@@ -90,7 +90,7 @@ class Application
 
         $language = new Language(
             $this->area,
-            (string) $config->get('app.default_language', 'en-us'),
+            $this->resolveLanguageCode($session, $config),
             'en-us'
         );
         $language->load('common');
@@ -188,5 +188,21 @@ class Application
             (array) $config->get('security.allowed_hosts', []),
             (string) $config->get('app.base_url', '')
         );
+    }
+
+    private function resolveLanguageCode(Session $session, Config $config): string
+    {
+        $default = $this->normalizeLanguageCode((string) $config->get('app.default_language', 'en-us')) ?? 'en-us';
+        $sessionCode = $this->normalizeLanguageCode((string) $session->get('language_code', ''));
+
+        return $sessionCode ?? $default;
+    }
+
+    private function normalizeLanguageCode(string $languageCode): ?string
+    {
+        $languageCode = strtolower(trim($languageCode));
+        $languageCode = str_replace('_', '-', $languageCode);
+
+        return in_array($languageCode, ['en-us', 'pt-br'], true) ? $languageCode : null;
     }
 }

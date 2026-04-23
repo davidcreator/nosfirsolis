@@ -3,6 +3,9 @@
 return [
     'layout.header_subtitle' => 'Planejamento anual, mensal e por periodo com camadas estrategicas.',
     'layout.header_title' => 'Strategic Content Planner',
+    'layout.language_label' => 'Idioma',
+    'layout.language_option_en_us' => 'English',
+    'layout.language_option_pt_br' => 'Portugues',
     'layout.logout' => 'Sair',
     'layout.nav_calendar' => 'Calendario',
     'layout.nav_dashboard' => 'Dashboard',

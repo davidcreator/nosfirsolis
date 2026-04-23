@@ -20,6 +20,8 @@ return [
     'common.context_seasonal' => 'Seasonal',
     'common.feature_disabled_message' => 'This feature is disabled by feature flag.',
     'common.feature_disabled_title' => 'Feature unavailable',
+    'common.flash_language_invalid' => 'Invalid selected language.',
+    'common.flash_language_updated' => 'Language updated successfully.',
     'common.flash_invalid_request' => 'Invalid request.',
     'common.no' => 'No',
     'common.option_select' => 'Select',

@@ -2,6 +2,9 @@
 
 return [
     'layout.connected_as' => 'Connected as',
+    'layout.language_label' => 'Language',
+    'layout.language_option_en_us' => 'English',
+    'layout.language_option_pt_br' => 'Portuguese',
     'layout.logout' => 'Sign out',
     'layout.nav_campaigns' => 'Campaigns',
     'layout.nav_channels' => 'Channels',

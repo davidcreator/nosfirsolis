@@ -69,6 +69,21 @@ $navItems = [
                     <span class="user-avatar"><?= e($userInitial) ?></span>
                     <div>
                         <strong><?= e($userName) ?></strong>
+                        <form method="post" action="<?= e(route_url('language/save')) ?>" style="margin:2px 0 4px 0">
+                            <?= csrf_field() ?>
+                            <input type="hidden" name="redirect_route" value="<?= e($currentRoute) ?>">
+                            <label for="adminLanguageCode" style="font-size:12px;opacity:.9">
+                                <?= e($t('layout.language_label', 'Idioma')) ?>
+                            </label>
+                            <select id="adminLanguageCode" name="language_code" onchange="this.form.submit()" style="margin-left:4px">
+                                <option value="pt-br" <?= strtolower((string) ($language_code ?? 'en-us')) === 'pt-br' ? 'selected' : '' ?>>
+                                    <?= e($t('layout.language_option_pt_br', 'Portugues')) ?>
+                                </option>
+                                <option value="en-us" <?= strtolower((string) ($language_code ?? 'en-us')) === 'en-us' ? 'selected' : '' ?>>
+                                    <?= e($t('layout.language_option_en_us', 'English')) ?>
+                                </option>
+                            </select>
+                        </form>
                         <form method="post" action="<?= e(route_url('auth/logout')) ?>" style="display:inline">
                             <?= csrf_field() ?>
                             <button type="submit" style="background:none;border:0;padding:0;color:inherit;font:inherit;cursor:pointer">

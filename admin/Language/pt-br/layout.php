@@ -2,6 +2,9 @@
 
 return [
     'layout.connected_as' => 'Conectado como',
+    'layout.language_label' => 'Idioma',
+    'layout.language_option_en_us' => 'English',
+    'layout.language_option_pt_br' => 'Portugues',
     'layout.logout' => 'Sair',
     'layout.nav_campaigns' => 'Campanhas',
     'layout.nav_channels' => 'Canais',
