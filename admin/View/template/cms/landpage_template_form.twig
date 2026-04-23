@@ -1,0 +1,85 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  {% set rms_actions = [
+    {
+      tag: 'button',
+      type: 'submit',
+      form: 'form-template',
+      class: 'btn btn-primary',
+      title: button_save,
+      icon: 'fa-solid fa-floppy-disk',
+      text: button_save
+    },
+    {
+      href: cancel,
+      class: 'btn btn-light',
+      title: button_cancel,
+      icon: 'fa-solid fa-reply',
+      text: button_cancel
+    }
+  ] %}
+  {% set rms_heading_title = heading_title %}
+  {% set rms_breadcrumbs = breadcrumbs %}
+  {% include 'common/rms_page_header.twig' %}
+  <div class="container-fluid">
+    {% if error_warning %}
+      {% set rms_alert_class = 'alert alert-danger' %}
+      {% set rms_alert_icon = 'fa-solid fa-circle-exclamation' %}
+      {% set rms_alert_text = error_warning %}
+      {% include 'common/rms_alert.twig' %}
+    {% endif %}
+    {% set rms_card_body %}
+      <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-template" data-testid="admin-landpage-template-form">
+        <div class="row g-4">
+          <div class="col-lg-8">
+            <div class="row mb-3 required">
+              <label class="col-sm-3 col-form-label" for="input-name">{{ entry_title }}</label>
+              <div class="col-sm-9">
+                <input type="text" name="name" value="{{ template.name }}" id="input-name" class="form-control" required data-testid="admin-landpage-template-name" />
+              </div>
+            </div>
+            <div class="row mb-3 required">
+              <label class="col-sm-3 col-form-label" for="input-code">{{ entry_slug }}</label>
+              <div class="col-sm-9">
+                <input type="text" name="code" value="{{ template.code }}" id="input-code" class="form-control" required data-testid="admin-landpage-template-code" />
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-sm-3 col-form-label" for="input-description">{{ entry_meta_description }}</label>
+              <div class="col-sm-9">
+                <textarea name="description" id="input-description" rows="4" class="form-control">{{ template.description }}</textarea>
+              </div>
+            </div>
+            <div class="row mb-0">
+              <label class="col-sm-3 col-form-label" for="input-html">{{ entry_html }}</label>
+              <div class="col-sm-9">
+                <textarea name="html" id="input-html" rows="16" class="form-control rms-code-textarea" required>{{ template.html }}</textarea>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="row mb-3">
+              <label class="col-form-label" for="input-status">{{ entry_status }}</label>
+              <div>
+                <select name="status" id="input-status" class="form-select" data-testid="admin-landpage-template-status">
+                  <option value="1" {% if template.status %}selected{% endif %}>{{ text_enabled }}</option>
+                  <option value="0" {% if not template.status %}selected{% endif %}>{{ text_disabled }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="row mb-0">
+              <label class="col-form-label" for="input-css">{{ entry_custom_css }}</label>
+              <div>
+                <textarea name="css" id="input-css" rows="12" class="form-control rms-code-textarea">{{ template.css }}</textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    {% endset %}
+    {% set rms_card_icon = 'fa-solid fa-file-code' %}
+    {% set rms_card_title = text_form %}
+    {% include 'common/rms_admin_card.twig' %}
+  </div>
+</div>
+{{ footer }}

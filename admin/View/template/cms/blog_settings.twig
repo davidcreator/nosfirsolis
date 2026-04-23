@@ -1,0 +1,119 @@
+{{ header }}
+{{ column_left }}
+<div id="content" data-testid="admin-blog-settings-page">
+  {% set rms_actions = [
+    {
+      tag: 'button',
+      type: 'submit',
+      form: 'form-blog-settings',
+      class: 'btn btn-primary',
+      title: button_save,
+      icon: 'fa-solid fa-floppy-disk',
+      text: button_save
+    },
+    {
+      href: cancel,
+      class: 'btn btn-light',
+      title: button_cancel,
+      icon: 'fa-solid fa-reply',
+      text: button_cancel
+    }
+  ] %}
+  {% set rms_heading_title = heading_title %}
+  {% set rms_breadcrumbs = breadcrumbs %}
+  {% include 'common/rms_page_header.twig' %}
+  <div class="container-fluid">
+    {% if success %}
+      {% set rms_alert_class = 'alert alert-success' %}
+      {% set rms_alert_icon = 'fa-solid fa-circle-check' %}
+      {% set rms_alert_text = success %}
+      {% set rms_alert_testid = 'admin-blog-settings-success' %}
+      {% include 'common/rms_alert.twig' %}
+    {% endif %}
+    {% if error_warning %}
+      {% set rms_alert_class = 'alert alert-danger' %}
+      {% set rms_alert_icon = 'fa-solid fa-circle-exclamation' %}
+      {% set rms_alert_text = error_warning %}
+      {% include 'common/rms_alert.twig' %}
+    {% endif %}
+    {% set rms_card_body %}
+      <form action="{{ action }}" method="post" id="form-blog-settings" data-testid="admin-blog-settings-form">
+        <div class="row g-4">
+          <div class="col-lg-6">
+            <h4>{{ heading_general }}</h4>
+            <div class="row mb-3">
+              <label class="col-sm-4 col-form-label" for="input-auto-approve">{{ entry_comment_auto_approve }}</label>
+              <div class="col-sm-8">
+                <select name="blog_comment_auto_approve" id="input-auto-approve" class="form-select" data-testid="admin-blog-settings-auto-approve">
+                  <option value="1" {{ blog_comment_auto_approve ? 'selected' : '' }}>{{ text_enabled }}</option>
+                  <option value="0" {{ not blog_comment_auto_approve ? 'selected' : '' }}>{{ text_disabled }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-sm-4 col-form-label" for="input-require-login">{{ entry_comment_require_login }}</label>
+              <div class="col-sm-8">
+                <select name="blog_comment_require_login" id="input-require-login" class="form-select" data-testid="admin-blog-settings-require-login">
+                  <option value="1" {{ blog_comment_require_login ? 'selected' : '' }}>{{ text_enabled }}</option>
+                  <option value="0" {{ not blog_comment_require_login ? 'selected' : '' }}>{{ text_disabled }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-sm-4 col-form-label" for="input-spam-words">{{ entry_comment_spam_words }}</label>
+              <div class="col-sm-8">
+                <textarea name="blog_comment_spam_words" id="input-spam-words" rows="4" class="form-control" data-testid="admin-blog-settings-spam-words">{{ blog_comment_spam_words }}</textarea>
+                <div class="form-text">{{ help_spam_words }}</div>
+              </div>
+            </div>
+            <div class="row mb-0">
+              <label class="col-sm-4 col-form-label" for="input-rate-limit">{{ entry_comment_rate_limit }}</label>
+              <div class="col-sm-8">
+                <input type="number" name="blog_comment_rate_limit" value="{{ blog_comment_rate_limit }}" id="input-rate-limit" class="form-control" min="0" data-testid="admin-blog-settings-rate-limit"/>
+                <div class="form-text">{{ help_comment_rate_limit }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <h4>{{ text_form }}</h4>
+            <div class="row mb-3">
+              <label class="col-sm-4 col-form-label" for="input-share-img">{{ entry_share_default_image }}</label>
+              <div class="col-sm-8">
+                <input type="text" name="blog_share_default_image" value="{{ blog_share_default_image }}" id="input-share-img" class="form-control" placeholder="https://..." data-testid="admin-blog-settings-share-image">
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-sm-4 col-form-label" for="input-schema-auto">{{ entry_schema_auto }}</label>
+              <div class="col-sm-8">
+                <select name="blog_schema_auto" id="input-schema-auto" class="form-select" data-testid="admin-blog-settings-schema-auto">
+                  <option value="1" {{ blog_schema_auto ? 'selected' : '' }}>{{ text_enabled }}</option>
+                  <option value="0" {{ not blog_schema_auto ? 'selected' : '' }}>{{ text_disabled }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-sm-4 col-form-label" for="input-rss">{{ entry_rss_enabled }}</label>
+              <div class="col-sm-8">
+                <select name="blog_rss_enabled" id="input-rss" class="form-select" data-testid="admin-blog-settings-rss">
+                  <option value="1" {{ blog_rss_enabled ? 'selected' : '' }}>{{ text_enabled }}</option>
+                  <option value="0" {{ not blog_rss_enabled ? 'selected' : '' }}>{{ text_disabled }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="row mb-0">
+              <label class="col-sm-4 col-form-label" for="input-cache-ttl">{{ entry_cache_ttl }}</label>
+              <div class="col-sm-8">
+                <input type="number" name="blog_cache_ttl" value="{{ blog_cache_ttl }}" id="input-cache-ttl" class="form-control" min="60" step="60" data-testid="admin-blog-settings-cache-ttl"/>
+                <div class="form-text">{{ help_cache_ttl }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    {% endset %}
+    {% set rms_card_icon = 'fa-solid fa-gear' %}
+    {% set rms_card_title = heading_general %}
+    {% include 'common/rms_admin_card.twig' %}
+  </div>
+</div>
+{{ footer }}

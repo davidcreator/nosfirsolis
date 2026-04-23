@@ -1,0 +1,43 @@
+<div class="card mb-3">
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">{{ entry_questions }} #{{ i + 1 }}</label>
+        <textarea name="questions[{{ i }}][question]" rows="2" class="form-control">{{ q.question }}</textarea>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">{{ entry_type }}</label>
+        <select name="questions[{{ i }}][type]" class="form-select">
+          <option value="single" {% if q.type == 'single' %}selected{% endif %}>{{ text_single }}</option>
+          <option value="multiple" {% if q.type == 'multiple' %}selected{% endif %}>{{ text_multiple }}</option>
+          <option value="true_false" {% if q.type == 'true_false' %}selected{% endif %}>{{ text_true_false }}</option>
+          <option value="text" {% if q.type == 'text' %}selected{% endif %}>{{ text_text }}</option>
+          <option value="file" {% if q.type == 'file' %}selected{% endif %}>{{ text_file }}</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">{{ entry_points }}</label>
+        <input type="number" name="questions[{{ i }}][points]" value="{{ q.points|default(1) }}" class="form-control" min="0">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">{{ entry_options }}</label>
+        <textarea name="questions[{{ i }}][options]" rows="3" class="form-control">{{ q.options }}</textarea>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">{{ entry_correct }}</label>
+        <textarea name="questions[{{ i }}][correct_answer]" rows="2" class="form-control">{{ q.correct_answer }}</textarea>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">{{ entry_sort_order }}</label>
+        <input type="number" name="questions[{{ i }}][sort_order]" value="{{ q.sort_order|default(i) }}" class="form-control">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">{{ entry_manual_review }}</label>
+        <select name="questions[{{ i }}][manual_review]" class="form-select">
+          <option value="0" {% if not q.manual_review %}selected{% endif %}>No</option>
+          <option value="1" {% if q.manual_review %}selected{% endif %}>Yes</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>

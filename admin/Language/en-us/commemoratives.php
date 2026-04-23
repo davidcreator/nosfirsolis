@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'commemoratives.button_new' => 'New date',
+    'commemoratives.col_context' => 'Context',
+    'commemoratives.col_date' => 'Date',
+    'commemoratives.col_name' => 'Name',
+    'commemoratives.col_recurrence' => 'Recurrence',
+    'commemoratives.col_status' => 'Status',
+    'commemoratives.confirm_delete' => 'Delete this date?',
+    'commemoratives.field_context' => 'Context',
+    'commemoratives.field_country_code' => 'Country (ISO2)',
+    'commemoratives.field_date' => 'Date',
+    'commemoratives.field_description' => 'Description',
+    'commemoratives.field_name' => 'Name',
+    'commemoratives.field_recurrence' => 'Recurrence',
+    'commemoratives.field_status' => 'Status',
+    'commemoratives.flash_created' => 'Commemorative date created.',
+    'commemoratives.flash_deleted' => 'Commemorative date removed.',
+    'commemoratives.flash_not_found' => 'Record not found.',
+    'commemoratives.flash_updated' => 'Commemorative date updated.',
+    'commemoratives.heading_index' => 'Commemorative dates',
+    'commemoratives.title_create' => 'New Commemorative Date',
+    'commemoratives.title_edit' => 'Edit Commemorative Date',
+    'commemoratives.title_index' => 'Commemorative dates',
+];

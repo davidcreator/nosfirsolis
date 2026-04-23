@@ -1,0 +1,57 @@
+﻿{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end">
+        <a href="{{ add }}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> {{ text_add }}</a>
+        <button type="submit" form="form-plan" formaction="{{ delete }}" class="btn btn-danger" onclick="return confirm('Delete selected?');"><i class="fa-regular fa-trash-can"></i></button>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  <div class="container-fluid">
+    <div class="card">
+      <div class="card-header">{{ text_list }}</div>
+      <div class="card-body">
+        <form id="form-plan" method="post">
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead>
+                <tr>
+                  <td style="width:1%;" class="text-center"><input type="checkbox" onclick="$('input[name=\'selected[]\']').prop('checked', this.checked);"></td>
+                  <td>{{ column_name }}</td>
+                  <td>{{ column_price }}</td>
+                  <td>{{ column_period }}</td>
+                  <td>{{ column_status }}</td>
+                  <td class="text-end">{{ column_action }}</td>
+                </tr>
+              </thead>
+              <tbody>
+                {% if plans %}
+                  {% for p in plans %}
+                    <tr>
+                      <td class="text-center"><input type="checkbox" name="selected[]" value="{{ p.plan_id }}"></td>
+                      <td>{{ p.name }}</td>
+                      <td>{{ p.price }} {{ p.currency }}</td>
+                      <td>{{ p.period_days }} dias</td>
+                      <td>{{ p.status ? 'Ativo' : 'Inativo' }}</td>
+                      <td class="text-end"><a href="{{ p.edit }}" class="btn btn-primary btn-sm"><i class="fa-solid fa-pencil"></i></a></td>
+                    </tr>
+                  {% endfor %}
+                {% else %}
+                  <tr><td class="text-center" colspan="6">{{ text_no_results }}</td></tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{{ footer }}

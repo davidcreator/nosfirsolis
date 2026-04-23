@@ -1,0 +1,129 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end rms-page-actions">
+        <button type="submit" form="form-quiz" class="btn btn-primary" data-bs-toggle="tooltip" title="{{ button_save }}" data-testid="admin-mooc-quiz-save">
+          <i class="fa-solid fa-floppy-disk"></i>
+          <span>{{ button_save }}</span>
+        </button>
+        <a href="{{ cancel }}" class="btn btn-light" data-bs-toggle="tooltip" title="{{ button_cancel }}">
+          <i class="fa-solid fa-reply"></i>
+          <span>{{ button_cancel }}</span>
+        </a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if errors.warning %}<div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> {{ errors.warning }}</div>{% endif %}
+    <div class="card rms-admin-card">
+      <div class="card-header"><i class="fa-solid fa-clipboard-question"></i> {{ text_form }}</div>
+      <div class="card-body">
+        <form id="form-quiz" method="post" action="{{ action }}" data-testid="admin-mooc-quiz-form">
+          <div class="row g-4">
+            <div class="col-lg-5">
+              <div class="mb-3">
+                <label class="form-label">{{ entry_lesson }}</label>
+                <select name="lesson_id" class="form-select" data-testid="admin-mooc-quiz-lesson">
+                  <option value="">{{ text_no_results }}</option>
+                  {% for lesson in lessons %}
+                    <option value="{{ lesson.lesson_id }}" {% if lesson.lesson_id == quiz.lesson_id %}selected{% endif %}>{{ lesson.title }}</option>
+                  {% endfor %}
+                </select>
+                {% if errors.lesson_id %}<div class="text-danger">{{ errors.lesson_id }}</div>{% endif %}
+              </div>
+              <div class="mb-3">
+                <label class="form-label">{{ entry_title }}</label>
+                <input type="text" name="title" value="{{ quiz.title }}" class="form-control" data-testid="admin-mooc-quiz-title">
+                {% if errors.title %}<div class="text-danger">{{ errors.title }}</div>{% endif %}
+              </div>
+              <div class="mb-3">
+                <label class="form-label">{{ entry_description }}</label>
+                <textarea name="description" rows="4" class="form-control">{{ quiz.description }}</textarea>
+              </div>
+              <div class="row mb-0">
+                <div class="col-md-4">
+                  <label class="form-label">{{ entry_passing }}</label>
+                  <input type="number" name="passing_score" value="{{ quiz.passing_score }}" class="form-control" min="0" max="100" data-testid="admin-mooc-quiz-passing-score">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">{{ entry_time_limit }}</label>
+                  <input type="number" name="time_limit_seconds" value="{{ quiz.time_limit_seconds }}" class="form-control" min="0" placeholder="ex: 900" data-testid="admin-mooc-quiz-time-limit">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">{{ entry_status }}</label>
+                  <select name="status" class="form-select" data-testid="admin-mooc-quiz-status">
+                    <option value="1" {% if quiz.status %}selected{% endif %}>Enabled</option>
+                    <option value="0" {% if not quiz.status %}selected{% endif %}>Disabled</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-7">
+              <div class="d-flex align-items-center justify-content-between mb-3">
+                <h5 class="mb-0">{{ entry_questions }}</h5>
+                <span class="text-muted small">Use options one per line. Multiple answers can also span multiple lines.</span>
+              </div>
+              {% set questions = quiz.questions %}
+              {% if not questions %}{% set questions = [ {} ] %}{% endif %}
+              {% for q in questions %}
+                {% set i = loop.index0 %}
+                <div class="card rms-admin-card mb-3" data-testid="admin-mooc-quiz-question-card" data-question-index="{{ i }}">
+                  <div class="card-body">
+                    <div class="row g-3">
+                      <div class="col-md-6">
+                        <label class="form-label">{{ entry_questions }} #{{ i + 1 }}</label>
+                        <textarea name="questions[{{ i }}][question]" rows="2" class="form-control" data-testid="admin-mooc-quiz-question-text">{{ q.question }}</textarea>
+                      </div>
+                      <div class="col-md-3">
+                        <label class="form-label">{{ entry_type }}</label>
+                        <select name="questions[{{ i }}][type]" class="form-select" data-testid="admin-mooc-quiz-question-type">
+                          <option value="single" {% if q.type == 'single' %}selected{% endif %}>{{ text_single }}</option>
+                          <option value="multiple" {% if q.type == 'multiple' %}selected{% endif %}>{{ text_multiple }}</option>
+                          <option value="true_false" {% if q.type == 'true_false' %}selected{% endif %}>{{ text_true_false }}</option>
+                          <option value="text" {% if q.type == 'text' %}selected{% endif %}>{{ text_text }}</option>
+                          <option value="file" {% if q.type == 'file' %}selected{% endif %}>{{ text_file }}</option>
+                        </select>
+                      </div>
+                      <div class="col-md-3">
+                        <label class="form-label">{{ entry_points }}</label>
+                        <input type="number" name="questions[{{ i }}][points]" value="{{ q.points|default(1) }}" class="form-control" min="0">
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">{{ entry_options }}</label>
+                        <textarea name="questions[{{ i }}][options]" rows="3" class="form-control">{{ q.options }}</textarea>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">{{ entry_correct }}</label>
+                        <textarea name="questions[{{ i }}][correct_answer]" rows="2" class="form-control">{{ q.correct_answer }}</textarea>
+                      </div>
+                      <div class="col-md-3">
+                        <label class="form-label">{{ entry_sort_order }}</label>
+                        <input type="number" name="questions[{{ i }}][sort_order]" value="{{ q.sort_order|default(i) }}" class="form-control">
+                      </div>
+                      <div class="col-md-3">
+                        <label class="form-label">{{ entry_manual_review }}</label>
+                        <select name="questions[{{ i }}][manual_review]" class="form-select" data-testid="admin-mooc-quiz-question-manual-review">
+                          <option value="0" {% if not q.manual_review %}selected{% endif %}>No</option>
+                          <option value="1" {% if q.manual_review %}selected{% endif %}>Yes</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{{ footer }}

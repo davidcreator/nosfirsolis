@@ -1,0 +1,19 @@
+<div class="rms-metric-tile{% if rms_metric_class is defined and rms_metric_class %} {{ rms_metric_class }}{% endif %}">
+  <div class="rms-metric-tile-body{% if rms_metric_body_class is defined and rms_metric_body_class %} {{ rms_metric_body_class }}{% endif %}">
+    {% if rms_metric_label is defined and rms_metric_label %}
+      <div class="rms-metric-label">{{ rms_metric_label }}</div>
+    {% endif %}
+    <div class="{{ rms_metric_value_class|default('h3') }}">
+      {% if rms_metric_value_html is defined %}
+        {{ rms_metric_value_html|raw }}
+      {% else %}
+        {{ rms_metric_value }}
+      {% endif %}
+    </div>
+    {% if rms_metric_note_html is defined and rms_metric_note_html|trim %}
+      <div class="{{ rms_metric_note_class|default('text-muted') }}">
+        {{ rms_metric_note_html|raw }}
+      </div>
+    {% endif %}
+  </div>
+</div>

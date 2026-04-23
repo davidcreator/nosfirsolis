@@ -1,0 +1,87 @@
+{{ header }}{{ column_left }}
+<div id="content" data-testid="admin-blog-category-list-page">
+  {% set rms_actions = [
+    {
+      tag: 'button',
+      type: 'submit',
+      form: 'form-category',
+      formaction: delete,
+      class: 'btn btn-danger',
+      icon: 'fa-regular fa-trash-can',
+      text: button_delete,
+      title: button_delete
+    },
+    {
+      href: add,
+      class: 'btn btn-primary',
+      icon: 'fa-solid fa-plus',
+      text: text_add,
+      title: text_add,
+      testid: 'admin-blog-category-add-link'
+    }
+  ] %}
+  {% include 'common/rms_page_header.twig' with {
+    rms_heading_title: heading_title,
+    rms_breadcrumbs: breadcrumbs,
+    rms_actions: rms_actions
+  } %}
+  <div class="container-fluid">
+    {% if success %}
+      <div class="alert alert-success"><i class="fa-solid fa-circle-check"></i> {{ success }}</div>
+    {% endif %}
+    {% set rms_card_body %}
+      <form action="{{ delete }}" method="post" enctype="multipart/form-data" id="form-category">
+        <div class="rms-admin-table-responsive">
+          <table class="table table-bordered table-hover align-middle">
+            <thead>
+              <tr>
+                <th style="width: 1px;" class="text-center">
+                  <input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);" />
+                </th>
+                <th>{{ column_title }}</th>
+                <th>{{ column_status }}</th>
+                <th>{{ column_date }}</th>
+                <th class="text-end">{{ column_action }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if categories %}
+                {% for category in categories %}
+                  <tr data-testid="admin-blog-category-row" data-category-id="{{ category.category_id }}">
+                    <td class="text-center">
+                      <input type="checkbox" name="selected[]" value="{{ category.category_id }}" />
+                    </td>
+                    <td>{{ category.name }}</td>
+                    <td>
+                      {% if category.status %}
+                        <span class="badge text-bg-success rms-status-badge">{{ text_enabled }}</span>
+                      {% else %}
+                        <span class="badge text-bg-secondary rms-status-badge">{{ text_disabled }}</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ category.date_modified }}</td>
+                    <td class="text-end">
+                      <a href="{{ category.edit }}" data-bs-toggle="tooltip" title="{{ text_edit }}" class="btn btn-outline-primary btn-sm" data-testid="admin-blog-category-edit-link">
+                        <i class="fa-solid fa-pen"></i>
+                      </a>
+                    </td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="5" class="rms-empty-state">{{ text_no_results }}</td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </form>
+    {% endset %}
+    {% include 'common/rms_admin_card.twig' with {
+      rms_card_icon: 'fa-solid fa-list',
+      rms_card_title: heading_title,
+      rms_card_body: rms_card_body
+    } %}
+  </div>
+</div>
+{{ footer }}

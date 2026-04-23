@@ -1,0 +1,502 @@
+{{ header }}
+{{ column_left }}
+<div id="content" data-testid="admin-database-page">
+  {% set rms_actions = [
+    {
+      href: view_documentation,
+      class: 'btn btn-info',
+      title: button_documentation,
+      icon: 'fa-solid fa-book',
+      text: button_documentation,
+      testid: 'admin-database-docs-link'
+    }
+  ] %}
+  {% set rms_heading_title = heading_title %}
+  {% set rms_breadcrumbs = breadcrumbs %}
+  {% include 'common/rms_page_header.twig' %}
+  <div class="container-fluid">
+    {% if success %}
+      {% set rms_alert_class = 'alert alert-success' %}
+      {% set rms_alert_icon = 'fa-solid fa-circle-check' %}
+      {% set rms_alert_text = success %}
+      {% include 'common/rms_alert.twig' %}
+    {% endif %}
+    {% if error_warning %}
+      {% set rms_alert_class = 'alert alert-danger' %}
+      {% set rms_alert_icon = 'fa-solid fa-circle-exclamation' %}
+      {% set rms_alert_text = error_warning %}
+      {% include 'common/rms_alert.twig' %}
+    {% endif %}
+
+    <div class="row g-3 mb-4">
+      <div class="col-md-3">
+        {% set rms_metric_label = text_schema_version %}
+        {% set rms_metric_value_class = 'display-6' %}
+        {% set rms_metric_note_html = '' %}
+        {% set rms_metric_value_html = schema_version %}
+        {% include 'common/rms_metric_tile.twig' %}
+      </div>
+      <div class="col-md-3">
+        {% set rms_metric_label = text_migration_history %}
+        {% set rms_metric_value_class = 'display-6' %}
+        {% set rms_metric_note_html = '' %}
+        {% set rms_metric_value_html = migration_history_count %}
+        {% include 'common/rms_metric_tile.twig' %}
+      </div>
+      <div class="col-md-3">
+        {% set rms_metric_label = text_schema_errors %}
+        {% set rms_metric_value_class = 'display-6' %}
+        {% set rms_metric_note_html = '' %}
+        {% set rms_metric_value_html = schema_error_count %}
+        {% include 'common/rms_metric_tile.twig' %}
+      </div>
+      <div class="col-md-3">
+        {% set rms_metric_label = text_integrity_issues %}
+        {% set rms_metric_value_class = 'display-6' %}
+        {% set rms_metric_note_html = '' %}
+        {% set rms_metric_value_html = integrity_issue_count %}
+        {% include 'common/rms_metric_tile.twig' %}
+      </div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-md-6">
+        {% set rms_card_body %}
+          {% if migration_needed %}
+            <div class="alert alert-warning"><i class="fa-solid fa-triangle-exclamation"></i> {{ text_migration_needed|format(schema_version) }}</div>
+            <form id="form-migration" data-testid="admin-database-migration-form">
+              <div class="row mb-3">
+                <label class="col-sm-4 col-form-label" for="input-description">{{ entry_description }}</label>
+                <div class="col-sm-8">
+                  <input type="text" name="description" value="" placeholder="{{ entry_description }}" id="input-description" class="form-control" />
+                </div>
+              </div>
+              <div class="text-end">
+                <button type="button" id="button-migration" class="btn btn-primary" data-url="{{ apply_migration }}" data-migration-needed="{{ text_migration_needed }}" data-migration-current="{{ text_migration_current }}"><i class="fa-solid fa-rotate"></i> {{ button_apply }}</button>
+              </div>
+            </form>
+          {% else %}
+            <div class="alert alert-success"><i class="fa-solid fa-circle-check"></i> {{ text_migration_current|format(schema_version) }}</div>
+          {% endif %}
+        {% endset %}
+        {% set rms_card_icon = 'fa-solid fa-database' %}
+        {% set rms_card_title = text_schema_version %}
+        {% include 'common/rms_admin_card.twig' %}
+      </div>
+
+      <div class="col-md-6">
+        {% set rms_card_body %}
+          <div class="d-grid gap-2">
+            <button type="button" id="button-validate" class="btn btn-info" data-url="{{ validate_schema }}" data-testid="admin-database-validate"><i class="fa-solid fa-check"></i> {{ button_validate }}</button>
+            <button type="button" id="button-integrity" class="btn btn-info" data-url="{{ check_integrity }}" data-testid="admin-database-integrity"><i class="fa-solid fa-shield-halved"></i> {{ button_check }}</button>
+            <button type="button" id="button-fix" class="btn btn-warning" data-url="{{ fix_issues }}" data-confirm="{{ text_confirm_fix }}" data-testid="admin-database-fix" {% if integrity_issues|length == 0 %}disabled{% endif %}><i class="fa-solid fa-screwdriver-wrench"></i> {{ button_fix }}</button>
+          </div>
+        {% endset %}
+        {% set rms_card_icon = 'fa-solid fa-screwdriver-wrench' %}
+        {% set rms_card_title = text_list %}
+        {% include 'common/rms_admin_card.twig' %}
+      </div>
+    </div>
+
+    <div class="row g-3 mt-1">
+      <div class="col-md-6">
+        {% set rms_card_body %}
+          <div id="migration-history" data-date="{{ text_migration_date }}" data-version="{{ text_migration_version }}" data-description="{{ text_migration_description }}" data-no-history="{{ text_no_history }}">
+            {% if migration_history|length > 0 %}
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                  <thead>
+                    <tr>
+                      <th>{{ text_migration_date }}</th>
+                      <th>{{ text_migration_version }}</th>
+                      <th>{{ text_migration_description }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for migration in migration_history %}
+                      <tr>
+                        <td>{{ migration.date_added }}</td>
+                        <td>{{ migration.version }}</td>
+                        <td>{{ migration.description }}</td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            {% else %}
+              {% set rms_empty_icon = 'fa-solid fa-clock-rotate-left' %}
+              {% set rms_empty_text = text_no_history %}
+              {% include 'common/rms_empty_state.twig' %}
+            {% endif %}
+          </div>
+        {% endset %}
+        {% set rms_card_icon = 'fa-solid fa-clock-rotate-left' %}
+        {% set rms_card_title = text_migration_history %}
+        {% include 'common/rms_admin_card.twig' %}
+      </div>
+
+      <div class="col-md-6">
+        {% set rms_card_body %}
+          <div id="schema-errors" data-table="{{ text_issue_table }}" data-description="{{ text_issue_description }}" data-no-issues="{{ text_no_issues }}">
+            {% if schema_errors|length > 0 %}
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                  <thead>
+                    <tr>
+                      <th>{{ text_issue_table }}</th>
+                      <th>{{ text_issue_description }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for error in schema_errors %}
+                      <tr>
+                        <td>{{ error.table }}</td>
+                        <td>{{ error.message }}</td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            {% else %}
+              {% set rms_empty_icon = 'fa-solid fa-circle-check' %}
+              {% set rms_empty_text = text_no_issues %}
+              {% include 'common/rms_empty_state.twig' %}
+            {% endif %}
+          </div>
+        {% endset %}
+        {% set rms_card_icon = 'fa-solid fa-triangle-exclamation' %}
+        {% set rms_card_title = text_schema_errors %}
+        {% include 'common/rms_admin_card.twig' %}
+      </div>
+    </div>
+
+    <div class="row mt-3">
+      <div class="col-md-12">
+        {% set rms_card_body %}
+          <div id="integrity-issues" data-table="{{ text_issue_table }}" data-type="{{ text_issue_type }}" data-description="{{ text_issue_description }}" data-solution="{{ text_issue_solution }}" data-no-issues="{{ text_no_issues }}">
+            {% if integrity_issues|length > 0 %}
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                  <thead>
+                    <tr>
+                      <th>{{ text_issue_table }}</th>
+                      <th>{{ text_issue_type }}</th>
+                      <th>{{ text_issue_description }}</th>
+                      <th>{{ text_issue_solution }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for issue in integrity_issues %}
+                      <tr>
+                        <td>{{ issue.table }}</td>
+                        <td>{{ issue.type }}</td>
+                        <td>{{ issue.description }}</td>
+                        <td>{{ issue.solution }}</td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            {% else %}
+              {% set rms_empty_icon = 'fa-solid fa-circle-check' %}
+              {% set rms_empty_text = text_no_issues %}
+              {% include 'common/rms_empty_state.twig' %}
+            {% endif %}
+          </div>
+        {% endset %}
+        {% set rms_card_icon = 'fa-solid fa-circle-exclamation' %}
+        {% set rms_card_title = text_integrity_issues %}
+        {% include 'common/rms_admin_card.twig' %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="fix-result" class="mt-3"></div>
+
+<script type="text/javascript" src="view/js/tool/database.js"></script>
+<script type="text/javascript">
+// Initialize data attributes for the JavaScript file
+$(document).ready(function() {
+  // Set data attributes for tables
+  $('#migration-history').attr({
+    'data-date': '{{ text_migration_date }}',
+    'data-version': '{{ text_migration_version }}',
+    'data-description': '{{ text_migration_description }}',
+    'data-no-history': '{{ text_no_history }}'
+  });
+
+  $('#schema-errors').attr({
+    'data-table': '{{ text_issue_table }}',
+    'data-description': '{{ text_issue_description }}',
+    'data-no-issues': '{{ text_no_issues }}'
+  });
+
+  $('#integrity-issues').attr({
+    'data-table': '{{ text_issue_table }}',
+    'data-type': '{{ text_issue_type }}',
+    'data-description': '{{ text_issue_description }}',
+    'data-solution': '{{ text_issue_solution }}',
+    'data-no-issues': '{{ text_no_issues }}'
+  });
+});
+
+$('#button-migration').on('click', function() {
+  $.ajax({
+    url: '{{ apply_migration }}',
+    type: 'post',
+    dataType: 'json',
+    data: $('#form-migration').serialize(),
+    beforeSend: function() {
+      $('#button-migration').button('loading');
+    },
+    complete: function() {
+      $('#button-migration').button('reset');
+    },
+    success: function(json) {
+      $('.alert-dismissible').remove();
+
+      if (json['error']) {
+        $('#form-migration').before('<div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> ' + json['error'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+      }
+
+      if (json['success']) {
+        $('#form-migration').before('<div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> ' + json['success'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+
+        // Update migration history
+        if (json['migration_history']) {
+          updateMigrationHistory(json['migration_history']);
+        }
+
+        // Update schema version
+        if (json['schema_version']) {
+          if (json['migration_needed']) {
+            $('.alert-warning').html('<i class="fa fa-exclamation-triangle"></i> ' + '{{ text_migration_needed }}'.replace('%s', json['schema_version']));
+          } else {
+            $('.alert-warning').replaceWith('<div class="alert alert-success"><i class="fa fa-check-circle"></i> ' + '{{ text_migration_current }}'.replace('%s', json['schema_version']) + '</div>');
+            $('#form-migration').hide();
+          }
+        }
+      }
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+    }
+  });
+});
+
+$('#button-validate').on('click', function() {
+  $.ajax({
+    url: '{{ validate_schema }}',
+    type: 'post',
+    dataType: 'json',
+    beforeSend: function() {
+      $('#button-validate').button('loading');
+    },
+    complete: function() {
+      $('#button-validate').button('reset');
+    },
+    success: function(json) {
+      $('.alert-dismissible').remove();
+
+      if (json['error']) {
+        $('#content > .container-fluid').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> ' + json['error'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+      }
+
+      if (json['success']) {
+        $('#content > .container-fluid').prepend('<div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> ' + json['success'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+      }
+
+      // Update schema errors
+      if (json['schema_errors']) {
+        updateSchemaErrors(json['schema_errors']);
+      }
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+    }
+  });
+});
+
+$('#button-integrity').on('click', function() {
+  $.ajax({
+    url: '{{ check_integrity }}',
+    type: 'post',
+    dataType: 'json',
+    beforeSend: function() {
+      $('#button-integrity').button('loading');
+    },
+    complete: function() {
+      $('#button-integrity').button('reset');
+    },
+    success: function(json) {
+      $('.alert-dismissible').remove();
+
+      if (json['error']) {
+        $('#content > .container-fluid').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> ' + json['error'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+      }
+
+      if (json['success']) {
+        $('#content > .container-fluid').prepend('<div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> ' + json['success'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+      }
+
+      // Update integrity issues
+      if (json['integrity_issues']) {
+        updateIntegrityIssues(json['integrity_issues']);
+
+        // Enable or disable fix button
+        if (json['integrity_issues'].length > 0) {
+          $('#button-fix').prop('disabled', false);
+        } else {
+          $('#button-fix').prop('disabled', true);
+        }
+      }
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+    }
+  });
+});
+
+$('#button-fix').on('click', function() {
+  if (confirm('{{ text_confirm_fix }}')) {
+    $.ajax({
+      url: '{{ fix_issues }}',
+      type: 'post',
+      dataType: 'json',
+      beforeSend: function() {
+        $('#button-fix').button('loading');
+      },
+      complete: function() {
+        $('#button-fix').button('reset');
+      },
+      success: function(json) {
+        $('.alert-dismissible').remove();
+
+        if (json['error']) {
+          $('#content > .container-fluid').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> ' + json['error'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+        }
+
+        if (json['success']) {
+          $('#content > .container-fluid').prepend('<div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> ' + json['success'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+        }
+
+        // Update integrity issues
+        if (json['integrity_issues']) {
+          updateIntegrityIssues(json['integrity_issues']);
+
+          // Enable or disable fix button
+          if (json['integrity_issues'].length > 0) {
+            $('#button-fix').prop('disabled', false);
+          } else {
+            $('#button-fix').prop('disabled', true);
+          }
+        }
+      },
+      error: function(xhr, ajaxOptions, thrownError) {
+        alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+      }
+    });
+  }
+});
+
+function updateMigrationHistory(history) {
+  var html = '';
+
+  if (history.length > 0) {
+    html += '<div class="table-responsive">';
+    html += '  <table class="table table-bordered table-hover">';
+    html += '    <thead>';
+    html += '      <tr>';
+    html += '        <th>{{ text_migration_date }}</th>';
+    html += '        <th>{{ text_migration_version }}</th>';
+    html += '        <th>{{ text_migration_description }}</th>';
+    html += '      </tr>';
+    html += '    </thead>';
+    html += '    <tbody>';
+
+    for (var i = 0; i < history.length; i++) {
+      html += '      <tr>';
+      html += '        <td>' + history[i]['date_added'] + '</td>';
+      html += '        <td>' + history[i]['version'] + '</td>';
+      html += '        <td>' + history[i]['description'] + '</td>';
+      html += '      </tr>';
+    }
+
+    html += '    </tbody>';
+    html += '  </table>';
+    html += '</div>';
+  } else {
+    html += '<div class="alert alert-info">{{ text_no_history }}</div>';
+  }
+
+  $('#migration-history').html(html);
+}
+
+function updateSchemaErrors(errors) {
+  var html = '';
+
+  if (errors.length > 0) {
+    html += '<div class="table-responsive">';
+    html += '  <table class="table table-bordered table-hover">';
+    html += '    <thead>';
+    html += '      <tr>';
+    html += '        <th>{{ text_issue_table }}</th>';
+    html += '        <th>{{ text_issue_description }}</th>';
+    html += '      </tr>';
+    html += '    </thead>';
+    html += '    <tbody>';
+
+    for (var i = 0; i < errors.length; i++) {
+      html += '      <tr>';
+      html += '        <td>' + errors[i]['table'] + '</td>';
+      html += '        <td>' + errors[i]['message'] + '</td>';
+      html += '      </tr>';
+    }
+
+    html += '    </tbody>';
+    html += '  </table>';
+    html += '</div>';
+  } else {
+    html += '<div class="alert alert-success">{{ text_no_issues }}</div>';
+  }
+
+  $('#schema-errors').html(html);
+}
+
+function updateIntegrityIssues(issues) {
+  var html = '';
+
+  if (issues.length > 0) {
+    html += '<div class="table-responsive">';
+    html += '  <table class="table table-bordered table-hover">';
+    html += '    <thead>';
+    html += '      <tr>';
+    html += '        <th>{{ text_issue_table }}</th>';
+    html += '        <th>{{ text_issue_type }}</th>';
+    html += '        <th>{{ text_issue_description }}</th>';
+    html += '        <th>{{ text_issue_solution }}</th>';
+    html += '      </tr>';
+    html += '    </thead>';
+    html += '    <tbody>';
+
+    for (var i = 0; i < issues.length; i++) {
+      html += '      <tr>';
+      html += '        <td>' + issues[i]['table'] + '</td>';
+      html += '        <td>' + issues[i]['type'] + '</td>';
+      html += '        <td>' + issues[i]['description'] + '</td>';
+      html += '        <td>' + issues[i]['solution'] + '</td>';
+      html += '      </tr>';
+    }
+
+    html += '    </tbody>';
+    html += '  </table>';
+    html += '</div>';
+  } else {
+    html += '<div class="alert alert-success">{{ text_no_issues }}</div>';
+  }
+
+  $('#integrity-issues').html(html);
+}
+</script>
+{{ footer }}

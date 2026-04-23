@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}" data-admin-theme="{{ admin_appearance_mode|default('light') }}" data-bs-theme="{{ admin_appearance_mode|default('light') }}">
+<head>
+  <meta charset="UTF-8"/>
+  <title>{{ title }}</title>
+  <base href="{{ base }}"/>
+  {% if description %}
+    <meta name="description" content="{{ description }}"/>
+  {% endif %}
+  {% if keywords %}
+    <meta name="keywords" content="{{ keywords }}"/>
+  {% endif %}
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+  <meta http-equiv="cache-control" content="no-cache">
+  <meta http-equiv="expires" content="0">
+  <!-- CSS -->
+  <link rel="stylesheet" media="screen" href="{{ bootstrap }}" />
+  <link type="text/css" href="{{ icons }}" rel="stylesheet" />
+  <link type="text/css" rel="stylesheet" href="{{ reamurcms }}" />
+  <link type="text/css" rel="stylesheet" href="view/js/jquery/datetimepicker/daterangepicker.css" />
+  <link type="text/css" rel="stylesheet" href="view/css/theme-switcher.css" />
+  {% if admin_appearance_style %}
+    <style id="admin-appearance-style">{{ admin_appearance_style|raw }}</style>
+  {% endif %}
+
+  <!-- JS -->
+  <script type="text/javascript" src="{{ jquery }}"></script>
+  <script type="text/javascript" src="view/js/jquery/datetimepicker/moment.min.js"></script>
+  <script type="text/javascript" src="view/js/jquery/datetimepicker/moment-with-locales.min.js"></script>
+  <script type="text/javascript" src="view/js/jquery/datetimepicker/daterangepicker.js"></script>  
+  <script type="text/javascript" src="{{ common_js }}"></script>
+  <script type="text/javascript" src="view/js/chat/chat-header.js"></script>
+  <script>window.__adminAppearanceTheme = { enabled: {{ admin_appearance_status ? 'true' : 'false' }}, mode: {{ admin_appearance_mode|json_encode|raw }}, tokens: {{ admin_appearance_tokens|json_encode|raw }} };</script>
+  <script type="text/javascript" src="view/js/theme-switcher.js"></script>
+  {% for style in styles %}
+    <link type="text/css" href="{{ style.href }}" rel="{{ style.rel }}" media="{{ style.media }}"/>
+  {% endfor %}
+  {% for link in links %}
+    <link href="{{ link.href }}" rel="{{ link.rel }}"/>
+  {% endfor %}
+  {% for script in scripts %}
+    <script type="text/javascript" src="{{ script.href }}"></script>
+  {% endfor %}
+</head>
+<body>
+<div id="container">
+  <div id="alert" class="toast-container position-fixed top-0 end-0 p-3" data-testid="admin-alert-container"></div>
+  <header id="header" class="navbar navbar-expand navbar-light bg-light">
+    <div class="container-fluid">
+      <a href="{{ home }}" class="navbar-brand d-none d-lg-block"><img src="view/image/reamurcms.png" alt="{{ heading_title }}" title="{{ heading_title }}"/></a>
+      {% if logged %}
+        <button type="button" id="button-menu" class="btn btn-link d-inline-block d-lg-none"><i class="fa-solid fa-bars"></i></button>
+        <ul class="nav navbar-nav">
+          {% if chat_enabled %}
+          <li id="nav-chat" class="nav-item dropdown"
+              data-chat-header-api="{{ chat_header_api }}"
+              data-chat-link="{{ chat_link }}"
+              data-empty-label="{{ text_chat_notification_none }}"
+              data-view-all-label="{{ text_chat_notification_all }}"
+              data-browser-title="{{ chat_browser_title }}"
+              data-attention-total="{{ chat_unread_total }}"
+              data-latest-notification-id="{{ chat_notification_latest_id }}"
+              data-latest-notification-created-at="{{ chat_notification_latest_created_at }}">
+            <a href="#" data-bs-toggle="dropdown" class="nav-link dropdown-toggle"><i class="fa-regular fa-comment"></i> <span id="nav-chat-badge" class="badge bg-danger{% if not chat_unread_total %} d-none{% endif %}">{% if chat_unread_total %}{{ chat_unread_total }}{% endif %}</span></a>
+            <div id="nav-chat-menu" class="dropdown-menu dropdown-menu-end">
+              {% if chat_notifications %}
+                {% for chat_notification in chat_notifications %}
+                  <a href="{{ chat_notification.href }}" class="dropdown-item{% if chat_notification.is_unread %} fw-semibold{% endif %}">
+                    <div>{{ chat_notification.title }}</div>
+                    {% if chat_notification.meta %}
+                      <small class="text-muted d-block">{{ chat_notification.meta }}</small>
+                    {% endif %}
+                  </a>
+                {% endfor %}
+                <a href="{{ chat_notification_all }}" class="dropdown-item text-center text-primary">{{ text_chat_notification_all }}</a>
+              {% else %}
+                <span class="dropdown-item text-center">{{ text_chat_notification_none }}</span>
+              {% endif %}
+            </div>
+          </li>
+          {% endif %}
+          <li id="nav-notification" class="nav-item dropdown">
+            <a href="#" data-bs-toggle="dropdown" class="nav-link dropdown-toggle"><i class="fa-regular fa-bell"></i>{% if notification_total %} <span class="badge bg-danger">{{ notification_total }}</span>{% endif %}</a>
+            <div class="dropdown-menu dropdown-menu-end">
+              {% if notifications %}
+                {% for notification in notifications %}
+                  <a href="{{ notification.href }}" data-bs-toggle="modal" class="dropdown-item">{{ notification.title }}</a>
+                {% endfor %}
+                <a href="{{ notification_all }}" class="dropdown-item text-center text-primary">{{ text_notification_all }}</a>
+              {% else %}
+                <span class="dropdown-item text-center">{{ text_no_results }}</span>
+              {% endif %}
+            </div>
+          </li>
+          <li id="nav-language" class="nav-item dropdown">{{ language }}</li>
+          <li id="nav-profile" class="nav-item dropdown">
+            <a href="#" data-bs-toggle="dropdown" class="nav-link dropdown-toggle"><img src="{{ image }}" alt="{{ firstname }} {{ lastname }}" title="{{ username }}" class="rounded-circle"/><span class="d-none d-md-inline d-lg-inline">&nbsp;&nbsp;&nbsp;{{ firstname }} {{ lastname }} <i class="fa-solid fa-caret-down fa-fw"></i></span></a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a href="{{ profile }}" class="dropdown-item"><i class="fa-solid fa-user-circle fa-fw"></i> {{ text_profile }}</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><h6 class="dropdown-header">{{ text_store }}</h6></li>
+              {% for store in stores %}
+                <a href="{{ store.href }}" target="_blank" class="dropdown-item">{{ store.name }}</a>
+              {% endfor %}
+              <li><hr class="dropdown-divider"></li>
+              <li><h6 class="dropdown-header">{{ text_help }}</h6></li>
+              <li><a href="https://reamurcms.com" target="_blank" class="dropdown-item"><i class="fa-brands fa-reamurcms fa-fw"></i> {{ text_homepage }}</a></li>
+              <li><a href="http://docs.reamurcms.com" target="_blank" class="dropdown-item"><i class="fa-solid fa-file fa-fw"></i> {{ text_documentation }}</a></li>
+              <li><a href="https://forum.reamurcms.com" target="_blank" class="dropdown-item"><i class="fa-solid fa-comments fa-fw"></i> {{ text_support }}</a></li>
+            </ul>
+          </li>
+          <li id="nav-logout" class="nav-item"><a href="{{ logout }}" class="nav-link"><i class="fa-solid fa-sign-out"></i> <span class="d-none d-md-inline">{{ text_logout }}</span></a></li>
+        </ul>
+      {% endif %}
+    </div>
+  </header>

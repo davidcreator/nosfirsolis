@@ -1,0 +1,44 @@
+<div class="page-header">
+  <div class="container-fluid">
+    {% if rms_actions is defined and rms_actions %}
+      <div class="float-end rms-page-actions">
+        {% for action in rms_actions %}
+          {% if action.tag|default('a') == 'button' %}
+            <button
+              type="{{ action.type|default('button') }}"
+              {% if action.id is defined and action.id %}id="{{ action.id }}"{% endif %}
+              class="{{ action.class|default('btn btn-light') }}"
+              {% if action.form is defined and action.form %}form="{{ action.form }}"{% endif %}
+              {% if action.formaction is defined and action.formaction %}formaction="{{ action.formaction }}"{% endif %}
+              {% if action.onclick is defined and action.onclick %}onclick="{{ action.onclick }}"{% endif %}
+              {% if action.disabled is defined and action.disabled %}disabled{% endif %}
+              {% if action.title is defined and action.title %}data-bs-toggle="tooltip" title="{{ action.title }}"{% endif %}
+              {% if action.testid is defined and action.testid %}data-testid="{{ action.testid }}"{% endif %}
+            >
+              {% if action.icon is defined and action.icon %}<i class="{{ action.icon }}"></i>{% endif %}
+              {% if action.text is defined and action.text %}<span>{{ action.text }}</span>{% endif %}
+            </button>
+          {% else %}
+            <a
+              href="{{ action.href|default('#') }}"
+              {% if action.id is defined and action.id %}id="{{ action.id }}"{% endif %}
+              class="{{ action.class|default('btn btn-light') }}"
+              {% if action.onclick is defined and action.onclick %}onclick="{{ action.onclick }}"{% endif %}
+              {% if action.title is defined and action.title %}data-bs-toggle="tooltip" title="{{ action.title }}"{% endif %}
+              {% if action.testid is defined and action.testid %}data-testid="{{ action.testid }}"{% endif %}
+            >
+              {% if action.icon is defined and action.icon %}<i class="{{ action.icon }}"></i>{% endif %}
+              {% if action.text is defined and action.text %}<span>{{ action.text }}</span>{% endif %}
+            </a>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
+    <h1>{{ rms_heading_title }}</h1>
+    <ol class="breadcrumb">
+      {% for breadcrumb in rms_breadcrumbs %}
+        <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+      {% endfor %}
+    </ol>
+  </div>
+</div>

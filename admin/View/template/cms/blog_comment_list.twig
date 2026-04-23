@@ -1,0 +1,113 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end rms-page-actions">
+        <button type="submit" form="form-comment" formaction="{{ approve }}" class="btn btn-success">
+          <i class="fa-solid fa-check"></i>
+          <span>{{ button_approve }}</span>
+        </button>
+        <button type="submit" form="form-comment" formaction="{{ disapprove }}" class="btn btn-warning">
+          <i class="fa-solid fa-ban"></i>
+          <span>{{ button_disapprove }}</span>
+        </button>
+        <button type="submit" form="form-comment" formaction="{{ spam }}" class="btn btn-danger">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <span>{{ button_spam }}</span>
+        </button>
+        <button type="submit" form="form-comment" formaction="{{ block }}" class="btn btn-dark">
+          <i class="fa-solid fa-user-slash"></i>
+          <span>{{ button_block }}</span>
+        </button>
+        <button type="submit" form="form-comment" formaction="{{ delete }}" class="btn btn-light">
+          <i class="fa-regular fa-trash-can"></i>
+          <span>{{ button_delete }}</span>
+        </button>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  <div class="container-fluid">
+    <div class="card rms-admin-card mb-3">
+      <div class="card-body">
+        <form action="" method="get" class="row g-3 align-items-end">
+          <input type="hidden" name="route" value="cms/blog_comment">
+          <input type="hidden" name="user_token" value="{{ user_token }}">
+          <div class="col-md-3">
+            <label class="form-label">{{ column_status|default('Status') }}</label>
+            <select name="status" class="form-select">
+              <option value="">{{ text_all|default('All') }}</option>
+              <option value="1" {{ filter_status is same as('1') ? 'selected' : '' }}>{{ text_enabled }}</option>
+              <option value="0" {{ filter_status is same as('0') ? 'selected' : '' }}>{{ text_pending }}</option>
+              <option value="2" {{ filter_status is same as('2') ? 'selected' : '' }}>{{ text_spam }}</option>
+              <option value="3" {{ filter_status is same as('3') ? 'selected' : '' }}>{{ text_blocked }}</option>
+            </select>
+          </div>
+          <div class="col-md-5">
+            <label class="form-label">Search</label>
+            <input type="text" name="q" value="{{ filter_q }}" class="form-control" placeholder="search">
+          </div>
+          <div class="col-md-2">
+            <button class="btn btn-primary w-100" type="submit"><i class="fa-solid fa-filter"></i> Search</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card rms-admin-card">
+      <div class="card-header"><i class="fa-solid fa-comments"></i> {{ heading_title }}</div>
+      <div class="card-body">
+        <form action="" method="post" id="form-comment">
+          <div class="rms-admin-table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+              <thead>
+                <tr>
+                  <th style="width:1px" class="text-center"><input type="checkbox" onclick="$('input[name*=\\'selected\\']').prop('checked', this.checked);" /></th>
+                  <th>Post</th>
+                  <th>Author</th>
+                  <th>Email</th>
+                  <th>Status</th>
+                  <th>Content</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+              {% if comments %}
+                {% for c in comments %}
+                  <tr>
+                    <td class="text-center"><input type="checkbox" name="selected[]" value="{{ c.comment_id }}"/></td>
+                    <td><a href="{{ c.post_link }}">{{ c.post_title }}</a></td>
+                    <td>{{ c.author }}</td>
+                    <td>{{ c.email }}</td>
+                    <td>
+                      {% if c.status_label == text_enabled %}
+                        <span class="badge text-bg-success rms-status-badge">{{ c.status_label }}</span>
+                      {% elseif c.status_label == text_pending %}
+                        <span class="badge text-bg-warning rms-status-badge">{{ c.status_label }}</span>
+                      {% elseif c.status_label == text_spam %}
+                        <span class="badge text-bg-danger rms-status-badge">{{ c.status_label }}</span>
+                      {% else %}
+                        <span class="badge text-bg-dark rms-status-badge">{{ c.status_label }}</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ c.content }}</td>
+                    <td>{{ c.date_added }}</td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr><td colspan="7" class="rms-empty-state">{{ text_no_results }}</td></tr>
+              {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{{ footer }}

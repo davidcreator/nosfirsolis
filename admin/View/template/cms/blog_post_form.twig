@@ -1,0 +1,155 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  {% set rms_actions = [
+    {
+      tag: 'button',
+      type: 'submit',
+      form: 'form-post',
+      class: 'btn btn-primary',
+      title: button_save,
+      icon: 'fa-solid fa-floppy-disk',
+      text: button_save
+    },
+    {
+      href: cancel,
+      class: 'btn btn-light',
+      title: button_cancel,
+      icon: 'fa-solid fa-reply',
+      text: button_cancel
+    }
+  ] %}
+  {% set rms_heading_title = heading_title %}
+  {% set rms_breadcrumbs = breadcrumbs %}
+  {% include 'common/rms_page_header.twig' %}
+  <div class="container-fluid">
+    {% if errors.warning %}
+      {% set rms_alert_class = 'alert alert-danger' %}
+      {% set rms_alert_icon = 'fa-solid fa-circle-exclamation' %}
+      {% set rms_alert_text = errors.warning %}
+      {% include 'common/rms_alert.twig' %}
+    {% endif %}
+    {% set rms_card_body %}
+      <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-post" data-testid="admin-blog-post-form">
+        <div class="row g-4">
+          <div class="col-lg-8">
+            <div class="row mb-3 required">
+              <label class="col-sm-3 col-form-label" for="input-title">{{ entry_title }}</label>
+              <div class="col-sm-9">
+                <input type="text" name="title" value="{{ post.title }}" id="input-title" class="form-control" data-testid="admin-blog-post-title" />
+                {% if errors.title %}<div class="text-danger">{{ errors.title }}</div>{% endif %}
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-sm-3 col-form-label" for="input-slug">{{ entry_slug }}</label>
+              <div class="col-sm-9">
+                <input type="text" name="slug" value="{{ post.slug }}" id="input-slug" class="form-control" data-testid="admin-blog-post-slug" />
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-sm-3 col-form-label" for="input-excerpt">{{ entry_excerpt }}</label>
+              <div class="col-sm-9">
+                <textarea name="excerpt" id="input-excerpt" rows="4" class="form-control">{{ post.excerpt }}</textarea>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-sm-3 col-form-label" for="input-content">{{ entry_content }}</label>
+              <div class="col-sm-9">
+                <textarea name="content" id="input-content" rows="12" data-rms-toggle="ckeditor" data-lang="{{ ckeditor }}" class="form-control">{{ post.content }}</textarea>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-sm-3 col-form-label" for="input-published">{{ entry_published_at }}</label>
+              <div class="col-sm-5">
+                <input type="datetime-local" name="published_at" value="{{ post.published_at }}" id="input-published" class="form-control"/>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-sm-3 col-form-label" for="input-meta-title">{{ entry_meta_title }}</label>
+              <div class="col-sm-9">
+                <input type="text" name="meta_title" value="{{ post.meta_title }}" id="input-meta-title" class="form-control"/>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-sm-3 col-form-label" for="input-meta-description">{{ entry_meta_description }}</label>
+              <div class="col-sm-9">
+                <textarea name="meta_description" id="input-meta-description" rows="3" class="form-control">{{ post.meta_description }}</textarea>
+              </div>
+            </div>
+            <div class="row mb-0">
+              <label class="col-sm-3 col-form-label" for="input-meta-keyword">{{ entry_meta_keyword }}</label>
+              <div class="col-sm-9">
+                <input type="text" name="meta_keyword" value="{{ post.meta_keyword }}" id="input-meta-keyword" class="form-control"/>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-4">
+            <div class="row mb-3">
+              <label class="col-form-label" for="input-status">{{ entry_status }}</label>
+              <div>
+                <select name="status" id="input-status" class="form-select" data-testid="admin-blog-post-status">
+                  <option value="draft" {{ post.status == 'draft' ? 'selected' : '' }}>{{ text_draft }}</option>
+                  <option value="published" {{ post.status == 'published' ? 'selected' : '' }}>{{ text_published }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col-12">
+                <input type="hidden" name="is_premium" value="0"/>
+                <div class="rms-form-check-card">
+                  <input class="form-check-input" type="checkbox" name="is_premium" value="1" id="input-is-premium" {{ post.is_premium ? 'checked' : '' }} data-testid="admin-blog-post-premium"/>
+                  <label class="form-check-label" for="input-is-premium">{{ entry_is_premium }} - {{ text_enabled }}</label>
+                </div>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-form-label" for="input-price">{{ entry_price }}</label>
+              <div>
+                <input type="text" name="price" value="{{ post.price }}" id="input-price" class="form-control" data-testid="admin-blog-post-price"/>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-form-label" for="input-owner">{{ entry_owner }}</label>
+              <div>
+                <input type="number" name="owner_id" value="{{ post.owner_id }}" id="input-owner" class="form-control" placeholder="ID do responsavel (opcional)"/>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-form-label" for="input-payout-share">{{ entry_payout_share }}</label>
+              <div>
+                <div class="input-group">
+                  <input type="text" name="payout_share" value="{{ post.payout_share }}" id="input-payout-share" class="form-control"/>
+                  <span class="input-group-text">%</span>
+                </div>
+              </div>
+            </div>
+            <div class="row mb-0">
+              <label class="col-form-label" for="input-image">{{ entry_featured_image }}</label>
+              <div>
+                <div class="d-flex flex-column gap-3">
+                  <a href="" id="thumb-image" data-rms-toggle="image" data-rms-target="#input-image" data-rms-thumb="#thumb-image" class="img-thumbnail">
+                    <img src="{{ thumb }}" alt="" title="" data-placeholder="{{ placeholder }}" />
+                  </a>
+                  <div class="d-flex gap-2">
+                    <button type="button" data-rms-toggle="image" data-rms-target="#input-image" data-rms-thumb="#thumb-image" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-pen"></i> {{ button_edit }}</button>
+                    <button type="button" data-rms-toggle="clear" data-rms-target="#input-image" data-rms-thumb="#thumb-image" class="btn btn-outline-secondary btn-sm"><i class="fa-regular fa-trash-can"></i> {{ button_clear }}</button>
+                  </div>
+                </div>
+                <input type="hidden" name="featured_image" value="{{ post.featured_image }}" id="input-image"/>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    {% endset %}
+    {% set rms_card_icon = 'fa-solid fa-pen-nib' %}
+    {% set rms_card_title = text_form %}
+    {% include 'common/rms_admin_card.twig' %}
+  </div>
+</div>
+<script type="text/javascript">
+  $('textarea[data-rms-toggle=\'ckeditor\']').ckeditor({
+    language: '{{ ckeditor }}'
+  });
+</script>
+{{ footer }}

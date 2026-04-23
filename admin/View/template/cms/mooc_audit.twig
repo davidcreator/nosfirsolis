@@ -1,0 +1,1240 @@
+{{ header }}{{ column_left }}
+<div id="content" data-testid="admin-mooc-audit-page">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end rms-page-actions">
+        <form action="{{ run_monitor }}" method="post" class="d-inline-block mb-0" data-testid="admin-mooc-audit-run-form">
+          <button type="submit" class="btn btn-warning" data-testid="admin-mooc-audit-run-now"{% if not monitor_settings_can_modify %} disabled{% endif %}>
+            <i class="fa-solid fa-play"></i> {{ button_run_monitor_now }}
+          </button>
+        </form>
+        <a href="{{ export_json }}" class="btn btn-info" data-testid="admin-mooc-audit-export-json"><i class="fa-solid fa-code"></i> {{ button_export_json }}</a>
+        <a href="{{ export_csv }}" class="btn btn-success" data-testid="admin-mooc-audit-export-csv"><i class="fa-solid fa-download"></i> {{ button_export_csv }}</a>
+        <a href="{{ clear }}" class="btn btn-light" data-testid="admin-mooc-audit-clear"><i class="fa-solid fa-eraser"></i> {{ button_clear }}</a>
+        <a href="{{ filter_action }}" class="btn btn-primary" data-testid="admin-mooc-audit-refresh"><i class="fa-solid fa-rotate-right"></i> {{ button_refresh }}</a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    {% if success %}
+      {% set rms_alert_class = 'alert alert-success' %}
+      {% set rms_alert_icon = 'fa-solid fa-circle-check' %}
+      {% set rms_alert_text = success %}
+      {% set rms_alert_testid = 'admin-mooc-audit-success' %}
+      {% include 'common/rms_alert.twig' %}
+    {% endif %}
+    {% if warning %}
+      {% set rms_alert_class = 'alert alert-danger' %}
+      {% set rms_alert_icon = 'fa-solid fa-circle-exclamation' %}
+      {% set rms_alert_text = warning %}
+      {% set rms_alert_testid = 'admin-mooc-audit-warning' %}
+      {% include 'common/rms_alert.twig' %}
+    {% endif %}
+    {% for alert in alerts %}
+      {% set rms_alert_class = 'alert alert-' ~ alert.level %}
+      {% set rms_alert_icon = '' %}
+      {% set rms_alert_text = alert.text %}
+      {% set rms_alert_testid = 'admin-mooc-audit-alert' %}
+      {% include 'common/rms_alert.twig' %}
+    {% endfor %}
+
+    <div class="card rms-admin-card" data-testid="admin-mooc-audit-settings-panel">
+      <div class="card-header">
+        <span><i class="fa-solid fa-sliders"></i> {{ text_monitor_settings }}</span>
+      </div>
+      <div class="card-body">
+        <p class="text-muted" data-testid="admin-mooc-audit-settings-help">{{ text_monitor_settings_help }}</p>
+        <form action="{{ save_monitor }}" method="post" data-testid="admin-mooc-audit-settings-form">
+          <div class="row">
+            <div class="col-md-4">
+              <h4>{{ text_monitor_settings_scheduler }}</h4>
+              <div class="rms-form-check-card">
+                <input class="form-check-input" type="checkbox" name="mooc_audit_monitor_scheduler_enabled" value="1"{% if monitor_settings.scheduler_enabled %} checked{% endif %} id="input-monitor-scheduler-enabled" data-testid="admin-mooc-audit-settings-scheduler-enabled" />
+                <label class="form-check-label" for="input-monitor-scheduler-enabled">
+                  {{ entry_monitor_scheduler_enabled }}
+                </label>
+              </div>
+              <div class="form-group">
+                <label for="input-monitor-scheduler-interval">{{ entry_monitor_scheduler_interval_minutes }}</label>
+                <input type="number" min="1" max="1440" name="mooc_audit_monitor_scheduler_interval_minutes" value="{{ monitor_settings.scheduler_interval_minutes }}" id="input-monitor-scheduler-interval" class="form-control" data-testid="admin-mooc-audit-settings-scheduler-interval" />
+              </div>
+              <div class="form-group">
+                <label for="input-monitor-scheduler-lock-timeout">{{ entry_monitor_scheduler_lock_timeout_seconds }}</label>
+                <input type="number" min="30" max="86400" name="mooc_audit_monitor_scheduler_lock_timeout_seconds" value="{{ monitor_settings.scheduler_lock_timeout_seconds }}" id="input-monitor-scheduler-lock-timeout" class="form-control" data-testid="admin-mooc-audit-settings-scheduler-lock-timeout" />
+              </div>
+
+              <h4>{{ text_monitor_settings_history }}</h4>
+              <div class="form-group">
+                <label for="input-monitor-history-retention-days">{{ entry_monitor_history_retention_days }}</label>
+                <input type="number" min="0" max="3650" name="mooc_audit_monitor_history_retention_days" value="{{ monitor_settings.history_retention_days }}" id="input-monitor-history-retention-days" class="form-control" data-testid="admin-mooc-audit-settings-history-retention-days" />
+              </div>
+              <div class="form-group">
+                <label for="input-monitor-history-max-rows">{{ entry_monitor_history_max_rows }}</label>
+                <input type="number" min="0" max="200000" name="mooc_audit_monitor_history_max_rows" value="{{ monitor_settings.history_max_rows }}" id="input-monitor-history-max-rows" class="form-control" data-testid="admin-mooc-audit-settings-history-max-rows" />
+              </div>
+
+              <h4>{{ text_monitor_settings_thresholds }}</h4>
+              <div class="form-group">
+                <label for="input-monitor-hours">{{ entry_monitor_hours }}</label>
+                <select name="mooc_audit_monitor_hours" id="input-monitor-hours" class="form-control" data-testid="admin-mooc-audit-settings-hours">
+                  {% for option in hours_options %}
+                    <option value="{{ option }}"{% if option == monitor_settings.hours %} selected{% endif %}>{{ option }}h</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="input-monitor-fail-on">{{ entry_monitor_fail_on }}</label>
+                <select name="mooc_audit_monitor_fail_on" id="input-monitor-fail-on" class="form-control" data-testid="admin-mooc-audit-settings-fail-on">
+                  {% for option in monitor_fail_on_options %}
+                    <option value="{{ option }}"{% if option == monitor_settings.fail_on %} selected{% endif %}>{{ attribute(_context, 'text_monitor_fail_' ~ option) }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="input-monitor-failed-threshold">{{ entry_monitor_failed_threshold }}</label>
+                <input type="number" min="0" name="mooc_audit_monitor_failed_threshold" value="{{ monitor_settings.failed_threshold }}" id="input-monitor-failed-threshold" class="form-control" data-testid="admin-mooc-audit-settings-failed-threshold" />
+              </div>
+              <div class="form-group">
+                <label for="input-monitor-noop-threshold">{{ entry_monitor_noop_threshold }}</label>
+                <input type="number" min="0" name="mooc_audit_monitor_noop_threshold" value="{{ monitor_settings.noop_threshold }}" id="input-monitor-noop-threshold" class="form-control" data-testid="admin-mooc-audit-settings-noop-threshold" />
+              </div>
+              <div class="form-group">
+                <label for="input-monitor-top-event-threshold">{{ entry_monitor_top_event_threshold }}</label>
+                <input type="number" min="0" name="mooc_audit_monitor_top_event_threshold" value="{{ monitor_settings.top_event_threshold }}" id="input-monitor-top-event-threshold" class="form-control" data-testid="admin-mooc-audit-settings-top-event-threshold" />
+              </div>
+              <div class="form-group">
+                <label for="input-monitor-request-chain-threshold">{{ entry_monitor_request_chain_threshold }}</label>
+                <input type="number" min="0" name="mooc_audit_monitor_request_chain_threshold" value="{{ monitor_settings.request_chain_threshold }}" id="input-monitor-request-chain-threshold" class="form-control" data-testid="admin-mooc-audit-settings-request-chain-threshold" />
+              </div>
+              <div class="form-group">
+                <label for="input-monitor-request-noop-threshold">{{ entry_monitor_request_noop_threshold }}</label>
+                <input type="number" min="0" name="mooc_audit_monitor_request_noop_threshold" value="{{ monitor_settings.request_noop_threshold }}" id="input-monitor-request-noop-threshold" class="form-control" data-testid="admin-mooc-audit-settings-request-noop-threshold" />
+              </div>
+              <div class="form-group">
+                <label for="input-monitor-anomaly-limit">{{ entry_monitor_anomaly_limit }}</label>
+                <input type="number" min="1" max="100" name="mooc_audit_monitor_anomaly_limit" value="{{ monitor_settings.anomaly_limit }}" id="input-monitor-anomaly-limit" class="form-control" data-testid="admin-mooc-audit-settings-anomaly-limit" />
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <h4>{{ text_monitor_settings_snapshot }}</h4>
+              <div class="rms-form-check-card">
+                <input class="form-check-input" type="checkbox" name="mooc_audit_monitor_write_snapshot" value="1"{% if monitor_settings.write_snapshot %} checked{% endif %} id="input-monitor-write-snapshot" data-testid="admin-mooc-audit-settings-write-snapshot" />
+                <label class="form-check-label" for="input-monitor-write-snapshot">
+                  {{ entry_monitor_write_snapshot }}
+                </label>
+              </div>
+              <div class="form-group">
+                <label for="input-monitor-snapshot-path">{{ entry_monitor_snapshot_path }}</label>
+                <input type="text" name="mooc_audit_monitor_snapshot_path" value="{{ monitor_settings.snapshot_path }}" id="input-monitor-snapshot-path" class="form-control" data-testid="admin-mooc-audit-settings-snapshot-path" />
+              </div>
+
+              <h4>{{ text_monitor_settings_webhook }}</h4>
+              <div class="form-group">
+                <label for="input-monitor-webhook-url">{{ entry_monitor_webhook_url }}</label>
+                <input type="text" name="mooc_audit_monitor_webhook_url" value="{{ monitor_settings.webhook_url }}" id="input-monitor-webhook-url" class="form-control" data-testid="admin-mooc-audit-settings-webhook-url" />
+              </div>
+              <div class="form-group">
+                <label for="input-monitor-webhook-notify-on">{{ entry_monitor_webhook_notify_on }}</label>
+                <select name="mooc_audit_monitor_webhook_notify_on" id="input-monitor-webhook-notify-on" class="form-control" data-testid="admin-mooc-audit-settings-webhook-notify-on">
+                  {% for option in monitor_notify_on_options %}
+                    <option value="{{ option }}"{% if option == monitor_settings.webhook_notify_on %} selected{% endif %}>{{ option|upper }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="input-monitor-webhook-timeout">{{ entry_monitor_webhook_timeout }}</label>
+                <input type="number" min="1" max="60" name="mooc_audit_monitor_webhook_timeout" value="{{ monitor_settings.webhook_timeout }}" id="input-monitor-webhook-timeout" class="form-control" data-testid="admin-mooc-audit-settings-webhook-timeout" />
+              </div>
+              <div class="form-group">
+                <label for="input-monitor-webhook-secret">{{ entry_monitor_webhook_secret }}</label>
+                <input type="password" name="mooc_audit_monitor_webhook_secret" value="{{ monitor_settings.webhook_secret }}" id="input-monitor-webhook-secret" class="form-control" data-testid="admin-mooc-audit-settings-webhook-secret" />
+              </div>
+              <div class="rms-form-check-card">
+                <input class="form-check-input" type="checkbox" name="mooc_audit_monitor_webhook_fail_on_error" value="1"{% if monitor_settings.webhook_fail_on_error %} checked{% endif %} id="input-monitor-webhook-fail-on-error" data-testid="admin-mooc-audit-settings-webhook-fail-on-error" />
+                <label class="form-check-label" for="input-monitor-webhook-fail-on-error">
+                  {{ entry_monitor_webhook_fail_on_error }}
+                </label>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <h4>{{ text_monitor_settings_email }}</h4>
+              <div class="form-group">
+                <label for="input-monitor-email-recipients">{{ entry_monitor_email_recipients }}</label>
+                <textarea name="mooc_audit_monitor_email_recipients" id="input-monitor-email-recipients" rows="4" class="form-control" data-testid="admin-mooc-audit-settings-email-recipients">{{ monitor_settings.email_recipients }}</textarea>
+              </div>
+              <div class="form-group">
+                <label for="input-monitor-email-notify-on">{{ entry_monitor_email_notify_on }}</label>
+                <select name="mooc_audit_monitor_email_notify_on" id="input-monitor-email-notify-on" class="form-control" data-testid="admin-mooc-audit-settings-email-notify-on">
+                  {% for option in monitor_notify_on_options %}
+                    <option value="{{ option }}"{% if option == monitor_settings.email_notify_on %} selected{% endif %}>{{ option|upper }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="input-monitor-email-subject-prefix">{{ entry_monitor_email_subject_prefix }}</label>
+                <input type="text" name="mooc_audit_monitor_email_subject_prefix" value="{{ monitor_settings.email_subject_prefix }}" id="input-monitor-email-subject-prefix" class="form-control" data-testid="admin-mooc-audit-settings-email-subject-prefix" />
+              </div>
+              <div class="form-group">
+                <label for="input-monitor-email-engine">{{ entry_monitor_email_engine }}</label>
+                <select name="mooc_audit_monitor_email_engine" id="input-monitor-email-engine" class="form-control" data-testid="admin-mooc-audit-settings-email-engine">
+                  {% for option in monitor_email_engine_options %}
+                    <option value="{{ option }}"{% if option == monitor_settings.email_engine %} selected{% endif %}>
+                      {% if option == '' %}
+                        {{ text_monitor_email_engine_default }}
+                      {% elseif option == 'mail' %}
+                        {{ text_monitor_email_engine_mail }}
+                      {% elseif option == 'capture' %}
+                        {{ text_monitor_email_engine_capture }}
+                      {% else %}
+                        {{ text_monitor_email_engine_smtp }}
+                      {% endif %}
+                    </option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="input-monitor-email-from">{{ entry_monitor_email_from }}</label>
+                <input type="text" name="mooc_audit_monitor_email_from" value="{{ monitor_settings.email_from }}" id="input-monitor-email-from" class="form-control" data-testid="admin-mooc-audit-settings-email-from" />
+              </div>
+              <div class="form-group">
+                <label for="input-monitor-email-reply-to">{{ entry_monitor_email_reply_to }}</label>
+                <input type="text" name="mooc_audit_monitor_email_reply_to" value="{{ monitor_settings.email_reply_to }}" id="input-monitor-email-reply-to" class="form-control" data-testid="admin-mooc-audit-settings-email-reply-to" />
+              </div>
+              <div class="form-group">
+                <label for="input-monitor-email-sender">{{ entry_monitor_email_sender }}</label>
+                <input type="text" name="mooc_audit_monitor_email_sender" value="{{ monitor_settings.email_sender }}" id="input-monitor-email-sender" class="form-control" data-testid="admin-mooc-audit-settings-email-sender" />
+              </div>
+              <div class="rms-form-check-card">
+                <input class="form-check-input" type="checkbox" name="mooc_audit_monitor_email_fail_on_error" value="1"{% if monitor_settings.email_fail_on_error %} checked{% endif %} id="input-monitor-email-fail-on-error" data-testid="admin-mooc-audit-settings-email-fail-on-error" />
+                <label class="form-check-label" for="input-monitor-email-fail-on-error">
+                  {{ entry_monitor_email_fail_on_error }}
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" data-testid="admin-mooc-audit-settings-save"{% if not monitor_settings_can_modify %} disabled{% endif %}>
+            <i class="fa-solid fa-floppy-disk"></i> {{ button_save }}
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="card rms-admin-card" data-testid="admin-mooc-audit-rollout-panel">
+      <div class="card-header">
+        <span><i class="fa-solid fa-terminal"></i> {{ text_monitor_rollout }}</span>
+      </div>
+      <div class="card-body">
+        <p class="text-muted" data-testid="admin-mooc-audit-rollout-help">{{ text_monitor_rollout_help }}</p>
+
+        <div class="row">
+          <div class="col-md-6">
+            <h4>{{ text_monitor_rollout_linux }}</h4>
+            {% if monitor_rollout.cron_expression %}
+              <p><strong>{{ text_monitor_rollout_cron_expression }}:</strong> <code data-testid="admin-mooc-audit-rollout-cron-expression">{{ monitor_rollout.cron_expression }}</code></p>
+              <p><strong>{{ text_monitor_rollout_cron_line }}:</strong></p>
+              <pre data-testid="admin-mooc-audit-rollout-cron-line">{{ monitor_rollout.linux_cron_line }}</pre>
+            {% elseif monitor_rollout.cron_expression_note %}
+              <p><strong>{{ text_monitor_rollout_cron_note }}:</strong> <span data-testid="admin-mooc-audit-rollout-cron-note">{{ monitor_rollout.cron_expression_note }}</span></p>
+            {% endif %}
+            <p><strong>{{ text_monitor_rollout_linux_wrapper }}:</strong></p>
+            <pre data-testid="admin-mooc-audit-rollout-linux-wrapper">{{ monitor_rollout.linux_wrapper_command }}</pre>
+            <p><strong>{{ text_monitor_rollout_force_command }}:</strong></p>
+            <pre data-testid="admin-mooc-audit-rollout-force-command">{{ monitor_rollout.verification_command }}</pre>
+          </div>
+          <div class="col-md-6">
+            <h4>{{ text_monitor_rollout_windows }}</h4>
+            <p><strong>{{ text_monitor_rollout_windows_task }}:</strong></p>
+            <pre data-testid="admin-mooc-audit-rollout-windows-task">{{ monitor_rollout.windows_task_command }}</pre>
+            <p><strong>{{ text_monitor_rollout_windows_delete }}:</strong></p>
+            <pre data-testid="admin-mooc-audit-rollout-windows-delete">{{ monitor_rollout.windows_task_delete_command }}</pre>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <h4>{{ text_monitor_rollout_verification }}</h4>
+            <pre data-testid="admin-mooc-audit-rollout-linux-direct">{{ monitor_rollout.linux_direct_command }}</pre>
+          </div>
+          <div class="col-md-6">
+            <h4>{{ text_monitor_rollout_rollback }}</h4>
+            <p data-testid="admin-mooc-audit-rollout-disable-note">{{ text_monitor_rollout_disable_note }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card rms-admin-card" data-testid="admin-mooc-audit-monitor-state-panel">
+      <div class="card-header">
+        <span><i class="fa-regular fa-clock"></i> {{ text_monitor_state }}</span>
+      </div>
+      <div class="card-body">
+        {% if monitor_state %}
+          <div class="row">
+            <div class="col-md-3">
+              {% set rms_metric_label = text_monitor_snapshot_status %}
+              {% set rms_metric_value_class = 'h3' %}
+              {% set rms_metric_note_html = '' %}
+              {% set rms_metric_value_html %}
+                <span class="label label-{{ monitor_state.status_class }}" data-testid="admin-mooc-audit-state-status" data-status="{{ monitor_state.status }}">{{ monitor_state.status_label }}</span>
+              {% endset %}
+              {% include 'common/rms_metric_tile.twig' %}
+            </div>
+            <div class="col-md-3">
+              {% set rms_metric_label = text_monitor_state_alerts %}
+              {% set rms_metric_value_class = 'h3' %}
+              {% set rms_metric_note_html = '' %}
+              {% set rms_metric_value_html %}
+                <span data-testid="admin-mooc-audit-state-alert-count">{{ monitor_state.alerts_total }}</span>
+              {% endset %}
+              {% include 'common/rms_metric_tile.twig' %}
+            </div>
+            <div class="col-md-3">
+              {% set rms_metric_label = text_monitor_state_enabled %}
+              {% set rms_metric_value_class = 'h3' %}
+              {% set rms_metric_note_html = '' %}
+              {% set rms_metric_value_html %}
+                <span data-testid="admin-mooc-audit-state-enabled">{{ monitor_state.enabled ? 'ON' : 'OFF' }}</span>
+              {% endset %}
+              {% include 'common/rms_metric_tile.twig' %}
+            </div>
+            <div class="col-md-3">
+              {% set rms_metric_label = text_monitor_state_ran %}
+              {% set rms_metric_value_class = 'h3' %}
+              {% set rms_metric_note_html = '' %}
+              {% set rms_metric_value_html %}
+                <span data-testid="admin-mooc-audit-state-ran">{{ monitor_state.ran ? 'YES' : 'NO' }}</span>
+              {% endset %}
+              {% include 'common/rms_metric_tile.twig' %}
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-4">
+              <p><strong>{{ text_monitor_state_reason }}:</strong> <span data-testid="admin-mooc-audit-state-reason">{{ monitor_state.reason_label }}</span></p>
+            </div>
+            <div class="col-md-4">
+              <p><strong>{{ text_monitor_state_trigger }}:</strong> <span data-testid="admin-mooc-audit-state-trigger">{{ monitor_state.trigger ?: '-' }}</span></p>
+            </div>
+            <div class="col-md-4">
+              <p><strong>{{ text_monitor_state_interval }}:</strong> <span data-testid="admin-mooc-audit-state-interval">{{ monitor_state.interval_minutes ? monitor_state.interval_minutes ~ ' min' : '-' }}</span></p>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-4">
+              <p><strong>{{ text_monitor_state_started_at }}:</strong> <span data-testid="admin-mooc-audit-state-started-at">{{ monitor_state.started_at ?: '-' }}</span></p>
+            </div>
+            <div class="col-md-4">
+              <p><strong>{{ text_monitor_state_finished_at }}:</strong> <span data-testid="admin-mooc-audit-state-finished-at">{{ monitor_state.finished_at ?: '-' }}</span></p>
+            </div>
+            <div class="col-md-4">
+              <p><strong>{{ text_monitor_state_duration }}:</strong> <span data-testid="admin-mooc-audit-state-duration">{{ monitor_state.duration_ms ? monitor_state.duration_ms ~ ' ms' : '-' }}</span></p>
+            </div>
+          </div>
+          {% if monitor_state.snapshot_path %}
+            <p><strong>{{ text_monitor_state_snapshot_path }}:</strong> <span data-testid="admin-mooc-audit-state-snapshot-path">{{ monitor_state.snapshot_path }}</span></p>
+          {% endif %}
+          {% if monitor_state.lock_path %}
+            <p><strong>{{ text_monitor_state_lock_path }}:</strong> <span data-testid="admin-mooc-audit-state-lock-path">{{ monitor_state.lock_path }}</span></p>
+          {% endif %}
+          {% if monitor_state.path %}
+            <p class="text-muted"><strong>{{ text_monitor_state_file_path }}:</strong> <span data-testid="admin-mooc-audit-state-path">{{ monitor_state.path }}</span></p>
+          {% endif %}
+        {% else %}
+          <p data-testid="admin-mooc-audit-state-empty">{{ text_monitor_state_none }}</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card rms-admin-card" data-testid="admin-mooc-audit-monitor-history-panel">
+      <div class="card-header">
+        <span><i class="fa-solid fa-clock-rotate-left"></i> {{ text_monitor_history }}</span>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-3">
+            {% set rms_metric_label = text_monitor_history_total_runs %}
+            {% set rms_metric_value_class = 'h3' %}
+            {% set rms_metric_note_html = '' %}
+            {% set rms_metric_value_html %}
+              <span data-testid="admin-mooc-audit-history-total-runs">{{ monitor_history_overview.total_runs }}</span>
+            {% endset %}
+            {% include 'common/rms_metric_tile.twig' %}
+          </div>
+          <div class="col-md-3">
+            {% set rms_metric_label = text_monitor_history_executed_runs %}
+            {% set rms_metric_value_class = 'h3' %}
+            {% set rms_metric_note_html = '' %}
+            {% set rms_metric_value_html %}
+              <span data-testid="admin-mooc-audit-history-executed-runs">{{ monitor_history_overview.executed_runs }}</span>
+            {% endset %}
+            {% include 'common/rms_metric_tile.twig' %}
+          </div>
+          <div class="col-md-3">
+            {% set rms_metric_label = text_monitor_history_skipped_runs %}
+            {% set rms_metric_value_class = 'h3' %}
+            {% set rms_metric_note_html = '' %}
+            {% set rms_metric_value_html %}
+              <span data-testid="admin-mooc-audit-history-skipped-runs">{{ monitor_history_overview.skipped_runs }}</span>
+            {% endset %}
+            {% include 'common/rms_metric_tile.twig' %}
+          </div>
+          <div class="col-md-3">
+            {% set rms_metric_label = text_monitor_history_danger_runs %}
+            {% set rms_metric_value_class = 'h3' %}
+            {% set rms_metric_note_html = '' %}
+            {% set rms_metric_value_html %}
+              <span data-testid="admin-mooc-audit-history-danger-runs">{{ monitor_history_overview.danger_runs }}</span>
+            {% endset %}
+            {% include 'common/rms_metric_tile.twig' %}
+          </div>
+        </div>
+
+        <p><strong>{{ text_monitor_history_last_seen }}:</strong> <span data-testid="admin-mooc-audit-history-last-seen">{{ monitor_history_overview.last_seen ?: '-' }}</span></p>
+
+        {% if monitor_history %}
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover" data-testid="admin-mooc-audit-history-table">
+              <thead>
+                <tr>
+                  <th>{{ column_created_at }}</th>
+                  <th>{{ column_command }}</th>
+                  <th>{{ column_status }}</th>
+                  <th>{{ column_reason }}</th>
+                  <th>{{ column_trigger }}</th>
+                  <th>{{ column_alerts_total }}</th>
+                  <th>Webhook</th>
+                  <th>Email</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in monitor_history %}
+                  <tr data-testid="admin-mooc-audit-history-row" data-command="{{ row.command }}" data-status="{{ row.status }}">
+                    <td data-testid="admin-mooc-audit-history-created-at">{{ row.created_at }}</td>
+                    <td data-testid="admin-mooc-audit-history-command">{{ row.command_label }}</td>
+                    <td>
+                      <span class="label label-{{ row.status_class }}" data-testid="admin-mooc-audit-history-status" data-status="{{ row.status }}">{{ row.status_label }}</span>
+                    </td>
+                    <td data-testid="admin-mooc-audit-history-reason">{{ row.reason_label ?: '-' }}</td>
+                    <td data-testid="admin-mooc-audit-history-trigger">{{ row.trigger ?: '-' }}</td>
+                    <td data-testid="admin-mooc-audit-history-alerts-total">{{ row.alerts_total }}</td>
+                    <td>
+                      <span class="label label-{{ row.webhook_status_class }}" data-testid="admin-mooc-audit-history-webhook-status" data-status="{{ row.webhook_delivery_status }}">{{ row.webhook_status_label }}</span>
+                    </td>
+                    <td>
+                      <span class="label label-{{ row.email_status_class }}" data-testid="admin-mooc-audit-history-email-status" data-status="{{ row.email_delivery_status }}">{{ row.email_status_label }}</span>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p data-testid="admin-mooc-audit-history-empty">{{ text_monitor_history_none }}</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card rms-admin-card" data-testid="admin-mooc-audit-monitor-panel">
+      <div class="card-header">
+        <span><i class="fa-solid fa-heart-pulse"></i> {{ text_monitor_snapshot }}</span>
+      </div>
+      <div class="card-body">
+        {% if monitor_snapshot %}
+          <div class="row">
+            <div class="col-md-3">
+              {% set rms_metric_label = text_monitor_snapshot_status %}
+              {% set rms_metric_value_class = 'h3' %}
+              {% set rms_metric_value_html %}
+                <span class="label label-{{ monitor_snapshot.status_class }}" data-testid="admin-mooc-audit-monitor-status" data-status="{{ monitor_snapshot.status }}">{{ monitor_snapshot.status_label }}</span>
+              {% endset %}
+              {% set rms_metric_note_html %}
+                {% if monitor_snapshot.is_stale %}
+                  <span class="text-warning" data-testid="admin-mooc-audit-monitor-stale">{{ text_monitor_snapshot_stale }}</span>
+                {% endif %}
+              {% endset %}
+              {% include 'common/rms_metric_tile.twig' %}
+            </div>
+            <div class="col-md-3">
+              {% set rms_metric_label = text_monitor_snapshot_alerts %}
+              {% set rms_metric_value_class = 'h3' %}
+              {% set rms_metric_note_html = '' %}
+              {% set rms_metric_value_html %}
+                <span data-testid="admin-mooc-audit-monitor-alert-count">{{ monitor_snapshot.alerts_total }}</span>
+              {% endset %}
+              {% include 'common/rms_metric_tile.twig' %}
+            </div>
+            <div class="col-md-3">
+              {% set rms_metric_label = text_monitor_snapshot_chain_breaks %}
+              {% set rms_metric_value_class = 'h3' %}
+              {% set rms_metric_note_html = '' %}
+              {% set rms_metric_value_html %}
+                <span data-testid="admin-mooc-audit-monitor-chain-breaks">{{ monitor_snapshot.chain_breaks }}</span>
+              {% endset %}
+              {% include 'common/rms_metric_tile.twig' %}
+            </div>
+            <div class="col-md-3">
+              {% set rms_metric_label = text_monitor_snapshot_noop_spikes %}
+              {% set rms_metric_value_class = 'h3' %}
+              {% set rms_metric_note_html = '' %}
+              {% set rms_metric_value_html %}
+                <span data-testid="admin-mooc-audit-monitor-noop-spikes">{{ monitor_snapshot.noop_spikes }}</span>
+              {% endset %}
+              {% include 'common/rms_metric_tile.twig' %}
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-4">
+              <p><strong>{{ text_monitor_snapshot_generated_at }}:</strong> <span data-testid="admin-mooc-audit-monitor-generated-at">{{ monitor_snapshot.generated_at ?: '-' }}</span></p>
+            </div>
+            <div class="col-md-4">
+              <p><strong>{{ text_monitor_snapshot_age }}:</strong> <span data-testid="admin-mooc-audit-monitor-age">{{ monitor_snapshot.age_minutes is not null ? monitor_snapshot.age_minutes ~ ' min' : '-' }}</span></p>
+            </div>
+            <div class="col-md-4">
+              <p><strong>{{ text_monitor_snapshot_anomalous_requests }}:</strong> <span data-testid="admin-mooc-audit-monitor-anomalous-requests">{{ monitor_snapshot.anomalous_requests }}</span></p>
+            </div>
+          </div>
+
+          <div class="card rms-admin-card mb-3" data-testid="admin-mooc-audit-monitor-webhook-panel">
+            <div class="card-header">
+              <span><i class="fa-solid fa-paper-plane"></i> {{ text_monitor_snapshot_webhook }}</span>
+            </div>
+            <div class="card-body">
+              {% if monitor_snapshot.notification %}
+                <div class="row">
+                  <div class="col-md-3">
+                    <p>
+                      <strong>{{ text_monitor_snapshot_webhook_status }}:</strong>
+                      <span
+                        class="label label-{{ monitor_snapshot.notification.status_class }}"
+                        data-testid="admin-mooc-audit-monitor-webhook-status"
+                        data-status="{{ monitor_snapshot.notification.status }}"
+                      >{{ monitor_snapshot.notification.status_label }}</span>
+                    </p>
+                  </div>
+                  <div class="col-md-3">
+                    <p><strong>{{ text_monitor_snapshot_webhook_http_code }}:</strong> <span data-testid="admin-mooc-audit-monitor-webhook-http-code">{{ monitor_snapshot.notification.status_code ?: '-' }}</span></p>
+                  </div>
+                  <div class="col-md-3">
+                    <p><strong>{{ text_monitor_snapshot_webhook_notify_on }}:</strong> <span data-testid="admin-mooc-audit-monitor-webhook-notify-on">{{ monitor_snapshot.notification.notify_on ?: '-' }}</span></p>
+                  </div>
+                  <div class="col-md-3">
+                    <p><strong>{{ text_monitor_snapshot_webhook_attempted_at }}:</strong> <span data-testid="admin-mooc-audit-monitor-webhook-attempted-at">{{ monitor_snapshot.notification.attempted_at ?: '-' }}</span></p>
+                  </div>
+                </div>
+
+                {% if monitor_snapshot.notification.url %}
+                  <p><strong>{{ text_monitor_snapshot_webhook_url }}:</strong> <span data-testid="admin-mooc-audit-monitor-webhook-url">{{ monitor_snapshot.notification.url }}</span></p>
+                {% endif %}
+
+                {% if monitor_snapshot.notification.error %}
+                  <p class="text-danger"><strong>{{ text_monitor_snapshot_webhook_error }}:</strong> <span data-testid="admin-mooc-audit-monitor-webhook-error">{{ monitor_snapshot.notification.error }}</span></p>
+                {% endif %}
+              {% else %}
+                <p data-testid="admin-mooc-audit-monitor-webhook-empty">{{ text_monitor_snapshot_webhook_none }}</p>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="card rms-admin-card mb-3" data-testid="admin-mooc-audit-monitor-email-panel">
+            <div class="card-header">
+              <span><i class="fa-solid fa-envelope"></i> {{ text_monitor_snapshot_email }}</span>
+            </div>
+            <div class="card-body">
+              {% if monitor_snapshot.notifications.email.exists %}
+                <div class="row">
+                  <div class="col-md-3">
+                    <p>
+                      <strong>{{ text_monitor_snapshot_email_status }}:</strong>
+                      <span
+                        class="label label-{{ monitor_snapshot.notifications.email.status_class }}"
+                        data-testid="admin-mooc-audit-monitor-email-status"
+                        data-status="{{ monitor_snapshot.notifications.email.status }}"
+                      >{{ monitor_snapshot.notifications.email.status_label }}</span>
+                    </p>
+                  </div>
+                  <div class="col-md-3">
+                    <p><strong>{{ text_monitor_snapshot_email_notify_on }}:</strong> <span data-testid="admin-mooc-audit-monitor-email-notify-on">{{ monitor_snapshot.notifications.email.notify_on ?: '-' }}</span></p>
+                  </div>
+                  <div class="col-md-3">
+                    <p><strong>{{ text_monitor_snapshot_email_attempted_at }}:</strong> <span data-testid="admin-mooc-audit-monitor-email-attempted-at">{{ monitor_snapshot.notifications.email.attempted_at ?: '-' }}</span></p>
+                  </div>
+                  <div class="col-md-3">
+                    <p><strong>{{ text_monitor_snapshot_email_engine }}:</strong> <span data-testid="admin-mooc-audit-monitor-email-engine">{{ monitor_snapshot.notifications.email.engine ?: '-' }}</span></p>
+                  </div>
+                </div>
+
+                <p><strong>{{ text_monitor_snapshot_email_subject }}:</strong> <span data-testid="admin-mooc-audit-monitor-email-subject">{{ monitor_snapshot.notifications.email.subject ?: '-' }}</span></p>
+                <p><strong>{{ text_monitor_snapshot_email_to }}:</strong> <span data-testid="admin-mooc-audit-monitor-email-to">{{ monitor_snapshot.notifications.email.recipients_text ?: '-' }}</span></p>
+
+                {% if monitor_snapshot.notifications.email.error %}
+                  <p class="text-danger"><strong>{{ text_monitor_snapshot_email_error }}:</strong> <span data-testid="admin-mooc-audit-monitor-email-error">{{ monitor_snapshot.notifications.email.error }}</span></p>
+                {% endif %}
+              {% else %}
+                <p data-testid="admin-mooc-audit-monitor-email-empty">{{ text_monitor_snapshot_email_none }}</p>
+              {% endif %}
+            </div>
+          </div>
+
+          {% if monitor_snapshot.alerts %}
+            <ul class="list-unstyled" data-testid="admin-mooc-audit-monitor-alert-list">
+              {% for alert in monitor_snapshot.alerts %}
+                <li data-testid="admin-mooc-audit-monitor-alert-item">
+                  <span class="label label-{{ alert.level == 'danger' ? 'danger' : (alert.level == 'warning' ? 'warning' : 'info') }}">{{ alert.level|upper }}</span>
+                  {{ alert.key }}:
+                  {{ alert.total }}
+                </li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+
+          {% if monitor_snapshot.path %}
+            <p class="text-muted"><strong>{{ text_monitor_snapshot_path }}:</strong> <span data-testid="admin-mooc-audit-monitor-path">{{ monitor_snapshot.path }}</span></p>
+          {% endif %}
+        {% else %}
+          <p data-testid="admin-mooc-audit-monitor-empty">{{ text_monitor_snapshot_none }}</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card rms-admin-card">
+      <div class="card-header">
+        <span><i class="fa-solid fa-filter"></i> {{ text_filters }}</span>
+      </div>
+      <div class="card-body">
+        <form action="{{ filter_action }}" method="get" data-testid="admin-mooc-audit-filter-form">
+          <input type="hidden" name="route" value="cms/mooc_audit" />
+          <input type="hidden" name="user_token" value="{{ user_token }}" />
+
+          <div class="row">
+            <div class="col-md-2">
+              <div class="form-group">
+                <label for="input-hours">{{ entry_hours }}</label>
+                <select name="hours" id="input-hours" class="form-control" data-testid="admin-mooc-audit-filter-hours">
+                  {% for option in hours_options %}
+                    <option value="{{ option }}"{% if option == filters.hours %} selected{% endif %}>{{ option }}h</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <div class="form-group">
+                <label for="input-limit">{{ entry_limit }}</label>
+                <select name="limit" id="input-limit" class="form-control" data-testid="admin-mooc-audit-filter-limit">
+                  {% for option in limit_options %}
+                    <option value="{{ option }}"{% if option == filters.limit %} selected{% endif %}>{{ option }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="input-event-key">{{ entry_event_key }}</label>
+                <select name="event_key" id="input-event-key" class="form-control" data-testid="admin-mooc-audit-filter-event">
+                  <option value="">{{ text_all_events }}</option>
+                  {% for event_key in event_options %}
+                    <option value="{{ event_key }}"{% if event_key == filters.event_key %} selected{% endif %}>{{ event_key }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <div class="form-group">
+                <label for="input-event-status">{{ entry_event_status }}</label>
+                <select name="event_status" id="input-event-status" class="form-control" data-testid="admin-mooc-audit-filter-status">
+                  <option value="">{{ text_all_statuses }}</option>
+                  {% for option in status_options %}
+                    {% if option %}
+                      <option value="{{ option }}"{% if option == filters.event_status %} selected{% endif %}>{{ attribute(_context, 'text_status_' ~ option) }}</option>
+                    {% endif %}
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <div class="form-group">
+                <label for="input-actor-type">{{ entry_actor_type }}</label>
+                <select name="actor_type" id="input-actor-type" class="form-control" data-testid="admin-mooc-audit-filter-actor">
+                  <option value="">{{ text_all_actors }}</option>
+                  {% for option in actor_options %}
+                    {% if option %}
+                      <option value="{{ option }}"{% if option == filters.actor_type %} selected{% endif %}>{{ attribute(_context, 'text_actor_' ~ option) }}</option>
+                    {% endif %}
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="input-course-id">{{ entry_course_id }}</label>
+                <select name="course_id" id="input-course-id" class="form-control" data-testid="admin-mooc-audit-filter-course">
+                  <option value="">{{ text_all_courses }}</option>
+                  {% for course in course_options %}
+                    <option value="{{ course.course_id }}"{% if course.course_id == filters.course_id %} selected{% endif %}>
+                      {{ course.title ?: ('#' ~ course.course_id) }} (#{{ course.course_id }}) - {{ course.total_events }}
+                    </option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="input-customer-id">{{ entry_customer_id }}</label>
+                <input type="text" name="customer_id" value="{{ filters.customer_id }}" id="input-customer-id" class="form-control" data-testid="admin-mooc-audit-filter-customer" />
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="input-request-id">{{ entry_request_id }}</label>
+                <input type="text" name="request_id" value="{{ filters.request_id }}" id="input-request-id" class="form-control" data-testid="admin-mooc-audit-filter-request" />
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group">
+                <label for="input-anomaly-code">{{ entry_anomaly_code }}</label>
+                <select name="anomaly_code" id="input-anomaly-code" class="form-control" data-testid="admin-mooc-audit-filter-anomaly-code">
+                  <option value="">{{ text_all_anomaly_types }}</option>
+                  {% for option in anomaly_code_options %}
+                    <option value="{{ option.value }}"{% if option.value == filters.anomaly_code %} selected{% endif %}>{{ option.label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group">
+                <label for="input-only-anomalous">{{ entry_only_anomalous_requests }}</label>
+                <div class="checkbox" style="margin-top: 0;">
+                  <label>
+                    <input
+                      type="checkbox"
+                      name="only_anomalous_requests"
+                      value="1"
+                      id="input-only-anomalous"
+                      {% if filters.only_anomalous_requests %}checked{% endif %}
+                      data-testid="admin-mooc-audit-filter-only-anomalies"
+                    />
+                    {{ entry_only_anomalous_requests }}
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <div class="form-group">
+                <label for="input-failed-threshold">{{ entry_failed_threshold }}</label>
+                <input type="number" min="0" name="failed_threshold" value="{{ filters.failed_threshold }}" id="input-failed-threshold" class="form-control" data-testid="admin-mooc-audit-filter-failed-threshold" />
+              </div>
+            </div>
+            <div class="col-md-2">
+              <div class="form-group">
+                <label for="input-noop-threshold">{{ entry_noop_threshold }}</label>
+                <input type="number" min="0" name="noop_threshold" value="{{ filters.noop_threshold }}" id="input-noop-threshold" class="form-control" data-testid="admin-mooc-audit-filter-noop-threshold" />
+              </div>
+            </div>
+            <div class="col-md-2">
+              <div class="form-group">
+                <label for="input-top-event-threshold">{{ entry_top_event_threshold }}</label>
+                <input type="number" min="0" name="top_event_threshold" value="{{ filters.top_event_threshold }}" id="input-top-event-threshold" class="form-control" data-testid="admin-mooc-audit-filter-top-event-threshold" />
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" data-testid="admin-mooc-audit-filter-apply"><i class="fa-solid fa-magnifying-glass"></i> {{ button_apply }}</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-3">
+        {% set rms_metric_label = text_total_events %}
+        {% set rms_metric_value_class = 'h2' %}
+        {% set rms_metric_note_html = '' %}
+        {% set rms_metric_value_html %}
+          <span data-testid="admin-mooc-audit-summary-total-events">{{ overview.total_events }}</span>
+        {% endset %}
+        {% include 'common/rms_metric_tile.twig' %}
+      </div>
+      <div class="col-md-3">
+        {% set rms_metric_label = text_total_requests %}
+        {% set rms_metric_value_class = 'h2' %}
+        {% set rms_metric_note_html = '' %}
+        {% set rms_metric_value_html %}
+          <span data-testid="admin-mooc-audit-summary-total-requests">{{ overview.total_requests }}</span>
+        {% endset %}
+        {% include 'common/rms_metric_tile.twig' %}
+      </div>
+      <div class="col-md-3">
+        {% set rms_metric_label = text_total_noop %}
+        {% set rms_metric_value_class = 'h2' %}
+        {% set rms_metric_note_html = '' %}
+        {% set rms_metric_value_html %}
+          <span data-testid="admin-mooc-audit-summary-total-noop">{{ overview.total_noop }}</span>
+        {% endset %}
+        {% include 'common/rms_metric_tile.twig' %}
+      </div>
+      <div class="col-md-3">
+        {% set rms_metric_label = text_total_failed %}
+        {% set rms_metric_value_class = 'h2' %}
+        {% set rms_metric_note_html = '' %}
+        {% set rms_metric_value_html %}
+          <span data-testid="admin-mooc-audit-summary-total-failed">{{ overview.total_failed }}</span>
+        {% endset %}
+        {% include 'common/rms_metric_tile.twig' %}
+      </div>
+    </div>
+
+    <div class="card rms-admin-card" data-testid="admin-mooc-audit-anomaly-panel">
+      <div class="card-header">
+        <span><i class="fa-solid fa-triangle-exclamation"></i> {{ text_request_anomalies }}</span>
+      </div>
+      <div class="card-body">
+        <div class="row" data-testid="admin-mooc-audit-anomaly-summary-row">
+          {% for card in request_anomaly_cards %}
+            <div class="col-sm-6 col-md-3">
+              <a
+                href="{{ card.href }}"
+                class="rms-metric-link{% if card.active %} is-active{% endif %}"
+                data-testid="{{ card.test_id }}"
+              >
+                {% set rms_metric_label = card.label %}
+                {% set rms_metric_value_class = 'h3' %}
+                {% set rms_metric_note_html = '' %}
+                {% set rms_metric_value_html = card.count %}
+                {% include 'common/rms_metric_tile.twig' %}
+              </a>
+            </div>
+          {% endfor %}
+        </div>
+
+        {% if request_anomalies %}
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover" data-testid="admin-mooc-audit-anomaly-table">
+              <thead>
+                <tr>
+                  <th>{{ column_request_id }}</th>
+                  <th>{{ column_status }}</th>
+                  <th>{{ column_customer }}</th>
+                  <th>{{ column_course }}</th>
+                  <th>{{ column_total }}</th>
+                  <th>{{ column_noop }}</th>
+                  <th>{{ column_last_seen }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in request_anomalies %}
+                  <tr data-testid="admin-mooc-audit-anomaly-row">
+                    <td>
+                      {% if row.request_audit_url %}
+                        <a href="{{ row.request_audit_url }}" data-testid="admin-mooc-audit-anomaly-request-link"><code>{{ row.request_id }}</code></a>
+                      {% else %}
+                        <code>{{ row.request_id }}</code>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% for label in row.anomaly_labels %}
+                        <span class="label label-warning" data-testid="admin-mooc-audit-anomaly-label">{{ label }}</span>
+                      {% endfor %}
+                    </td>
+                    <td>
+                      {% if row.customer_label %}
+                        {% if row.customer_admin_url %}
+                          <a href="{{ row.customer_admin_url }}" target="_blank" rel="noopener" title="{{ text_open_customer }}" data-testid="admin-mooc-audit-anomaly-customer-link">{{ row.customer_label }}</a>
+                        {% else %}
+                          {{ row.customer_label }}
+                        {% endif %}
+                      {% else %}
+                        -
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if row.course_label %}
+                        {% if row.course_admin_url %}
+                          <a href="{{ row.course_admin_url }}" target="_blank" rel="noopener" title="{{ text_open_course }}" data-testid="admin-mooc-audit-anomaly-course-link">{{ row.course_label }}</a>
+                        {% else %}
+                          {{ row.course_label }}
+                        {% endif %}
+                      {% else %}
+                        -
+                      {% endif %}
+                    </td>
+                    <td>{{ row.total_events }}</td>
+                    <td>{{ row.total_noop }}</td>
+                    <td>{{ row.last_seen ?: '-' }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          {% set rms_empty_icon = 'fa-solid fa-magnifying-glass' %}
+          {% set rms_empty_text = text_no_results %}
+          {% set rms_empty_testid = 'admin-mooc-audit-anomaly-empty' %}
+          {% include 'common/rms_empty_state.twig' %}
+        {% endif %}
+      </div>
+    </div>
+
+    {% if filters.request_id %}
+      <div class="card rms-admin-card" id="request-timeline" data-testid="admin-mooc-audit-request-timeline">
+        <div class="card-header">
+          <span><i class="fa-solid fa-shuffle"></i> {{ text_request_timeline }}</span>
+        </div>
+        <div class="card-body">
+          <p class="text-muted">
+            {{ entry_request_id }}:
+            <strong data-testid="admin-mooc-audit-request-id">{{ filters.request_id }}</strong>
+          </p>
+
+          <div class="row">
+            <div class="col-md-3">
+              {% set rms_metric_label = text_total_events %}
+              {% set rms_metric_value_class = 'h3' %}
+              {% set rms_metric_note_html = '' %}
+              {% set rms_metric_value_html %}
+                <span data-testid="admin-mooc-audit-request-total-events">{{ request_timeline_overview.total_events ?: 0 }}</span>
+              {% endset %}
+              {% include 'common/rms_metric_tile.twig' %}
+            </div>
+            <div class="col-md-3">
+              {% set rms_metric_label = text_request_unique_events %}
+              {% set rms_metric_value_class = 'h3' %}
+              {% set rms_metric_note_html = '' %}
+              {% set rms_metric_value_html %}
+                <span data-testid="admin-mooc-audit-request-unique-events">{{ request_timeline_overview.unique_events ?: 0 }}</span>
+              {% endset %}
+              {% include 'common/rms_metric_tile.twig' %}
+            </div>
+            <div class="col-md-3">
+              {% set rms_metric_label = text_request_started_at %}
+              {% set rms_metric_value_class = 'h5' %}
+              {% set rms_metric_note_html = '' %}
+              {% set rms_metric_value_html %}
+                <span data-testid="admin-mooc-audit-request-started-at">{{ request_timeline_overview.started_at ?: '-' }}</span>
+              {% endset %}
+              {% include 'common/rms_metric_tile.twig' %}
+            </div>
+            <div class="col-md-3">
+              {% set rms_metric_label = text_request_finished_at %}
+              {% set rms_metric_value_class = 'h5' %}
+              {% set rms_metric_note_html = '' %}
+              {% set rms_metric_value_html %}
+                <span data-testid="admin-mooc-audit-request-finished-at">{{ request_timeline_overview.finished_at ?: '-' }}</span>
+              {% endset %}
+              {% include 'common/rms_metric_tile.twig' %}
+            </div>
+          </div>
+
+          <p class="text-muted">{{ text_request_duration }}: <strong data-testid="admin-mooc-audit-request-duration">{{ request_timeline_overview.duration_seconds ?: 0 }}s</strong></p>
+
+          {% if request_timeline %}
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover" data-testid="admin-mooc-audit-request-table">
+                <thead>
+                  <tr>
+                    <th>{{ column_sequence }}</th>
+                    <th>{{ column_offset }}</th>
+                    <th>{{ column_created_at }}</th>
+                    <th>{{ column_event }}</th>
+                    <th>{{ column_status }}</th>
+                    <th>{{ column_actor }}</th>
+                    <th>{{ column_customer }}</th>
+                    <th>{{ column_course }}</th>
+                    <th>{{ column_source }}</th>
+                    <th>{{ column_message }}</th>
+                    <th>{{ column_payload }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for row in request_timeline %}
+                    <tr data-testid="admin-mooc-audit-request-row">
+                      <td>{{ row.sequence }}</td>
+                      <td>{{ row.offset_seconds }}s</td>
+                      <td>{{ row.created_at }}</td>
+                      <td>{{ row.event_key }}</td>
+                      <td>
+                        {% set rms_event_status = row.event_status %}
+                        {% include 'common/rms_event_status_label.twig' %}
+                      </td>
+                      <td>{{ row.actor_label }}</td>
+                      <td>
+                        {% if row.customer_label %}
+                          {% if row.customer_admin_url %}
+                            <a href="{{ row.customer_admin_url }}" target="_blank" rel="noopener" title="{{ text_open_customer }}" data-testid="admin-mooc-audit-request-customer-link">{{ row.customer_label }}</a>
+                          {% else %}
+                            {{ row.customer_label }}
+                          {% endif %}
+                        {% else %}
+                          -
+                        {% endif %}
+                      </td>
+                      <td>
+                        {% if row.course_label %}
+                          {% if row.course_admin_url %}
+                            <a href="{{ row.course_admin_url }}" target="_blank" rel="noopener" title="{{ text_open_course }}" data-testid="admin-mooc-audit-request-course-link">{{ row.course_label }}</a>
+                          {% else %}
+                            {{ row.course_label }}
+                          {% endif %}
+                        {% else %}
+                          -
+                        {% endif %}
+                      </td>
+                      <td><code>{{ row.source }}</code></td>
+                      <td>{{ row.message }}</td>
+                      <td>
+                        <details>
+                          <summary>{{ text_payload }}</summary>
+                          <pre style="white-space: pre-wrap;">{{ row.payload_pretty }}</pre>
+                        </details>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            {% set rms_empty_icon = 'fa-solid fa-clock-rotate-left' %}
+            {% set rms_empty_text = text_no_results %}
+            {% include 'common/rms_empty_state.twig' %}
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="row">
+      <div class="col-md-6">
+        <div class="card rms-admin-card">
+          <div class="card-header">
+            <span><i class="fa-solid fa-calendar-days"></i> {{ text_daily_trend }}</span>
+          </div>
+          <div class="card-body">
+            {% if daily_trend %}
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover" data-testid="admin-mooc-audit-trend-table">
+                  <thead>
+                    <tr>
+                      <th>{{ column_date }}</th>
+                      <th>{{ column_total }}</th>
+                      <th>{{ column_requests }}</th>
+                      <th>{{ column_failed }}</th>
+                      <th>{{ column_noop }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for row in daily_trend %}
+                      <tr data-testid="admin-mooc-audit-trend-row">
+                        <td>{{ row.bucket_date }}</td>
+                        <td>{{ row.total_events }}</td>
+                        <td>{{ row.total_requests }}</td>
+                        <td>{{ row.total_failed }}</td>
+                        <td>{{ row.total_noop }}</td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            {% else %}
+              {% set rms_empty_icon = 'fa-solid fa-chart-line' %}
+              {% set rms_empty_text = text_no_results %}
+              {% include 'common/rms_empty_state.twig' %}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card rms-admin-card">
+          <div class="card-header">
+            <span><i class="fa-solid fa-graduation-cap"></i> {{ text_course_breakdown }}</span>
+          </div>
+          <div class="card-body">
+            {% if course_breakdown %}
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover" data-testid="admin-mooc-audit-course-table">
+                  <thead>
+                    <tr>
+                      <th>{{ column_course }}</th>
+                      <th>{{ column_total }}</th>
+                      <th>{{ column_requests }}</th>
+                      <th>{{ column_failed }}</th>
+                      <th>{{ column_noop }}</th>
+                      <th>{{ column_last_seen }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for row in course_breakdown %}
+                      <tr data-testid="admin-mooc-audit-course-row" data-course-id="{{ row.course_id }}">
+                        <td>
+                          {% if row.course_admin_url %}
+                            <a href="{{ row.course_admin_url }}" target="_blank" rel="noopener" title="{{ text_open_course }}" data-testid="admin-mooc-audit-course-open-link">{{ row.course_title ?: ('#' ~ row.course_id) }} (#{{ row.course_id }})</a>
+                          {% else %}
+                            {{ row.course_title ?: ('#' ~ row.course_id) }} (#{{ row.course_id }})
+                          {% endif %}
+                          {% if row.course_audit_url %}
+                            <div class="small">
+                              <a href="{{ row.course_audit_url }}" data-testid="admin-mooc-audit-course-filter-link">{{ text_focus_course }}</a>
+                            </div>
+                          {% endif %}
+                        </td>
+                        <td>{{ row.total_events }}</td>
+                        <td>{{ row.total_requests }}</td>
+                        <td>{{ row.total_failed }}</td>
+                        <td>{{ row.total_noop }}</td>
+                        <td>{{ row.last_seen ?: '-' }}</td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            {% else %}
+              {% set rms_empty_icon = 'fa-solid fa-book-open-reader' %}
+              {% set rms_empty_text = text_no_results %}
+              {% include 'common/rms_empty_state.twig' %}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card rms-admin-card">
+      <div class="card-header">
+        <span><i class="fa-solid fa-chart-line"></i> {{ text_top_events }}</span>
+      </div>
+      <div class="card-body">
+        <p class="text-muted">{{ text_last_seen }}: <strong data-testid="admin-mooc-audit-last-seen">{{ overview.last_seen ?: '-' }}</strong></p>
+
+        {% if summary %}
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover" data-testid="admin-mooc-audit-summary-table">
+              <thead>
+                <tr>
+                  <th>{{ column_event }}</th>
+                  <th>{{ column_status }}</th>
+                  <th>{{ column_total }}</th>
+                  <th>{{ column_last_seen }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in summary %}
+                  <tr>
+                    <td>{{ row.event_key }}</td>
+                    <td>
+                      {% set rms_event_status = row.event_status %}
+                      {% include 'common/rms_event_status_label.twig' %}
+                    </td>
+                    <td>{{ row.total }}</td>
+                    <td>{{ row.last_seen }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          {% set rms_empty_icon = 'fa-solid fa-chart-column' %}
+          {% set rms_empty_text = text_no_results %}
+          {% include 'common/rms_empty_state.twig' %}
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card rms-admin-card">
+      <div class="card-header">
+        <span><i class="fa-solid fa-clock-rotate-left"></i> {{ text_recent }}</span>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover" data-testid="admin-mooc-audit-recent-table">
+            <thead>
+              <tr>
+                <th>{{ column_created_at }}</th>
+                <th>{{ column_event }}</th>
+                <th>{{ column_status }}</th>
+                <th>{{ column_actor }}</th>
+                <th>{{ column_customer }}</th>
+                <th>{{ column_course }}</th>
+                <th>{{ column_request_id }}</th>
+                <th>{{ column_source }}</th>
+                <th>{{ column_message }}</th>
+                <th>{{ column_payload }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if recent %}
+                {% for row in recent %}
+                  <tr data-testid="admin-mooc-audit-row">
+                    <td>{{ row.created_at }}</td>
+                    <td>{{ row.event_key }}</td>
+                    <td>
+                      {% set rms_event_status = row.event_status %}
+                      {% include 'common/rms_event_status_label.twig' %}
+                    </td>
+                    <td>{{ row.actor_label }}</td>
+                    <td>
+                      {% if row.customer_label %}
+                        {% if row.customer_admin_url %}
+                          <a href="{{ row.customer_admin_url }}" target="_blank" rel="noopener" title="{{ text_open_customer }}" data-testid="admin-mooc-audit-customer-link">{{ row.customer_label }}</a>
+                        {% else %}
+                          {{ row.customer_label }}
+                        {% endif %}
+                      {% else %}
+                        -
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if row.course_label %}
+                        {% if row.course_admin_url %}
+                          <a href="{{ row.course_admin_url }}" target="_blank" rel="noopener" title="{{ text_open_course }}" data-testid="admin-mooc-audit-course-open-link">{{ row.course_label }}</a>
+                        {% else %}
+                          {{ row.course_label }}
+                        {% endif %}
+                        {% if row.course_audit_url %}
+                          <div class="small">
+                            <a href="{{ row.course_audit_url }}" data-testid="admin-mooc-audit-course-filter-link">{{ text_focus_course }}</a>
+                          </div>
+                        {% endif %}
+                      {% else %}
+                        -
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if row.request_id and row.request_audit_url %}
+                        <a href="{{ row.request_audit_url }}" data-testid="admin-mooc-audit-request-link"><code>{{ row.request_id }}</code></a>
+                        <div class="small">{{ text_focus_request }}</div>
+                      {% else %}
+                        <code>{{ row.request_id }}</code>
+                      {% endif %}
+                    </td>
+                    <td><code>{{ row.source }}</code></td>
+                    <td>{{ row.message }}</td>
+                    <td>
+                      <details>
+                        <summary>{{ text_payload }}</summary>
+                        <pre style="white-space: pre-wrap;">{{ row.payload_pretty }}</pre>
+                      </details>
+                    </td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="10">
+                    {% set rms_empty_icon = 'fa-solid fa-inbox' %}
+                    {% set rms_empty_text = text_no_results %}
+                    {% include 'common/rms_empty_state.twig' %}
+                  </td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{{ footer }}

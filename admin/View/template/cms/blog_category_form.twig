@@ -1,0 +1,111 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  {% set rms_actions = [
+    {
+      tag: 'button',
+      type: 'submit',
+      form: 'form-category',
+      class: 'btn btn-primary',
+      title: button_save,
+      icon: 'fa-solid fa-floppy-disk',
+      text: button_save
+    },
+    {
+      href: cancel,
+      class: 'btn btn-light',
+      title: button_cancel,
+      icon: 'fa-solid fa-reply',
+      text: button_cancel
+    }
+  ] %}
+  {% set rms_heading_title = heading_title %}
+  {% set rms_breadcrumbs = breadcrumbs %}
+  {% include 'common/rms_page_header.twig' %}
+  <div class="container-fluid">
+    {% if errors.warning %}
+      {% set rms_alert_class = 'alert alert-danger' %}
+      {% set rms_alert_icon = 'fa-solid fa-circle-exclamation' %}
+      {% set rms_alert_text = errors.warning %}
+      {% include 'common/rms_alert.twig' %}
+    {% endif %}
+    {% set rms_card_body %}
+      <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-category" data-testid="admin-blog-category-form">
+        <div class="row g-4">
+          <div class="col-lg-8">
+            <div class="row mb-3 required">
+              <label class="col-sm-3 col-form-label" for="input-name">{{ entry_title }}</label>
+              <div class="col-sm-9">
+                <input type="text" name="name" value="{{ category.name }}" id="input-name" class="form-control" data-testid="admin-blog-category-name" />
+                {% if errors.name %}<div class="text-danger">{{ errors.name }}</div>{% endif %}
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-sm-3 col-form-label" for="input-slug">{{ entry_slug }}</label>
+              <div class="col-sm-9">
+                <input type="text" name="slug" value="{{ category.slug }}" id="input-slug" class="form-control" data-testid="admin-blog-category-slug" />
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-sm-3 col-form-label" for="input-description">{{ entry_description }}</label>
+              <div class="col-sm-9">
+                <textarea name="description" id="input-description" rows="5" class="form-control">{{ category.description }}</textarea>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-sm-3 col-form-label" for="input-meta-title">{{ entry_meta_title }}</label>
+              <div class="col-sm-9">
+                <input type="text" name="meta_title" value="{{ category.meta_title }}" id="input-meta-title" class="form-control" maxlength="255" />
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-sm-3 col-form-label" for="input-meta-description">{{ entry_meta_description }}</label>
+              <div class="col-sm-9">
+                <textarea name="meta_description" id="input-meta-description" rows="3" class="form-control" maxlength="180">{{ category.meta_description }}</textarea>
+              </div>
+            </div>
+            <div class="row mb-0">
+              <label class="col-sm-3 col-form-label" for="input-meta-keywords">{{ entry_meta_keyword }}</label>
+              <div class="col-sm-9">
+                <input type="text" name="meta_keywords" value="{{ category.meta_keywords }}" id="input-meta-keywords" class="form-control" maxlength="255" />
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="row mb-3">
+              <label class="col-form-label" for="input-status">{{ entry_status }}</label>
+              <div>
+                <select name="status" id="input-status" class="form-select" data-testid="admin-blog-category-status">
+                  <option value="1" {{ category.status ? 'selected' : '' }}>{{ text_enabled }}</option>
+                  <option value="0" {{ not category.status ? 'selected' : '' }}>{{ text_disabled }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-form-label" for="input-parent">{{ entry_parent }}</label>
+              <div>
+                <select name="parent_id" id="input-parent" class="form-select" data-testid="admin-blog-category-parent">
+                  <option value="0">-</option>
+                  {% for id, name in parents %}
+                    {% if id != category.category_id|default(0) %}
+                      <option value="{{ id }}" {{ category.parent_id == id ? 'selected' : '' }}>{{ name }}</option>
+                    {% endif %}
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="row mb-0">
+              <label class="col-form-label" for="input-sort">{{ entry_sort_order }}</label>
+              <div>
+                <input type="number" name="sort_order" value="{{ category.sort_order }}" id="input-sort" class="form-control" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    {% endset %}
+    {% set rms_card_icon = 'fa-solid fa-folder-tree' %}
+    {% set rms_card_title = text_form %}
+    {% include 'common/rms_admin_card.twig' %}
+  </div>
+</div>
+{{ footer }}

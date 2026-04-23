@@ -1,0 +1,101 @@
+{{ header }}
+{{ column_left }}
+<div id="content" data-testid="admin-mooc-course-list-page">
+  {% set rms_actions = [
+    {
+      href: add,
+      class: 'btn btn-primary',
+      title: text_add,
+      icon: 'fa-solid fa-plus',
+      text: text_add,
+      testid: 'admin-mooc-course-add-link'
+    },
+    {
+      tag: 'button',
+      type: 'submit',
+      form: 'form-course',
+      formaction: approve,
+      class: 'btn btn-success',
+      title: button_approve,
+      icon: 'fa-solid fa-check',
+      text: button_approve
+    },
+    {
+      tag: 'button',
+      type: 'submit',
+      form: 'form-course',
+      formaction: delete,
+      class: 'btn btn-danger',
+      title: button_delete|default('Delete'),
+      icon: 'fa-solid fa-trash',
+      text: button_delete|default('Delete'),
+      onclick: "return confirm('Delete selected?');"
+    }
+  ] %}
+  {% set rms_heading_title = heading_title %}
+  {% set rms_breadcrumbs = breadcrumbs %}
+  {% include 'common/rms_page_header.twig' %}
+  <div class="container-fluid">
+    {% if success %}
+      {% set rms_alert_class = 'alert alert-success' %}
+      {% set rms_alert_icon = 'fa-solid fa-circle-check' %}
+      {% set rms_alert_text = success %}
+      {% set rms_alert_testid = 'admin-mooc-course-list-success' %}
+      {% include 'common/rms_alert.twig' %}
+    {% endif %}
+    {% set rms_card_body %}
+      <form action="{{ delete }}" method="post" enctype="multipart/form-data" id="form-course">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <td style="width:1px;" class="text-center"><input type="checkbox" onclick="$('input[name*=\\'selected\\']').prop('checked', this.checked);" /></td>
+                <td>{{ column_title }}</td>
+                <td>{{ column_category }}</td>
+                <td>{{ column_instructor }}</td>
+                <td>{{ column_level }}</td>
+                <td>{{ column_status }}</td>
+                <td>{{ column_date }}</td>
+                <td class="text-end">{{ column_action }}</td>
+              </tr>
+            </thead>
+            <tbody>
+              {% if courses %}
+                {% for course in courses %}
+                  <tr data-testid="admin-mooc-course-row" data-course-id="{{ course.course_id }}">
+                    <td class="text-center"><input type="checkbox" name="selected[]" value="{{ course.course_id }}" /></td>
+                    <td>{{ course.title }}</td>
+                    <td>{{ course.categories }}</td>
+                    <td>{{ course.instructors }}</td>
+                    <td>{{ course.level }}</td>
+                    <td>
+                      <span class="rms-status-badge {{ course.status == 'published' ? 'bg-success-subtle text-success-emphasis' : (course.status == 'draft' ? 'bg-secondary-subtle text-secondary-emphasis' : 'bg-light text-dark') }}">
+                        {{ course.status == 'published' ? text_published : (course.status == 'draft' ? text_draft : course.status) }}
+                      </span>
+                    </td>
+                    <td>{{ course.date_added }}</td>
+                    <td class="text-end">
+                      <a href="{{ course.edit }}" class="btn btn-primary btn-sm" data-testid="admin-mooc-course-edit-link"><i class="fa-solid fa-pen"></i></a>
+                    </td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="8">
+                    {% set rms_empty_icon = 'fa-solid fa-graduation-cap' %}
+                    {% set rms_empty_text = text_no_results %}
+                    {% include 'common/rms_empty_state.twig' %}
+                  </td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </form>
+    {% endset %}
+    {% set rms_card_icon = 'fa-solid fa-list-check' %}
+    {% set rms_card_title = text_list %}
+    {% include 'common/rms_admin_card.twig' %}
+  </div>
+</div>
+{{ footer }}

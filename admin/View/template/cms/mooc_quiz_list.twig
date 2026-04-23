@@ -1,0 +1,91 @@
+{{ header }}{{ column_left }}
+<div id="content" data-testid="admin-mooc-quiz-list-page">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end rms-page-actions">
+        <a href="{{ add }}" class="btn btn-primary" data-testid="admin-mooc-quiz-add-link">
+          <i class="fa-solid fa-plus"></i>
+          <span>{{ text_add }}</span>
+        </a>
+        <button type="submit" form="form-quiz" formaction="{{ delete }}" class="btn btn-danger" onclick="return confirm('Delete selected?');">
+          <i class="fa-regular fa-trash-can"></i>
+          <span>{{ button_delete }}</span>
+        </button>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if success %}
+      <div class="alert alert-success" data-testid="admin-mooc-quiz-list-success"><i class="fa-solid fa-circle-check"></i> {{ success }}</div>
+    {% endif %}
+    <div class="card rms-admin-card mb-3">
+      <div class="card-body">
+        <form method="get" class="row g-3">
+          <input type="hidden" name="route" value="cms/mooc_quiz">
+          <input type="hidden" name="user_token" value="{{ user_token }}">
+          <div class="col-md-6">
+            <label class="form-label">{{ column_lesson }}</label>
+            <select name="lesson_id" class="form-select" onchange="this.form.submit()" data-testid="admin-mooc-quiz-filter-lesson">
+              <option value="0">-- All --</option>
+              {% for lesson in lessons %}
+                <option value="{{ lesson.lesson_id }}" {% if lesson.lesson_id == filter_lesson_id %}selected{% endif %}>{{ lesson.title }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="card rms-admin-card">
+      <div class="card-header"><i class="fa-solid fa-list"></i> {{ text_list }}</div>
+      <div class="card-body">
+        <form id="form-quiz" method="post">
+          <div class="rms-admin-table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+              <thead>
+                <tr>
+                  <th style="width:1%;" class="text-center"><input type="checkbox" onclick="$('input[name*=\\'selected\\']').prop('checked', this.checked);" /></th>
+                  <th>{{ column_title }}</th>
+                  <th>{{ column_lesson }}</th>
+                  <th>{{ column_status }}</th>
+                  <th class="text-end">{{ column_action }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% if quizzes %}
+                  {% for quiz in quizzes %}
+                    <tr data-testid="admin-mooc-quiz-row" data-quiz-id="{{ quiz.quiz_id }}">
+                      <td class="text-center"><input type="checkbox" name="selected[]" value="{{ quiz.quiz_id }}"></td>
+                      <td>{{ quiz.title }}</td>
+                      <td>{{ quiz.lesson_title }}</td>
+                      <td>
+                        {% if quiz.status %}
+                          <span class="badge text-bg-success rms-status-badge">Enabled</span>
+                        {% else %}
+                          <span class="badge text-bg-secondary rms-status-badge">Disabled</span>
+                        {% endif %}
+                      </td>
+                      <td class="text-end">
+                        <a href="{{ quiz.edit }}" class="btn btn-outline-primary btn-sm" data-testid="admin-mooc-quiz-edit-link"><i class="fa-solid fa-pen"></i></a>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                {% else %}
+                  <tr>
+                    <td colspan="5" class="rms-empty-state">{{ text_no_results }}</td>
+                  </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{{ footer }}

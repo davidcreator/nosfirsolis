@@ -1,0 +1,97 @@
+{{ header }}
+{{ column_left }}
+<div id="content" data-testid="admin-rmsmod-installer-page">
+  {% set rms_actions = [
+    {
+      href: back,
+      class: 'btn btn-light',
+      title: button_back,
+      icon: 'fa-solid fa-reply',
+      text: button_back
+    },
+    {
+      tag: 'button',
+      type: 'submit',
+      form: 'form-rmsmod-installer',
+      class: 'btn btn-primary',
+      title: button_install,
+      icon: 'fa-solid fa-download',
+      text: button_install,
+      testid: 'admin-rmsmod-installer-submit'
+    }
+  ] %}
+  {% set rms_heading_title = heading_title %}
+  {% set rms_breadcrumbs = breadcrumbs %}
+  {% include 'common/rms_page_header.twig' %}
+  <div class="container-fluid">
+    {% if error_warning %}
+      {% set rms_alert_class = 'alert alert-danger' %}
+      {% set rms_alert_icon = 'fa-solid fa-circle-exclamation' %}
+      {% set rms_alert_text = error_warning %}
+      {% include 'common/rms_alert.twig' %}
+    {% endif %}
+    {% if success %}
+      {% set rms_alert_class = 'alert alert-success' %}
+      {% set rms_alert_icon = 'fa-solid fa-circle-check' %}
+      {% set rms_alert_text = success %}
+      {% include 'common/rms_alert.twig' %}
+    {% endif %}
+
+    {% if results %}
+      {% set rms_card_body %}
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th>{{ column_extension }}</th>
+                <th>{{ column_status }}</th>
+                <th>{{ column_messages }}</th>
+                <th>{{ column_sql_executed }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for code, result in results %}
+                <tr data-testid="admin-rmsmod-installer-result-row">
+                  <td>{{ code }}</td>
+                  <td>
+                    {% if result.status == 'ok' %}
+                      <span class="rms-status-badge bg-success-subtle text-success-emphasis">{{ text_status_ok }}</span>
+                    {% elseif result.status == 'warning' %}
+                      <span class="rms-status-badge bg-warning-subtle text-warning-emphasis">{{ text_status_warning }}</span>
+                    {% else %}
+                      <span class="rms-status-badge bg-danger-subtle text-danger-emphasis">{{ text_status_error }}</span>
+                    {% endif %}
+                  </td>
+                  <td>{{ result.message }}</td>
+                  <td>{{ result.executed is defined ? result.executed : '-' }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% endset %}
+      {% set rms_card_icon = 'fa-solid fa-list-check' %}
+      {% set rms_card_title = text_progress %}
+      {% include 'common/rms_admin_card.twig' %}
+    {% endif %}
+
+    {% set rms_card_body %}
+      <p class="text-muted">{{ text_description }}</p>
+      <form action="{{ action }}" method="post" id="form-rmsmod-installer" data-testid="admin-rmsmod-installer-form">
+        {% for module in modules %}
+          <div class="border rounded-3 p-3 mb-3" data-testid="admin-rmsmod-installer-module">
+            <div class="form-check">
+              <input type="checkbox" name="modules[]" value="{{ module.code }}" class="form-check-input" id="mod-{{ module.code }}">
+              <label class="form-check-label fw-semibold" for="mod-{{ module.code }}">{{ module.name }}</label>
+            </div>
+            <p class="text-muted mb-0 mt-2">{{ module.desc }}</p>
+          </div>
+        {% endfor %}
+      </form>
+    {% endset %}
+    {% set rms_card_icon = 'fa-solid fa-plug' %}
+    {% set rms_card_title = text_available_modules %}
+    {% include 'common/rms_admin_card.twig' %}
+  </div>
+</div>
+{{ footer }}

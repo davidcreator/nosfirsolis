@@ -1,0 +1,119 @@
+{{ header }}
+{{ column_left }}
+<div id="content" data-testid="admin-admin-appearance-page">
+  {% set rms_actions = [
+    {
+      tag: 'button',
+      type: 'submit',
+      form: 'form-admin-appearance',
+      class: 'btn btn-primary',
+      title: button_save,
+      icon: 'fa-solid fa-floppy-disk',
+      text: button_save,
+      testid: 'admin-admin-appearance-save'
+    }
+  ] %}
+  {% set rms_heading_title = heading_title %}
+  {% set rms_breadcrumbs = breadcrumbs %}
+  {% include 'common/rms_page_header.twig' %}
+  <div class="container-fluid">
+    {% if success %}
+      {% set rms_alert_class = 'alert alert-success' %}
+      {% set rms_alert_icon = 'fa-solid fa-circle-check' %}
+      {% set rms_alert_text = success %}
+      {% include 'common/rms_alert.twig' %}
+    {% endif %}
+    {% if error_warning %}
+      {% set rms_alert_class = 'alert alert-danger' %}
+      {% set rms_alert_icon = 'fa-solid fa-circle-exclamation' %}
+      {% set rms_alert_text = error_warning %}
+      {% include 'common/rms_alert.twig' %}
+    {% endif %}
+    {% set general_group = admin_appearance_groups|first %}
+    {% set color_groups = admin_appearance_groups|slice(1, (admin_appearance_groups|length) - 2) %}
+    {% set layout_group = admin_appearance_groups|last %}
+    {% set t = admin_appearance_tokens %}
+    {% set rms_card_body %}
+      <form action="{{ save }}" method="post" id="form-admin-appearance" data-testid="admin-admin-appearance-form" data-admin-appearance-form data-admin-appearance-presets="{{ admin_appearance_presets_json|e('html_attr') }}" data-admin-appearance-saved="{{ admin_appearance_saved_json|e('html_attr') }}">
+        <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 mb-4">
+          <span><i class="fa-solid fa-swatchbook"></i> {{ text_group_palette }}</span>
+          <div class="d-flex align-items-center gap-2">
+            <select id="input-admin-appearance-preset" name="admin_appearance_preset" class="form-select form-select-sm" style="max-width:260px" data-testid="admin-admin-appearance-preset-select" data-admin-appearance-preset>
+              {% for preset in admin_appearance_presets %}
+                <option value="{{ preset.value }}" {% if preset.value == admin_appearance_preset %}selected{% endif %}>{{ preset.label }}</option>
+              {% endfor %}
+            </select>
+            <button type="button" class="btn btn-sm btn-secondary" data-admin-appearance-action="apply-preset">{{ text_apply_preset }}</button>
+            <button type="button" class="btn btn-sm btn-outline-danger" data-admin-appearance-action="reset-preview">{{ text_reset_preview }}</button>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="col-sm-2 col-form-label">{{ entry_status }}</label>
+          <div class="col-sm-10">
+            <div class="form-check form-switch">
+              <input type="hidden" name="admin_appearance_status" value="0">
+              <input class="form-check-input" type="checkbox" name="admin_appearance_status" value="1" {% if admin_appearance_status %}checked{% endif %}>
+              <label class="form-check-label">{{ admin_appearance_status ? text_enabled : text_disabled }}</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          {% for field in general_group.fields %}
+            <div class="col-md-4">
+              <label class="form-label" for="input-admin-appearance-{{ field.key }}">{{ attribute(_context, 'entry_' ~ field.key) }}</label>
+              {% if field.type == 'select' %}
+                <select id="input-admin-appearance-{{ field.key }}" name="admin_appearance_tokens[{{ field.key }}]" class="form-select" data-admin-appearance-token="{{ field.key }}">
+                  {% for option in field.options %}
+                    <option value="{{ option.value }}" {% if t[field.key]|default('') == option.value %}selected{% endif %}>{{ option.label }}</option>
+                  {% endfor %}
+                </select>
+              {% else %}
+                <input id="input-admin-appearance-{{ field.key }}" type="text" name="admin_appearance_tokens[{{ field.key }}]" value="{{ t[field.key]|default('') }}" class="form-control" data-admin-appearance-token="{{ field.key }}">
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+
+        <hr>
+        <div class="row g-3">
+          {% for group in color_groups %}
+            {% for field in group.fields %}
+              <div class="col-md-4">
+                <label class="form-label" for="input-admin-appearance-{{ field.key }}">{{ attribute(_context, 'entry_' ~ field.key) }}</label>
+                <div class="input-group">
+                  <span class="input-group-text admin-appearance-swatch" data-admin-appearance-swatch="{{ field.key }}" style="min-width:32px;background:{{ t[field.key]|default('transparent') }};"></span>
+                  <input type="color" class="form-control form-control-color" value="{{ t[field.key]|default('#000000') }}" data-admin-appearance-color="{{ field.key }}" title="{{ attribute(_context, 'entry_' ~ field.key) }}">
+                  <input id="input-admin-appearance-{{ field.key }}" type="text" name="admin_appearance_tokens[{{ field.key }}]" value="{{ t[field.key]|default('') }}" class="form-control" data-admin-appearance-token="{{ field.key }}">
+                </div>
+              </div>
+            {% endfor %}
+          {% endfor %}
+        </div>
+
+        <hr>
+        <div class="row g-3">
+          {% for field in layout_group.fields %}
+            <div class="col-md-4">
+              <label class="form-label" for="input-admin-appearance-{{ field.key }}">{{ attribute(_context, 'entry_' ~ field.key) }}</label>
+              {% if field.type == 'select' %}
+                <select id="input-admin-appearance-{{ field.key }}" name="admin_appearance_tokens[{{ field.key }}]" class="form-select" data-admin-appearance-token="{{ field.key }}">
+                  {% for option in field.options %}
+                    <option value="{{ option.value }}" {% if t[field.key]|default('') == option.value %}selected{% endif %}>{{ option.label }}</option>
+                  {% endfor %}
+                </select>
+              {% else %}
+                <input id="input-admin-appearance-{{ field.key }}" type="text" name="admin_appearance_tokens[{{ field.key }}]" value="{{ t[field.key]|default('') }}" class="form-control" data-admin-appearance-token="{{ field.key }}">
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      </form>
+    {% endset %}
+    {% set rms_card_icon = 'fa-solid fa-swatchbook' %}
+    {% set rms_card_title = heading_title %}
+    {% include 'common/rms_admin_card.twig' %}
+  </div>
+</div>
+{{ footer }}

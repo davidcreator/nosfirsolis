@@ -1,0 +1,287 @@
+{{ header }}
+{{ column_left }}
+<div id="content" data-testid="admin-appearance-page">
+  {% set rms_actions = [
+    {
+      tag: 'button',
+      type: 'submit',
+      form: 'form-appearance',
+      class: 'btn btn-primary',
+      title: button_save,
+      icon: 'fa-solid fa-floppy-disk',
+      text: button_save,
+      testid: 'admin-appearance-save'
+    }
+  ] %}
+  {% set rms_heading_title = heading_title %}
+  {% set rms_breadcrumbs = breadcrumbs %}
+  {% include 'common/rms_page_header.twig' %}
+  <div class="container-fluid">
+    {% if success %}
+      {% set rms_alert_class = 'alert alert-success' %}
+      {% set rms_alert_icon = 'fa-solid fa-circle-check' %}
+      {% set rms_alert_text = success %}
+      {% include 'common/rms_alert.twig' %}
+    {% endif %}
+    {% if error_warning %}
+      {% set rms_alert_class = 'alert alert-danger' %}
+      {% set rms_alert_icon = 'fa-solid fa-circle-exclamation' %}
+      {% set rms_alert_text = error_warning %}
+      {% include 'common/rms_alert.twig' %}
+    {% endif %}
+
+    {% set rms_card_body %}
+      <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 mb-4">
+        <span><i class="fa-solid fa-swatchbook"></i> {{ text_palette }}</span>
+        <div class="d-flex align-items-center gap-2">
+          <select id="preset-select" class="form-select form-select-sm" style="max-width:260px" data-testid="admin-appearance-preset-select">
+            <option value="">{{ text_preset_choose }}</option>
+            <option value="default">Default</option>
+            <option value="nature_tech">Nature Tech</option>
+            <option value="neon_grid">Neon Grid</option>
+            <option value="sport_active">Sport Active</option>
+          </select>
+          <button type="button" class="btn btn-sm btn-secondary" id="apply-preset">{{ text_apply }}</button>
+          <button type="button" class="btn btn-sm btn-outline-danger" id="reset-default">{{ text_reset }}</button>
+        </div>
+      </div>
+
+      <form action="{{ save }}" method="post" id="form-appearance" data-testid="admin-appearance-form">
+        <div class="row mb-3">
+          <label class="col-sm-2 col-form-label">{{ entry_status }}</label>
+          <div class="col-sm-10">
+            <div class="form-check form-switch">
+              <input type="hidden" name="appearance_status" value="0">
+              <input type="checkbox" class="form-check-input" name="appearance_status" value="1" {% if appearance_status %}checked{% endif %}>
+              <label class="form-check-label">{{ text_status_hint }}</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          {% set t = appearance_tokens %}
+          {% set fields = [
+            { key:'bg_00', label:entry_bg_00 },
+            { key:'bg_01', label:entry_bg_01 },
+            { key:'bg_02', label:entry_bg_02 },
+            { key:'card', label:entry_card },
+            { key:'card_border', label:entry_card_border },
+            { key:'text_00', label:entry_text_00 },
+            { key:'text_01', label:entry_text_01 },
+            { key:'muted', label:entry_muted },
+            { key:'accent', label:entry_accent },
+            { key:'accent_2', label:entry_accent_2 },
+            { key:'accent_3', label:entry_accent_3 },
+            { key:'menu_bg', label:entry_menu_bg },
+            { key:'menu_border', label:entry_menu_border },
+            { key:'menu_text', label:entry_menu_text },
+            { key:'menu_hover_bg', label:entry_menu_hover_bg },
+            { key:'menu_dropdown_bg', label:entry_menu_dropdown_bg },
+            { key:'menu_dropdown_text', label:entry_menu_dropdown_text },
+            { key:'menu_dropdown_hover_bg', label:entry_menu_dropdown_hover_bg },
+            { key:'menu_dropdown_hover_text', label:entry_menu_dropdown_hover_text },
+            { key:'menu_see_all_bg', label:entry_menu_see_all_bg },
+            { key:'menu_see_all_color', label:entry_menu_see_all_color }
+          ] %}
+          {% for f in fields %}
+            <div class="col-md-4">
+              <label class="form-label">{{ f.label }}</label>
+              <div class="input-group">
+                <span class="input-group-text color-swatch" data-token="{{ f.key }}" style="min-width:32px;"></span>
+                <input type="color" class="form-control form-control-color token-colorpicker" data-token="{{ f.key }}" value="#000000" title="{{ f.label }}">
+                <input type="text" name="appearance_tokens[{{ f.key }}]" value="{{ t[f.key]|default('') }}" class="form-control token-input" data-token="{{ f.key }}">
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <hr>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">{{ entry_radius_sm }}</label>
+            <input type="text" name="appearance_tokens[radius_sm]" value="{{ t.radius_sm|default('6px') }}" class="form-control token-input" data-token="radius_sm">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">{{ entry_radius_md }}</label>
+            <input type="text" name="appearance_tokens[radius_md]" value="{{ t.radius_md|default('12px') }}" class="form-control token-input" data-token="radius_md">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">{{ entry_radius_lg }}</label>
+            <input type="text" name="appearance_tokens[radius_lg]" value="{{ t.radius_lg|default('18px') }}" class="form-control token-input" data-token="radius_lg">
+          </div>
+        </div>
+
+        <div class="row g-3 mt-3">
+          <div class="col-md-6">
+            <label class="form-label">{{ entry_body_font }}</label>
+            <input type="text" name="appearance_tokens[body_font]" value="{{ t.body_font|default('"Source Sans 3", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif') }}" class="form-control token-input" data-token="body_font">
+            <small class="text-muted">Ex: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif</small>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">{{ entry_heading_font }}</label>
+            <input type="text" name="appearance_tokens[heading_font]" value="{{ t.heading_font|default('"Source Sans 3", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif') }}" class="form-control token-input" data-token="heading_font">
+            <small class="text-muted">Pode repetir a fonte base ou usar outra para titulos.</small>
+          </div>
+        </div>
+
+        <div class="row g-3 mt-3">
+          <div class="col-md-4">
+            <label class="form-label">{{ entry_input_shape }}</label>
+            <select name="appearance_tokens[input_shape]" class="form-select token-input" data-token="input_shape">
+              <option value="round" {% if t.input_shape == 'round' %}selected{% endif %}>{{ text_shape_round }}</option>
+              <option value="square" {% if t.input_shape == 'square' %}selected{% endif %}>{{ text_shape_square }}</option>
+              <option value="pill" {% if t.input_shape == 'pill' %}selected{% endif %}>{{ text_shape_pill }}</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">{{ entry_btn_uppercase }}</label>
+            <select name="appearance_tokens[btn_uppercase]" class="form-select token-input" data-token="btn_uppercase">
+              <option value="1" {% if t.btn_uppercase|default('1') == '1' %}selected{% endif %}>{{ text_enabled }}</option>
+              <option value="0" {% if t.btn_uppercase == '0' %}selected{% endif %}>{{ text_disabled }}</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">{{ entry_icon_pack }}</label>
+            <select name="appearance_tokens[icon_pack]" class="form-select token-input" data-token="icon_pack">
+              <option value="fontawesome" {% if t.icon_pack|default('fontawesome') == 'fontawesome' %}selected{% endif %}>Font Awesome</option>
+              <option value="bootstrap-icons" {% if t.icon_pack == 'bootstrap-icons' %}selected{% endif %}>Bootstrap Icons</option>
+            </select>
+          </div>
+        </div>
+      </form>
+    {% endset %}
+    {% set rms_card_icon = 'fa-solid fa-swatchbook' %}
+    {% set rms_card_title = text_palette %}
+    {% include 'common/rms_admin_card.twig' %}
+  </div>
+</div>
+<script>
+// Presets hardcoded para temas atuais
+  const presets = {
+    default: {
+      bg_00:'#f7f8fb', bg_01:'#ffffff', bg_02:'#eef1f7',
+      card:'#ffffff', card_border:'#e4e7ef',
+      text_00:'#0f1629', text_01:'#2c3550', muted:'#5d6780',
+      accent:'#23a1d1', accent_2:'#1f90bb', accent_3:'#51a351',
+      menu_bg:'linear-gradient(to bottom, #23a1d1, #1f90bb)',
+      menu_border:'#1f90bb', menu_text:'#ffffff',
+      menu_hover_bg:'rgba(0,0,0,0.1)',
+      menu_dropdown_bg:'#ffffff', menu_dropdown_text:'#333333',
+      menu_dropdown_hover_bg:'linear-gradient(to bottom, #23a1d1, #1f90bb)',
+      menu_dropdown_hover_text:'#ffffff',
+      menu_see_all_bg:'linear-gradient(to bottom, #23a1d1, #1f90bb)',
+      menu_see_all_color:'#ffffff',
+      radius_sm:'6px', radius_md:'12px', radius_lg:'18px',
+      input_shape:'round', btn_uppercase:'1', icon_pack:'fontawesome',
+      body_font:'"Source Sans 3", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+      heading_font:'"Source Sans 3", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
+    },
+    nature_tech: {
+      bg_00:'#081c17', bg_01:'#0b2a21', bg_02:'#0f3b2e',
+      card:'rgba(255, 255, 255, 0.03)', card_border:'rgba(255,255,255,0.08)',
+      text_00:'#e9f2ec', text_01:'#c7d8cf', muted:'#94a79c',
+      accent:'#f5a524', accent_2:'#35c48d', accent_3:'#35c48d',
+      menu_bg:'linear-gradient(120deg, rgba(12, 35, 27, 0.95), rgba(8, 28, 23, 0.9))',
+      menu_border:'rgba(255,255,255,0.08)', menu_text:'#e9f2ec',
+      menu_hover_bg:'rgba(245,165,36,0.14)',
+      menu_dropdown_bg:'#0b2a21', menu_dropdown_text:'#e9f2ec',
+      menu_dropdown_hover_bg:'rgba(53,196,141,0.16)', menu_dropdown_hover_text:'#e9f2ec',
+      menu_see_all_bg:'linear-gradient(120deg, rgba(245,165,36,0.2), rgba(53,196,141,0.18))',
+      menu_see_all_color:'#e9f2ec',
+      radius_sm:'10px', radius_md:'12px', radius_lg:'16px',
+      input_shape:'round', btn_uppercase:'0', icon_pack:'fontawesome',
+      body_font:'"Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+      heading_font:'"Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
+    },
+    neon_grid: {
+      bg_00:'#0a0f1a', bg_01:'#0f172a', bg_02:'#141d33',
+      card:'rgba(255,255,255,0.04)', card_border:'rgba(255,255,255,0.08)',
+      text_00:'#e5ecff', text_01:'#c4d1ff', muted:'#8fa0c7',
+      accent:'#49e0ff', accent_2:'#9b5cff', accent_3:'#9b5cff',
+      menu_bg:'linear-gradient(120deg, rgba(20, 29, 51, 0.95), rgba(10, 15, 26, 0.9))',
+      menu_border:'rgba(255,255,255,0.08)', menu_text:'#e5ecff',
+      menu_hover_bg:'rgba(73,224,255,0.14)',
+      menu_dropdown_bg:'#0f172a', menu_dropdown_text:'#e5ecff',
+      menu_dropdown_hover_bg:'rgba(73,224,255,0.16)', menu_dropdown_hover_text:'#e5ecff',
+      menu_see_all_bg:'linear-gradient(120deg, rgba(73,224,255,0.12), rgba(155,92,255,0.12))',
+      menu_see_all_color:'#e5ecff',
+      radius_sm:'10px', radius_md:'14px', radius_lg:'18px',
+      input_shape:'round', btn_uppercase:'0', icon_pack:'fontawesome',
+      body_font:'"Space Grotesk", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+      heading_font:'"Space Grotesk", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
+    },
+    sport_active: {
+      bg_00:'#101723', bg_01:'#101723', bg_02:'#162032',
+      card:'#162032', card_border:'#101723',
+      text_00:'#ece2df', text_01:'#e0cfc9', muted:'#9aa6bd',
+      accent:'#45649c', accent_2:'#2d4267', accent_3:'#45649c',
+      menu_bg:'#101723', menu_border:'#101723', menu_text:'#ece2df',
+      menu_hover_bg:'rgba(45,66,103,0.25)',
+      menu_dropdown_bg:'#162032', menu_dropdown_text:'#ece2df',
+      menu_dropdown_hover_bg:'rgba(45,66,103,0.35)', menu_dropdown_hover_text:'#ece2df',
+      menu_see_all_bg:'#2d4267', menu_see_all_color:'#ece2df',
+      radius_sm:'6px', radius_md:'14px', radius_lg:'20px',
+      input_shape:'round', btn_uppercase:'1', icon_pack:'fontawesome',
+      body_font:'"Manrope", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+      heading_font:'"Manrope", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
+    }
+  };
+
+document.getElementById('apply-preset').addEventListener('click', function() {
+  const key = document.getElementById('preset-select').value;
+  if (!key || !presets[key]) return;
+  const preset = presets[key];
+  document.querySelectorAll('.token-input').forEach(el => {
+    const token = el.dataset.token;
+    if (preset[token] !== undefined) {
+      el.value = preset[token];
+      syncColorPreview(token, preset[token]);
+    }
+  });
+});
+
+document.getElementById('reset-default').addEventListener('click', function() {
+  const preset = presets.default;
+  document.querySelectorAll('.token-input').forEach(el => {
+    const token = el.dataset.token;
+    if (preset[token] !== undefined) {
+      el.value = preset[token];
+      syncColorPreview(token, preset[token]);
+    }
+  });
+});
+
+function isHexColor(val) {
+  return /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(val.trim());
+}
+
+function syncColorPreview(token, value) {
+  const swatch = document.querySelector('.color-swatch[data-token="'+token+'"]');
+  const picker = document.querySelector('.token-colorpicker[data-token="'+token+'"]');
+  if (swatch) swatch.style.background = value || 'transparent';
+  if (picker && isHexColor(value)) picker.value = value;
+}
+
+// Initial paint
+document.querySelectorAll('.token-input').forEach(el => {
+  syncColorPreview(el.dataset.token, el.value);
+});
+
+// Text inputs update swatch and picker
+document.querySelectorAll('.token-input').forEach(el => {
+  el.addEventListener('input', () => syncColorPreview(el.dataset.token, el.value));
+});
+
+// Color picker updates text input and swatch
+document.querySelectorAll('.token-colorpicker').forEach(el => {
+  el.addEventListener('input', () => {
+    const token = el.dataset.token;
+    const textInput = document.querySelector('.token-input[data-token="'+token+'"]');
+    if (textInput) {
+      textInput.value = el.value;
+      syncColorPreview(token, el.value);
+    }
+  });
+});
+</script>
+{{ footer }}

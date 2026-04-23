@@ -1,0 +1,78 @@
+{{ header }}{{ column_left }}
+<div id="content" data-testid="admin-landpage-template-list-page">
+  {% set rms_actions = [
+    {
+      tag: 'button',
+      type: 'submit',
+      form: 'form-template',
+      formaction: delete,
+      class: 'btn btn-danger',
+      icon: 'fa-regular fa-trash-can',
+      text: button_delete
+    },
+    {
+      href: add,
+      class: 'btn btn-primary',
+      icon: 'fa-solid fa-plus',
+      text: text_add,
+      testid: 'admin-landpage-template-add-link'
+    }
+  ] %}
+  {% include 'common/rms_page_header.twig' with {
+    rms_heading_title: heading_title,
+    rms_breadcrumbs: breadcrumbs,
+    rms_actions: rms_actions
+  } %}
+  <div class="container-fluid">
+    {% if success %}
+      <div class="alert alert-success"><i class="fa-solid fa-circle-check"></i> {{ success }}</div>
+    {% endif %}
+    {% set rms_card_body %}
+      <form action="{{ delete }}" method="post" enctype="multipart/form-data" id="form-template">
+        <div class="rms-admin-table-responsive">
+          <table class="table table-bordered table-hover align-middle">
+            <thead>
+              <tr>
+                <th style="width: 1px;" class="text-center"><input type="checkbox" onclick="$('input[name*=\\'selected\\']').prop('checked', this.checked);" /></th>
+                <th>{{ column_template }}</th>
+                <th>{{ column_status }}</th>
+                <th>{{ column_date }}</th>
+                <th class="text-end">{{ column_action }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if templates %}
+                {% for t in templates %}
+                  <tr data-testid="admin-landpage-template-row" data-template-id="{{ t.template_id }}">
+                    <td class="text-center"><input type="checkbox" name="selected[]" value="{{ t.template_id }}" /></td>
+                    <td>
+                      <div class="fw-semibold">{{ t.name }}</div>
+                      <span class="badge text-bg-light text-dark rms-status-badge">{{ t.code }}</span>
+                    </td>
+                    <td>
+                      {% if t.status %}
+                        <span class="badge text-bg-success rms-status-badge">{{ text_enabled }}</span>
+                      {% else %}
+                        <span class="badge text-bg-secondary rms-status-badge">{{ text_disabled }}</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ t.date_modified }}</td>
+                    <td class="text-end"><a href="{{ t.edit }}" class="btn btn-outline-primary btn-sm" data-testid="admin-landpage-template-edit-link"><i class="fa-solid fa-pen"></i></a></td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr><td colspan="5" class="rms-empty-state">{{ text_no_results }}</td></tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </form>
+    {% endset %}
+    {% include 'common/rms_admin_card.twig' with {
+      rms_card_icon: 'fa-solid fa-file-code',
+      rms_card_title: text_list,
+      rms_card_body: rms_card_body
+    } %}
+  </div>
+</div>
+{{ footer }}

@@ -1,0 +1,1052 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end">
+        <a href="{{ add }}" data-bs-toggle="tooltip" title="{{ button_add }}" class="btn btn-primary"><i class="fa-solid fa-plus"></i></a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% set bulk_select_enabled = supports_operational_meta or supports_chat_routing %}
+    {% set total_columns = 4 + (bulk_select_enabled ? 1 : 0) + (supports_operational_meta ? 3 : 0) + (supports_chat_routing ? 2 : 0) + (supports_chat_tags ? 1 : 0) + (supports_sla ? 1 : 0) + (supports_engagement ? 1 : 0) %}
+    <div class="card">
+      <div class="card-header"><i class="fa-solid fa-comment"></i> {{ text_list }}</div>
+      <div class="card-body">
+        {% if success %}
+        <div class="alert alert-success alert-dismissible"><i class="fa-solid fa-check-circle"></i> {{ success }} <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        {% endif %}
+        {% if warning %}
+        <div class="alert alert-danger alert-dismissible"><i class="fa-solid fa-circle-exclamation"></i> {{ warning }} <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        {% endif %}
+
+        {% if supports_operational_meta or supports_sla %}
+        <div class="mb-4">
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <strong>{{ text_summary_title }}</strong>
+            <span class="text-muted small">{{ text_summary_hint }}</span>
+          </div>
+          <div class="row g-3">
+            <div class="col-sm-6 col-xl-2">
+              <a href="{{ summary_links.visible }}" class="card h-100 text-decoration-none">
+                <div class="card-body">
+                  <div class="text-muted small">{{ text_summary_visible }}</div>
+                  <div class="fs-3 fw-semibold">{{ chat_inbox_summary.visible_total }}</div>
+                </div>
+              </a>
+            </div>
+            {% if supports_operational_meta %}
+            <div class="col-sm-6 col-xl-2">
+              <div class="card h-100">
+                <div class="card-body">
+                  <div class="text-muted small">{{ text_summary_needs_team_action }}</div>
+                  <div class="fs-3 fw-semibold">{{ chat_inbox_summary.needs_team_action_total }}</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-6 col-xl-2">
+              <a href="{{ summary_links.waiting_customer }}" class="card h-100 text-decoration-none">
+                <div class="card-body">
+                  <div class="text-muted small">{{ text_summary_waiting_customer }}</div>
+                  <div class="fs-3 fw-semibold">{{ chat_inbox_summary.waiting_customer_total }}</div>
+                </div>
+              </a>
+            </div>
+            <div class="col-sm-6 col-xl-2">
+              <a href="{{ summary_links.unassigned }}" class="card h-100 text-decoration-none">
+                <div class="card-body">
+                  <div class="text-muted small">{{ text_summary_unassigned }}</div>
+                  <div class="fs-3 fw-semibold">{{ chat_inbox_summary.unassigned_total }}</div>
+                </div>
+              </a>
+            </div>
+            {% endif %}
+            {% if supports_sla %}
+            <div class="col-sm-6 col-xl-2">
+              <a href="{{ summary_links.sla_due_soon }}" class="card h-100 text-decoration-none">
+                <div class="card-body">
+                  <div class="text-muted small">{{ text_summary_sla_due_soon }}</div>
+                  <div class="fs-3 fw-semibold">{{ chat_inbox_summary.sla_due_soon_total }}</div>
+                </div>
+              </a>
+            </div>
+            <div class="col-sm-6 col-xl-2">
+              <a href="{{ summary_links.sla_breached }}" class="card h-100 text-decoration-none">
+                <div class="card-body">
+                  <div class="text-muted small">{{ text_summary_sla_breached }}</div>
+                  <div class="fs-3 fw-semibold">{{ chat_inbox_summary.sla_breached_total }}</div>
+                </div>
+              </a>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+
+        {% if can_supervise %}
+        <div class="card mb-4">
+          <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <span><i class="fa-solid fa-chart-line"></i> {{ text_supervisor_dashboard_title }}</span>
+            <span class="text-muted small">{{ text_supervisor_dashboard_hint }}</span>
+          </div>
+          <div class="card-body">
+            {% if supervisor_dashboard.scope_notice %}
+            <div class="alert alert-warning py-2 mb-3">
+              <i class="fa-solid fa-triangle-exclamation"></i> {{ supervisor_dashboard.scope_notice }}
+            </div>
+            {% endif %}
+
+            {% if supervisor_dashboard.has_data %}
+            <div class="mb-4">
+              <div class="small fw-semibold mb-2">{{ text_supervisor_sla_mix }}</div>
+              <div class="d-flex flex-wrap gap-2">
+                {% for item in supervisor_dashboard.sla_mix %}
+                <span class="badge {{ item.badge_class }}">{{ item.label }}: {{ item.total }}</span>
+                {% endfor %}
+              </div>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-xl-4">
+                <div class="border rounded h-100">
+                  <div class="px-3 py-2 border-bottom bg-light fw-semibold">{{ text_supervisor_department_pressure }}</div>
+                  {% if supervisor_dashboard.departments %}
+                  <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                      <thead>
+                        <tr>
+                          <th>{{ text_department }}</th>
+                          <th class="text-end">{{ text_supervisor_active }}</th>
+                          <th class="text-end">{{ text_summary_needs_team_action }}</th>
+                          <th class="text-end">{{ text_supervisor_at_risk }}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for row in supervisor_dashboard.departments %}
+                        <tr>
+                          <td>
+                            <a href="{{ row.href }}">{{ row.label }}</a>
+                            <div class="text-muted small">{{ text_summary_waiting_customer }}: {{ row.waiting_customer_total }} &middot; {{ text_summary_unassigned }}: {{ row.unassigned_total }}</div>
+                          </td>
+                          <td class="text-end">{{ row.active_total }}</td>
+                          <td class="text-end">{{ row.team_action_total }}</td>
+                          <td class="text-end"><span class="badge {{ row.risk_badge_class }}">{{ row.at_risk_total }}</span></td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                  {% else %}
+                  <div class="p-3 text-muted">{{ text_supervisor_empty }}</div>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="col-xl-4">
+                <div class="border rounded h-100">
+                  <div class="px-3 py-2 border-bottom bg-light fw-semibold">{{ text_supervisor_queue_pressure }}</div>
+                  {% if supervisor_dashboard.queues %}
+                  <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                      <thead>
+                        <tr>
+                          <th>{{ text_queue }}</th>
+                          <th class="text-end">{{ text_supervisor_active }}</th>
+                          <th class="text-end">{{ text_summary_needs_team_action }}</th>
+                          <th class="text-end">{{ text_supervisor_at_risk }}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for row in supervisor_dashboard.queues %}
+                        <tr>
+                          <td>
+                            <a href="{{ row.href }}">{{ row.label }}</a>
+                            <div class="text-muted small">{{ text_summary_waiting_customer }}: {{ row.waiting_customer_total }} &middot; {{ text_summary_unassigned }}: {{ row.unassigned_total }}</div>
+                          </td>
+                          <td class="text-end">{{ row.active_total }}</td>
+                          <td class="text-end">{{ row.team_action_total }}</td>
+                          <td class="text-end"><span class="badge {{ row.risk_badge_class }}">{{ row.at_risk_total }}</span></td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                  {% else %}
+                  <div class="p-3 text-muted">{{ text_supervisor_empty }}</div>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="col-xl-4">
+                <div class="border rounded h-100">
+                  <div class="px-3 py-2 border-bottom bg-light fw-semibold">{{ text_supervisor_agent_workload }}</div>
+                  {% if supervisor_dashboard.agents %}
+                  <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                      <thead>
+                        <tr>
+                          <th>{{ text_assignee }}</th>
+                          <th class="text-end">{{ text_supervisor_active }}</th>
+                          <th class="text-end">{{ text_summary_needs_team_action }}</th>
+                          <th class="text-end">{{ text_supervisor_at_risk }}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for row in supervisor_dashboard.agents %}
+                        <tr>
+                          <td>
+                            <a href="{{ row.href }}">{{ row.label }}</a>
+                            <div class="text-muted small">{{ text_summary_waiting_customer }}: {{ row.waiting_customer_total }} &middot; {{ text_summary_unassigned }}: {{ row.unassigned_total }}</div>
+                          </td>
+                          <td class="text-end">{{ row.active_total }}</td>
+                          <td class="text-end">{{ row.team_action_total }}</td>
+                          <td class="text-end"><span class="badge {{ row.risk_badge_class }}">{{ row.at_risk_total }}</span></td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                  {% else %}
+                  <div class="p-3 text-muted">{{ text_supervisor_empty }}</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            {% else %}
+            <div class="text-muted">{{ text_supervisor_empty }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="card mb-4">
+          <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <span><i class="fa-solid fa-chart-column"></i> {{ text_supervisor_trends_title }}</span>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+              <span class="text-muted small">{{ supervisor_trends.hint }}</span>
+              <form action="{{ reset|replace({'&amp;':'&'}) }}" method="get" class="d-flex flex-wrap align-items-center gap-2">
+                <input type="hidden" name="filter_scope" value="{{ chat_filters.filter_scope }}">
+                <input type="hidden" name="filter_status" value="{{ chat_filters.filter_status }}">
+                <input type="hidden" name="filter_priority" value="{{ chat_filters.filter_priority }}">
+                <input type="hidden" name="filter_department_id" value="{{ chat_filters.filter_department_id }}">
+                <input type="hidden" name="filter_queue_id" value="{{ chat_filters.filter_queue_id }}">
+                <input type="hidden" name="filter_assigned_user_id" value="{{ chat_filters.filter_assigned_user_id }}">
+                <input type="hidden" name="filter_sla_state" value="{{ chat_filters.filter_sla_state }}">
+                <input type="hidden" name="filter_tag" value="{{ chat_filters.filter_tag }}">
+                <label class="form-label small mb-0" for="input-trend-window">{{ text_supervisor_trends_window_label }}</label>
+                <select name="trend_window_days" id="input-trend-window" class="form-select form-select-sm">
+                  {% for option in trend_window_options %}
+                  <option value="{{ option }}"{% if supervisor_trends.window_days == option %} selected{% endif %}>{{ option }}</option>
+                  {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-sm btn-outline-secondary">{{ button_filter }}</button>
+                <a href="{{ analytics_export }}" class="btn btn-sm btn-outline-primary">{{ button_export_csv }}</a>
+              </form>
+            </div>
+          </div>
+          <div class="card-body">
+            {% if supervisor_trends.has_data %}
+            <div class="row g-3 mb-4">
+              {% for metric in supervisor_trends.metrics %}
+              <div class="col-sm-6 col-xl-3">
+                <div class="card h-100">
+                  <div class="card-body">
+                    <div class="text-muted small">{{ metric.label }}</div>
+                    <div class="fs-4 fw-semibold">{{ metric.current_total }}</div>
+                    <div class="text-muted small">{{ supervisor_trends.window_label }}</div>
+                    <div class="small mt-2">{{ supervisor_trends.previous_label }}: {{ metric.previous_total }}</div>
+                    <div class="mt-2">
+                      <span class="badge {{ metric.difference_badge_class }}">{{ text_supervisor_trends_difference }}: {{ metric.difference_label }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+
+            <div class="row g-3">
+              <div class="col-xl-7">
+                <div class="border rounded h-100">
+                  <div class="px-3 py-2 border-bottom bg-light fw-semibold">{{ text_supervisor_trends_daily }}</div>
+                  <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                      <thead>
+                        <tr>
+                          <th>{{ column_date }}</th>
+                          <th class="text-end">{{ text_supervisor_trends_new_chats }}</th>
+                          <th class="text-end">{{ text_supervisor_trends_resolved }}</th>
+                          <th class="text-end">{{ text_supervisor_trends_customer_messages }}</th>
+                          <th class="text-end">{{ text_supervisor_trends_admin_messages }}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for row in supervisor_trends.daily %}
+                        <tr>
+                          <td>{{ row.day_label }}</td>
+                          <td class="text-end">{{ row.new_chats_total }}</td>
+                          <td class="text-end">{{ row.resolved_chats_total }}</td>
+                          <td class="text-end">{{ row.customer_messages_total }}</td>
+                          <td class="text-end">{{ row.admin_messages_total }}</td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+              <div class="col-xl-5">
+                <div class="border rounded h-100">
+                  <div class="px-3 py-2 border-bottom bg-light fw-semibold">{{ text_supervisor_trends_departments }}</div>
+                  {% if supervisor_trends.departments %}
+                  <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                      <thead>
+                        <tr>
+                          <th>{{ text_department }}</th>
+                          <th class="text-end">{{ text_supervisor_trends_new_chats }}</th>
+                          <th class="text-end">{{ text_supervisor_trends_resolved }}</th>
+                          <th class="text-end">{{ text_supervisor_trends_customer_messages }}</th>
+                          <th class="text-end">{{ text_supervisor_trends_admin_messages }}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for row in supervisor_trends.departments %}
+                        <tr>
+                          <td><a href="{{ row.href }}">{{ row.label }}</a></td>
+                          <td class="text-end">{{ row.new_chats_total }}</td>
+                          <td class="text-end">{{ row.resolved_chats_total }}</td>
+                          <td class="text-end">{{ row.customer_messages_total }}</td>
+                          <td class="text-end">{{ row.admin_messages_total }}</td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                  {% else %}
+                  <div class="p-3 text-muted">{{ text_supervisor_trends_empty }}</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            {% else %}
+            <div class="text-muted">{{ text_supervisor_trends_empty }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        {% if supports_analytics_archive %}
+        <div class="card mb-4">
+          <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <span><i class="fa-solid fa-database"></i> {{ text_supervisor_archive_title }}</span>
+            <form action="{{ analytics_snapshot|replace({'&amp;':'&'}) }}" method="post" class="d-flex flex-wrap align-items-center gap-2">
+              <input type="hidden" name="filter_scope" value="{{ chat_filters.filter_scope }}">
+              <input type="hidden" name="filter_status" value="{{ chat_filters.filter_status }}">
+              <input type="hidden" name="filter_priority" value="{{ chat_filters.filter_priority }}">
+              <input type="hidden" name="filter_department_id" value="{{ chat_filters.filter_department_id }}">
+              <input type="hidden" name="filter_queue_id" value="{{ chat_filters.filter_queue_id }}">
+              <input type="hidden" name="filter_assigned_user_id" value="{{ chat_filters.filter_assigned_user_id }}">
+              <input type="hidden" name="filter_sla_state" value="{{ chat_filters.filter_sla_state }}">
+              <input type="hidden" name="filter_tag" value="{{ chat_filters.filter_tag }}">
+              <input type="hidden" name="trend_window_days" value="{{ chat_filters.trend_window_days }}">
+              <input type="hidden" name="page" value="{{ page }}">
+              <span class="text-muted small">{{ text_supervisor_archive_hint }}</span>
+              <button type="submit" class="btn btn-sm btn-outline-secondary">{{ button_capture_snapshot }}</button>
+            </form>
+          </div>
+          <div class="card-body">
+            <div class="alert alert-info py-2 mb-3">
+              <i class="fa-solid fa-circle-info"></i> {{ text_supervisor_archive_scope_note }}
+            </div>
+
+            {% if archived_analytics.has_data %}
+            <div class="small fw-semibold mb-3">
+              {{ text_supervisor_archive_latest }}:
+              <span class="text-muted">{{ archived_analytics.latest_snapshot_label }}</span>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-xl-7">
+                <div class="border rounded h-100">
+                  <div class="px-3 py-2 border-bottom bg-light fw-semibold">{{ text_supervisor_archive_recent }}</div>
+                  <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                      <thead>
+                        <tr>
+                          <th>{{ column_date }}</th>
+                          <th class="text-end">{{ text_supervisor_active }}</th>
+                          <th class="text-end">{{ text_summary_needs_team_action }}</th>
+                          <th class="text-end">{{ text_summary_waiting_customer }}</th>
+                          <th class="text-end">{{ text_summary_sla_due_soon }}</th>
+                          <th class="text-end">{{ text_summary_sla_breached }}</th>
+                          <th class="text-end">{{ text_supervisor_trends_new_chats }}</th>
+                          <th class="text-end">{{ text_supervisor_trends_resolved }}</th>
+                          <th class="text-end">{{ text_supervisor_archive_captured_at }}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for row in archived_analytics.snapshots %}
+                        <tr>
+                          <td>{{ row.snapshot_label }}</td>
+                          <td class="text-end">{{ row.active_total }}</td>
+                          <td class="text-end">{{ row.team_action_total }}</td>
+                          <td class="text-end">{{ row.waiting_customer_total }}</td>
+                          <td class="text-end">{{ row.sla_due_soon_total }}</td>
+                          <td class="text-end">{{ row.sla_breached_total }}</td>
+                          <td class="text-end">{{ row.new_chats_total }}</td>
+                          <td class="text-end">{{ row.resolved_chats_total }}</td>
+                          <td class="text-end">{{ row.captured_at_label }}</td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+              <div class="col-xl-5">
+                <div class="border rounded h-100">
+                  <div class="px-3 py-2 border-bottom bg-light fw-semibold">{{ text_supervisor_archive_departments }}</div>
+                  {% if archived_analytics.departments %}
+                  <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                      <thead>
+                        <tr>
+                          <th>{{ text_department }}</th>
+                          <th class="text-end">{{ text_supervisor_active }}</th>
+                          <th class="text-end">{{ text_supervisor_trends_new_chats }}</th>
+                          <th class="text-end">{{ text_supervisor_trends_resolved }}</th>
+                          <th class="text-end">{{ text_supervisor_trends_customer_messages }}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for row in archived_analytics.departments %}
+                        <tr>
+                          <td><a href="{{ row.href }}">{{ row.label }}</a></td>
+                          <td class="text-end">{{ row.active_total }}</td>
+                          <td class="text-end">{{ row.new_chats_total }}</td>
+                          <td class="text-end">{{ row.resolved_chats_total }}</td>
+                          <td class="text-end">{{ row.customer_messages_total }}</td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                  {% else %}
+                  <div class="p-3 text-muted">{{ text_supervisor_archive_empty }}</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            {% else %}
+            <div class="text-muted">{{ text_supervisor_archive_empty }}</div>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="row g-3 mb-4">
+          <div class="col-xl-7">
+            <div class="card h-100">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="fa-solid fa-robot"></i> {{ text_automation_title }}</span>
+                <span class="badge {% if supports_chat_automation %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                  {% if supports_chat_automation %}
+                  {{ text_automation_schema_ready }}
+                  {% else %}
+                  {{ text_automation_schema_missing }}
+                  {% endif %}
+                </span>
+              </div>
+              <div class="card-body">
+                <p class="text-muted small mb-3">{{ text_automation_hint }}</p>
+                <form action="{{ automation|replace({'&amp;':'&'}) }}" method="post" class="row g-3">
+                  <input type="hidden" name="filter_scope" value="{{ chat_filters.filter_scope }}">
+                  <input type="hidden" name="filter_status" value="{{ chat_filters.filter_status }}">
+                  <input type="hidden" name="filter_priority" value="{{ chat_filters.filter_priority }}">
+                  <input type="hidden" name="filter_department_id" value="{{ chat_filters.filter_department_id }}">
+                  <input type="hidden" name="filter_queue_id" value="{{ chat_filters.filter_queue_id }}">
+                  <input type="hidden" name="filter_assigned_user_id" value="{{ chat_filters.filter_assigned_user_id }}">
+                  <input type="hidden" name="filter_sla_state" value="{{ chat_filters.filter_sla_state }}">
+                  <input type="hidden" name="filter_tag" value="{{ chat_filters.filter_tag }}">
+                  <input type="hidden" name="trend_window_days" value="{{ chat_filters.trend_window_days }}">
+                  <input type="hidden" name="page" value="{{ page }}">
+
+                  <div class="col-md-6">
+                    <label class="form-label" for="input-automation-scheduler-enabled">{{ entry_automation_scheduler_enabled }}</label>
+                    <select name="chat_automation_scheduler_enabled" id="input-automation-scheduler-enabled" class="form-select">
+                      <option value="1"{% if chat_automation_settings.scheduler_enabled %} selected{% endif %}>{{ text_yes }}</option>
+                      <option value="0"{% if not chat_automation_settings.scheduler_enabled %} selected{% endif %}>{{ text_no }}</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="input-automation-scheduler-interval">{{ entry_automation_scheduler_interval }}</label>
+                    <input type="number" min="1" max="1440" name="chat_automation_scheduler_interval_minutes" id="input-automation-scheduler-interval" class="form-control" value="{{ chat_automation_settings.scheduler_interval_minutes }}">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label" for="input-automation-workload-enabled">{{ entry_automation_workload_enabled }}</label>
+                    <select name="chat_automation_workload_balancing_enabled" id="input-automation-workload-enabled" class="form-select">
+                      <option value="1"{% if chat_automation_settings.workload_balancing_enabled %} selected{% endif %}>{{ text_yes }}</option>
+                      <option value="0"{% if not chat_automation_settings.workload_balancing_enabled %} selected{% endif %}>{{ text_no }}</option>
+                    </select>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label" for="input-automation-workload-minutes">{{ entry_automation_workload_minutes }}</label>
+                    <input type="number" min="1" max="10080" name="chat_automation_workload_balancing_wait_minutes" id="input-automation-workload-minutes" class="form-control" value="{{ chat_automation_settings.workload_balancing_wait_minutes }}">
+                  </div>
+                  <div class="col-12">
+                    <div class="small text-muted">{{ text_automation_workload_scope }}</div>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label" for="input-automation-team-enabled">{{ entry_automation_team_enabled }}</label>
+                    <select name="chat_automation_team_escalation_enabled" id="input-automation-team-enabled" class="form-select">
+                      <option value="1"{% if chat_automation_settings.team_escalation_enabled %} selected{% endif %}>{{ text_yes }}</option>
+                      <option value="0"{% if not chat_automation_settings.team_escalation_enabled %} selected{% endif %}>{{ text_no }}</option>
+                    </select>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label" for="input-automation-team-minutes">{{ entry_automation_team_minutes }}</label>
+                    <input type="number" min="5" max="10080" name="chat_automation_team_escalation_minutes" id="input-automation-team-minutes" class="form-control" value="{{ chat_automation_settings.team_escalation_minutes }}">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label" for="input-automation-team-cooldown">{{ entry_automation_team_cooldown }}</label>
+                    <input type="number" min="5" max="10080" name="chat_automation_team_escalation_cooldown_minutes" id="input-automation-team-cooldown" class="form-control" value="{{ chat_automation_settings.team_escalation_cooldown_minutes }}">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label" for="input-automation-follow-enabled">{{ entry_automation_follow_up_enabled }}</label>
+                    <select name="chat_automation_customer_follow_up_enabled" id="input-automation-follow-enabled" class="form-select">
+                      <option value="1"{% if chat_automation_settings.customer_follow_up_enabled %} selected{% endif %}>{{ text_yes }}</option>
+                      <option value="0"{% if not chat_automation_settings.customer_follow_up_enabled %} selected{% endif %}>{{ text_no }}</option>
+                    </select>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label" for="input-automation-follow-minutes">{{ entry_automation_follow_up_minutes }}</label>
+                    <input type="number" min="15" max="10080" name="chat_automation_customer_follow_up_minutes" id="input-automation-follow-minutes" class="form-control" value="{{ chat_automation_settings.customer_follow_up_minutes }}">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label" for="input-automation-follow-cooldown">{{ entry_automation_follow_up_cooldown }}</label>
+                    <input type="number" min="15" max="10080" name="chat_automation_customer_follow_up_cooldown_minutes" id="input-automation-follow-cooldown" class="form-control" value="{{ chat_automation_settings.customer_follow_up_cooldown_minutes }}">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label" for="input-automation-follow-max">{{ entry_automation_follow_up_max }}</label>
+                    <input type="number" min="1" max="10" name="chat_automation_customer_follow_up_max_per_chat" id="input-automation-follow-max" class="form-control" value="{{ chat_automation_settings.customer_follow_up_max_per_chat }}">
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label" for="input-automation-follow-message">{{ entry_automation_follow_up_message }}</label>
+                    <textarea name="chat_automation_customer_follow_up_message" id="input-automation-follow-message" rows="3" class="form-control">{{ chat_automation_settings.customer_follow_up_message }}</textarea>
+                  </div>
+                  <div class="col-12 d-flex flex-wrap gap-2">
+                    <button type="submit" name="automation_action" value="save" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> {{ button_automation_save }}</button>
+                    <button type="submit" name="automation_action" value="preview" class="btn btn-outline-secondary"><i class="fa-solid fa-vial"></i> {{ button_automation_preview }}</button>
+                    <button type="submit" name="automation_action" value="run" class="btn btn-outline-warning"><i class="fa-solid fa-play"></i> {{ button_automation_run }}</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-5">
+            <div class="card mb-3">
+              <div class="card-header"><i class="fa-solid fa-diagram-project"></i> {{ text_automation_rollout_title }}</div>
+              <div class="card-body">
+                <p class="text-muted small mb-3">{{ text_automation_rollout_hint }}</p>
+                <div class="small mb-2"><strong>{{ text_automation_rollout_internal }}:</strong> <code>direct_chat_automation</code> / <code>cron/direct_chat</code> / <code>{{ chat_automation_rollout.interval_minutes }}</code> min</div>
+                <div class="small mb-3 text-muted">{{ text_automation_rollout_note }}</div>
+                <label class="form-label small" for="automation-cli-command">{{ text_automation_rollout_cli }}</label>
+                <textarea id="automation-cli-command" class="form-control form-control-sm mb-3" rows="2" readonly>{{ chat_automation_rollout.linux_direct_command }}</textarea>
+                <label class="form-label small" for="automation-windows-command">{{ text_automation_rollout_windows }}</label>
+                <textarea id="automation-windows-command" class="form-control form-control-sm" rows="3" readonly>{{ chat_automation_rollout.windows_wrapper_command }}</textarea>
+              </div>
+            </div>
+
+            {% if chat_automation_result %}
+            <div class="card mb-3">
+              <div class="card-header"><i class="fa-solid fa-wave-square"></i> {{ text_automation_result_title }}</div>
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <strong>{{ chat_automation_result.mode_label }}</strong>
+                  <span class="badge {% if chat_automation_result.success %}bg-success{% else %}bg-danger{% endif %}">{{ chat_automation_result.action_total }}</span>
+                </div>
+                <div class="small text-muted mb-3">
+                  {{ text_automation_scanned_total }}: {{ chat_automation_result.scanned_total }}<br>
+                  {{ text_automation_action_total }}: {{ chat_automation_result.action_total }}
+                </div>
+                {% if chat_automation_result.skipped_reason %}
+                <div class="alert alert-warning py-2 mb-3">{{ text_automation_skipped }}: {{ chat_automation_result.skipped_reason }}</div>
+                {% endif %}
+                {% if chat_automation_result.errors %}
+                <div class="alert alert-danger py-2 mb-3">
+                  <strong>{{ text_automation_errors }}</strong>
+                  <ul class="mb-0 mt-2">
+                    {% for error in chat_automation_result.errors %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                  </ul>
+                </div>
+                {% endif %}
+                {% if chat_automation_result.actions %}
+                <div class="small fw-semibold mb-2">{{ text_automation_actions }}</div>
+                <div class="d-grid gap-2">
+                  {% for action in chat_automation_result.actions %}
+                  <div class="border rounded p-2">
+                    <div class="fw-semibold">{{ action.summary }}</div>
+                    <div class="text-muted small">{{ action.target_label }} · {{ action.rule_label }} · {{ action.action_label }}</div>
+                  </div>
+                  {% endfor %}
+                </div>
+                {% endif %}
+              </div>
+            </div>
+            {% endif %}
+
+            <div class="card">
+              <div class="card-header"><i class="fa-solid fa-clock-rotate-left"></i> {{ text_automation_recent_title }}</div>
+              <div class="card-body">
+                {% if chat_automation_recent_logs %}
+                <div class="d-grid gap-2">
+                  {% for log in chat_automation_recent_logs %}
+                  <div class="border rounded p-2">
+                    <div class="d-flex justify-content-between align-items-start gap-2">
+                      <strong>{{ log.summary }}</strong>
+                      <span class="text-muted small">{{ log.created_at_label }}</span>
+                    </div>
+                    <div class="text-muted small">{{ log.target_label }} · {{ log.rule_label }} · {{ log.action_label }}</div>
+                    {% if log.participants %}
+                    <div class="text-muted small">{{ log.participants }}</div>
+                    {% endif %}
+                  </div>
+                  {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-muted">{{ text_automation_recent_empty }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if can_supervise and supports_department_teams %}
+        <form action="{{ teams|replace({'&amp;':'&'}) }}" method="post" class="mb-4">
+          <input type="hidden" name="filter_scope" value="{{ chat_filters.filter_scope }}">
+          <input type="hidden" name="filter_status" value="{{ chat_filters.filter_status }}">
+          <input type="hidden" name="filter_priority" value="{{ chat_filters.filter_priority }}">
+          <input type="hidden" name="filter_department_id" value="{{ chat_filters.filter_department_id }}">
+          <input type="hidden" name="filter_queue_id" value="{{ chat_filters.filter_queue_id }}">
+          <input type="hidden" name="filter_assigned_user_id" value="{{ chat_filters.filter_assigned_user_id }}">
+          <input type="hidden" name="filter_sla_state" value="{{ chat_filters.filter_sla_state }}">
+          <input type="hidden" name="filter_tag" value="{{ chat_filters.filter_tag }}">
+          <input type="hidden" name="trend_window_days" value="{{ chat_filters.trend_window_days }}">
+          <input type="hidden" name="page" value="{{ page }}">
+
+          <div class="card">
+            <div class="card-header"><i class="fa-solid fa-users-gear"></i> {{ text_team_permissions_title }}</div>
+            <div class="card-body">
+              <p class="text-muted small mb-3">{{ text_team_permissions_hint }}</p>
+              <div class="row g-3">
+                {% for department in chat_department_team_rows %}
+                <div class="col-lg-6 col-xl-3">
+                  <div class="border rounded p-3 h-100">
+                    <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                      <strong>{{ department.name }}</strong>
+                      <span class="badge bg-light text-dark">{{ department.member_total }}</span>
+                    </div>
+                    {% if department.description %}
+                    <div class="text-muted small mb-2">{{ department.description }}</div>
+                    {% endif %}
+                    <label class="form-label small" for="input-team-department-{{ department.chat_department_id }}">{{ text_team_permissions_members }}</label>
+                    <select
+                      name="department_members[{{ department.chat_department_id }}][]"
+                      id="input-team-department-{{ department.chat_department_id }}"
+                      class="form-select form-select-sm"
+                      multiple
+                      size="6"
+                    >
+                      {% for agent in chat_agents %}
+                      <option value="{{ agent.user_id }}"{% if agent.user_id in department.member_user_ids %} selected{% endif %}>{{ agent.name }}</option>
+                      {% endfor %}
+                    </select>
+                    <div class="form-text">{{ text_team_permissions_select_help }}</div>
+                    <div class="text-muted small mt-2">
+                      {% if department.member_names %}
+                      {{ department.member_names }}
+                      {% else %}
+                      {{ text_team_permissions_empty }}
+                      {% endif %}
+                    </div>
+                    {% if supports_queue_teams and department.queues %}
+                    <hr class="my-3">
+                    <div class="small fw-semibold mb-2">{{ text_queue_permissions_title }}</div>
+                    <div class="text-muted small mb-2">{{ text_queue_permissions_hint }}</div>
+                    <div class="d-grid gap-3">
+                      {% for queue in department.queues %}
+                      <div class="border rounded p-2">
+                        <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                          <strong>{{ queue.name }}</strong>
+                          <span class="badge bg-light text-dark">{{ queue.member_total }}</span>
+                        </div>
+                        {% if queue.description %}
+                        <div class="text-muted small mb-2">{{ queue.description }}</div>
+                        {% endif %}
+                        <label class="form-label small" for="input-team-queue-{{ queue.chat_queue_id }}">{{ text_queue_permissions_members }}</label>
+                        <select
+                          name="queue_members[{{ queue.chat_queue_id }}][]"
+                          id="input-team-queue-{{ queue.chat_queue_id }}"
+                          class="form-select form-select-sm"
+                          multiple
+                          size="5"
+                        >
+                          {% for agent in chat_agents %}
+                          <option value="{{ agent.user_id }}"{% if agent.user_id in queue.member_user_ids %} selected{% endif %}>{{ agent.name }}</option>
+                          {% endfor %}
+                        </select>
+                        <div class="form-text">{{ text_queue_permissions_select_help }}</div>
+                        <div class="text-muted small mt-2">
+                          {% if queue.member_names %}
+                          {{ queue.member_names }}
+                          {% else %}
+                          {{ text_queue_permissions_inherited }}
+                          {% endif %}
+                        </div>
+                      </div>
+                      {% endfor %}
+                    </div>
+                    {% endif %}
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              <div class="mt-3">
+                <button type="submit" class="btn btn-outline-primary"><i class="fa-solid fa-shield-halved"></i> {{ button_team_permissions_save }}</button>
+              </div>
+            </div>
+          </div>
+        </form>
+        {% endif %}
+
+        <form action="{{ reset|replace({'&amp;':'&'}) }}" method="get" class="row g-3 mb-4 align-items-end">
+          <input type="hidden" name="trend_window_days" value="{{ chat_filters.trend_window_days }}">
+          {% if can_supervise %}
+          <div class="col-md-3">
+            <label class="form-label" for="input-filter-scope">{{ text_scope }}</label>
+            <select name="filter_scope" id="input-filter-scope" class="form-select">
+              <option value="mine"{% if chat_filters.filter_scope != 'all' %} selected{% endif %}>{{ text_scope_mine }}</option>
+              <option value="all"{% if chat_filters.filter_scope == 'all' %} selected{% endif %}>{{ text_scope_all }}</option>
+            </select>
+          </div>
+          {% endif %}
+
+          {% if supports_operational_meta %}
+          <div class="col-md-3">
+            <label class="form-label" for="input-filter-status">{{ text_status }}</label>
+            <select name="filter_status" id="input-filter-status" class="form-select">
+              <option value="">{{ text_filter }}</option>
+              {% for status in chat_statuses %}
+              <option value="{{ status.key }}"{% if chat_filters.filter_status == status.key %} selected{% endif %}>{{ status.label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label" for="input-filter-priority">{{ text_priority }}</label>
+            <select name="filter_priority" id="input-filter-priority" class="form-select">
+              <option value="">{{ text_filter }}</option>
+              {% for priority in chat_priorities %}
+              <option value="{{ priority.key }}"{% if chat_filters.filter_priority == priority.key %} selected{% endif %}>{{ priority.label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          {% if supports_chat_routing %}
+          <div class="col-md-3">
+            <label class="form-label" for="input-filter-department">{{ text_department }}</label>
+            <select name="filter_department_id" id="input-filter-department" class="form-select">
+              <option value="">{{ text_department_all }}</option>
+              <option value="0"{% if chat_filters.filter_department_id == '0' %} selected{% endif %}>{{ text_unrouted }}</option>
+              {% for department in chat_departments %}
+              <option value="{{ department.chat_department_id }}"{% if chat_filters.filter_department_id == department.chat_department_id %} selected{% endif %}>{{ department.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label" for="input-filter-queue">{{ text_queue }}</label>
+            <select name="filter_queue_id" id="input-filter-queue" class="form-select">
+              <option value="">{{ text_queue_all }}</option>
+              <option value="0"{% if chat_filters.filter_queue_id == '0' %} selected{% endif %}>{{ text_unrouted }}</option>
+              {% for queue in chat_queues %}
+              <option value="{{ queue.chat_queue_id }}"{% if chat_filters.filter_queue_id == queue.chat_queue_id %} selected{% endif %}>{{ queue.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          {% endif %}
+          <div class="col-md-3">
+            <label class="form-label" for="input-filter-assignee">{{ text_assignee }}</label>
+            <select name="filter_assigned_user_id" id="input-filter-assignee" class="form-select">
+              <option value="">{{ text_assignee_all }}</option>
+              <option value="0"{% if chat_filters.filter_assigned_user_id == '0' %} selected{% endif %}>{{ text_unassigned }}</option>
+              {% for agent in chat_agents %}
+              <option value="{{ agent.user_id }}"{% if chat_filters.filter_assigned_user_id == agent.user_id %} selected{% endif %}>{{ agent.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          {% if supports_sla %}
+          <div class="col-md-3">
+            <label class="form-label" for="input-filter-sla">{{ text_sla_filter }}</label>
+            <select name="filter_sla_state" id="input-filter-sla" class="form-select">
+              <option value="">{{ text_sla_filter_all }}</option>
+              {% for sla_state in chat_sla_states %}
+              <option value="{{ sla_state.key }}"{% if chat_filters.filter_sla_state == sla_state.key %} selected{% endif %}>{{ sla_state.label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          {% endif %}
+          {% if supports_chat_tags %}
+          <div class="col-md-3">
+            <label class="form-label" for="input-filter-tag">{{ text_tags }}</label>
+            <input type="text" name="filter_tag" value="{{ chat_filters.filter_tag }}" placeholder="{{ text_tag_filter_placeholder }}" id="input-filter-tag" class="form-control">
+          </div>
+          {% endif %}
+          {% endif %}
+
+          <div class="col-12 d-flex gap-2">
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-filter"></i> {{ button_filter }}</button>
+            <a href="{{ reset }}" class="btn btn-outline-secondary">{{ button_reset }}</a>
+          </div>
+        </form>
+
+        {% if bulk_select_enabled %}
+        <form action="{{ bulk|replace({'&amp;':'&'}) }}" method="post">
+          <input type="hidden" name="filter_scope" value="{{ chat_filters.filter_scope }}">
+          <input type="hidden" name="filter_status" value="{{ chat_filters.filter_status }}">
+          <input type="hidden" name="filter_priority" value="{{ chat_filters.filter_priority }}">
+          <input type="hidden" name="filter_department_id" value="{{ chat_filters.filter_department_id }}">
+          <input type="hidden" name="filter_queue_id" value="{{ chat_filters.filter_queue_id }}">
+          <input type="hidden" name="filter_assigned_user_id" value="{{ chat_filters.filter_assigned_user_id }}">
+          <input type="hidden" name="filter_sla_state" value="{{ chat_filters.filter_sla_state }}">
+          <input type="hidden" name="filter_tag" value="{{ chat_filters.filter_tag }}">
+          <input type="hidden" name="trend_window_days" value="{{ chat_filters.trend_window_days }}">
+          <input type="hidden" name="page" value="{{ page }}">
+
+          <div class="border rounded p-3 mb-3 bg-light">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+              <strong>{{ text_bulk_title }}</strong>
+              <span class="text-muted small">{{ text_bulk_hint }}</span>
+            </div>
+            <div class="row g-3 align-items-end">
+              <div class="col-md-4 col-xl-3">
+                <label class="form-label" for="input-bulk-status">{{ entry_bulk_status }}</label>
+                <select name="bulk_status" id="input-bulk-status" class="form-select">
+                  <option value="">{{ text_keep_current }}</option>
+                  {% for status in chat_statuses %}
+                  <option value="{{ status.key }}">{{ status.label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-4 col-xl-3">
+                <label class="form-label" for="input-bulk-priority">{{ entry_bulk_priority }}</label>
+                <select name="bulk_priority" id="input-bulk-priority" class="form-select">
+                  <option value="">{{ text_keep_current }}</option>
+                  {% for priority in chat_priorities %}
+                  <option value="{{ priority.key }}">{{ priority.label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              {% if supports_chat_routing %}
+              <div class="col-md-4 col-xl-3">
+                <label class="form-label" for="input-bulk-department">{{ entry_bulk_department }}</label>
+                <select name="bulk_department_id" id="input-bulk-department" class="form-select">
+                  <option value="">{{ text_keep_current }}</option>
+                  <option value="0">{{ text_unrouted }}</option>
+                  {% for department in chat_departments %}
+                  <option value="{{ department.chat_department_id }}">{{ department.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-4 col-xl-3">
+                <label class="form-label" for="input-bulk-queue">{{ entry_bulk_queue }}</label>
+                <select name="bulk_queue_id" id="input-bulk-queue" class="form-select">
+                  <option value="">{{ text_keep_current }}</option>
+                  <option value="0">{{ text_unrouted }}</option>
+                  {% for queue in chat_queues %}
+                  <option value="{{ queue.chat_queue_id }}">{{ queue.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              {% endif %}
+              <div class="col-md-4 col-xl-3">
+                <label class="form-label" for="input-bulk-assignee">{{ entry_bulk_assignee }}</label>
+                <select name="bulk_assigned_user_id" id="input-bulk-assignee" class="form-select">
+                  <option value="">{{ text_keep_current }}</option>
+                  <option value="0">{{ text_unassigned }}</option>
+                  {% for agent in chat_agents %}
+                  <option value="{{ agent.user_id }}">{{ agent.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-12 col-xl-3 d-flex justify-content-xl-end">
+                <button type="submit" class="btn btn-outline-primary"><i class="fa-solid fa-layer-group"></i> {{ button_apply }}</button>
+              </div>
+            </div>
+          </div>
+
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                {% if bulk_select_enabled %}
+                <td class="text-center" style="width: 1px;"><input type="checkbox" class="form-check-input" id="input-check-all"></td>
+                {% endif %}
+                <td class="text-left">{{ column_participants }}</td>
+                <td class="text-left">{{ column_last_message }}</td>
+                {% if supports_operational_meta %}
+                <td class="text-left">{{ column_status }}</td>
+                <td class="text-left">{{ column_priority }}</td>
+                <td class="text-left">{{ column_assignee }}</td>
+                {% endif %}
+                {% if supports_chat_routing %}
+                <td class="text-left">{{ column_department }}</td>
+                <td class="text-left">{{ column_queue }}</td>
+                {% endif %}
+                {% if supports_chat_tags %}
+                <td class="text-left">{{ column_tags }}</td>
+                {% endif %}
+                {% if supports_sla %}
+                <td class="text-left">{{ column_sla }}</td>
+                {% endif %}
+                {% if supports_engagement %}
+                <td class="text-left">{{ column_wait }}</td>
+                {% endif %}
+                <td class="text-right">{{ column_date }}</td>
+                <td class="text-right">{{ column_action }}</td>
+              </tr>
+            </thead>
+            <tbody>
+              {% if chats %}
+              {% for chat in chats %}
+              <tr>
+                {% if bulk_select_enabled %}
+                <td class="text-center"><input type="checkbox" name="selected[]" value="{{ chat.chat_id }}" class="form-check-input chat-select-item"></td>
+                {% endif %}
+                <td class="text-left">{{ chat.participants }}</td>
+                <td class="text-left">{{ chat.last_message }}</td>
+                {% if supports_operational_meta %}
+                <td class="text-left">{{ chat.status_label }}</td>
+                <td class="text-left">{{ chat.priority_label }}</td>
+                <td class="text-left">{% if chat.assigned_user_name %}{{ chat.assigned_user_name }}{% else %}{{ text_unassigned }}{% endif %}</td>
+                {% endif %}
+                {% if supports_chat_routing %}
+                <td class="text-left">{% if chat.department_name %}{{ chat.department_name }}{% else %}{{ text_unrouted }}{% endif %}</td>
+                <td class="text-left">{% if chat.queue_name %}{{ chat.queue_name }}{% else %}{{ text_unrouted }}{% endif %}</td>
+                {% endif %}
+                {% if supports_chat_tags %}
+                <td class="text-left">{% if chat.tag_list %}{{ chat.tag_list }}{% else %}-{% endif %}</td>
+                {% endif %}
+                {% if supports_sla %}
+                <td class="text-left"><span class="badge {{ chat.sla_summary_badge_class }}">{{ chat.sla_summary_label }}</span></td>
+                {% endif %}
+                {% if supports_engagement %}
+                <td class="text-left"><span class="badge {{ chat.engagement_summary_badge_class }}">{{ chat.engagement_summary_label }}</span></td>
+                {% endif %}
+                <td class="text-right">{{ chat.last_message_date }}</td>
+                <td class="text-right"><a href="{{ chat.view }}" data-bs-toggle="tooltip" title="{{ button_view }}" class="btn btn-primary"><i class="fa-solid fa-eye"></i></a></td>
+              </tr>
+              {% endfor %}
+              {% else %}
+              <tr>
+                <td class="text-center" colspan="{{ total_columns }}">{{ text_no_results }}</td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+        </form>
+        {% else %}
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <td class="text-left">{{ column_participants }}</td>
+                <td class="text-left">{{ column_last_message }}</td>
+                {% if supports_operational_meta %}
+                <td class="text-left">{{ column_status }}</td>
+                <td class="text-left">{{ column_priority }}</td>
+                <td class="text-left">{{ column_assignee }}</td>
+                {% endif %}
+                {% if supports_chat_routing %}
+                <td class="text-left">{{ column_department }}</td>
+                <td class="text-left">{{ column_queue }}</td>
+                {% endif %}
+                {% if supports_chat_tags %}
+                <td class="text-left">{{ column_tags }}</td>
+                {% endif %}
+                {% if supports_sla %}
+                <td class="text-left">{{ column_sla }}</td>
+                {% endif %}
+                {% if supports_engagement %}
+                <td class="text-left">{{ column_wait }}</td>
+                {% endif %}
+                <td class="text-right">{{ column_date }}</td>
+                <td class="text-right">{{ column_action }}</td>
+              </tr>
+            </thead>
+            <tbody>
+              {% if chats %}
+              {% for chat in chats %}
+              <tr>
+                <td class="text-left">{{ chat.participants }}</td>
+                <td class="text-left">{{ chat.last_message }}</td>
+                {% if supports_operational_meta %}
+                <td class="text-left">{{ chat.status_label }}</td>
+                <td class="text-left">{{ chat.priority_label }}</td>
+                <td class="text-left">{% if chat.assigned_user_name %}{{ chat.assigned_user_name }}{% else %}{{ text_unassigned }}{% endif %}</td>
+                {% endif %}
+                {% if supports_chat_routing %}
+                <td class="text-left">{% if chat.department_name %}{{ chat.department_name }}{% else %}{{ text_unrouted }}{% endif %}</td>
+                <td class="text-left">{% if chat.queue_name %}{{ chat.queue_name }}{% else %}{{ text_unrouted }}{% endif %}</td>
+                {% endif %}
+                {% if supports_chat_tags %}
+                <td class="text-left">{% if chat.tag_list %}{{ chat.tag_list }}{% else %}-{% endif %}</td>
+                {% endif %}
+                {% if supports_sla %}
+                <td class="text-left"><span class="badge {{ chat.sla_summary_badge_class }}">{{ chat.sla_summary_label }}</span></td>
+                {% endif %}
+                {% if supports_engagement %}
+                <td class="text-left"><span class="badge {{ chat.engagement_summary_badge_class }}">{{ chat.engagement_summary_label }}</span></td>
+                {% endif %}
+                <td class="text-right">{{ chat.last_message_date }}</td>
+                <td class="text-right"><a href="{{ chat.view }}" data-bs-toggle="tooltip" title="{{ button_view }}" class="btn btn-primary"><i class="fa-solid fa-eye"></i></a></td>
+              </tr>
+              {% endfor %}
+              {% else %}
+              <tr>
+                <td class="text-center" colspan="{{ total_columns }}">{{ text_no_results }}</td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+        {% endif %}
+        <div class="row">
+          <div class="col-sm-6 text-left">{{ pagination }}</div>
+          <div class="col-sm-6 text-right">{{ results }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{{ footer }}
+{% if bulk_select_enabled %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var toggle = document.getElementById('input-check-all');
+
+  if (!toggle) {
+    return;
+  }
+
+  toggle.addEventListener('change', function() {
+    document.querySelectorAll('.chat-select-item').forEach(function(item) {
+      item.checked = toggle.checked;
+    });
+  });
+});
+</script>
+{% endif %}

@@ -1,0 +1,80 @@
+{{ header }}{{ column_left }}
+<div id="content" data-testid="admin-landpage-abtest-form-page">
+  {% set rms_actions = [
+    {
+      tag: 'button',
+      type: 'submit',
+      form: 'form-variant',
+      class: 'btn btn-primary',
+      title: button_save,
+      icon: 'fa-solid fa-floppy-disk',
+      text: button_save
+    },
+    {
+      href: cancel,
+      class: 'btn btn-light',
+      title: button_cancel,
+      icon: 'fa-solid fa-reply',
+      text: button_cancel
+    }
+  ] %}
+  {% set rms_heading_title = heading_title %}
+  {% set rms_breadcrumbs = breadcrumbs %}
+  {% include 'common/rms_page_header.twig' %}
+  <div class="container-fluid">
+    {% if error_warning %}
+      {% set rms_alert_class = 'alert alert-danger' %}
+      {% set rms_alert_icon = 'fa-solid fa-circle-exclamation' %}
+      {% set rms_alert_text = error_warning %}
+      {% include 'common/rms_alert.twig' %}
+    {% endif %}
+    {% set rms_card_body %}
+      <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-variant" data-testid="admin-landpage-abtest-form">
+        <div class="row g-4">
+          <div class="col-lg-8">
+            <div class="row mb-3">
+              <label class="col-sm-3 col-form-label" for="input-page-id">{{ column_page }}</label>
+              <div class="col-sm-9">
+                <select name="page_id" id="input-page-id" class="form-select" data-testid="admin-landpage-abtest-page">
+                  {% for p in pages %}
+                    <option value="{{ p.page_id }}" {% if variant.page_id == p.page_id %}selected{% endif %}>{{ p.title }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-sm-3 col-form-label" for="input-variant-name">{{ column_variant }}</label>
+              <div class="col-sm-9">
+                <input type="text" name="name" value="{{ variant.name }}" id="input-variant-name" class="form-control" data-testid="admin-landpage-abtest-name" />
+              </div>
+            </div>
+            <div class="row mb-0">
+              <label class="col-sm-3 col-form-label" for="input-weight">{{ column_weight }}</label>
+              <div class="col-sm-4">
+                <div class="input-group">
+                  <input type="number" name="weight" value="{{ variant.weight }}" id="input-weight" class="form-control" data-testid="admin-landpage-abtest-weight" />
+                  <span class="input-group-text">%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="row mb-0">
+              <label class="col-form-label" for="input-status">{{ column_status }}</label>
+              <div>
+                <select name="status" id="input-status" class="form-select" data-testid="admin-landpage-abtest-status">
+                  <option value="1" {% if variant.status %}selected{% endif %}>{{ text_variant_active }}</option>
+                  <option value="0" {% if not variant.status %}selected{% endif %}>{{ text_variant_disabled }}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    {% endset %}
+    {% set rms_card_icon = 'fa-solid fa-code-branch' %}
+    {% set rms_card_title = heading_title %}
+    {% include 'common/rms_admin_card.twig' %}
+  </div>
+</div>
+{{ footer }}

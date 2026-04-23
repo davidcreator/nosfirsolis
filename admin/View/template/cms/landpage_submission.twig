@@ -1,0 +1,269 @@
+{{ header }}{{ column_left }}
+<div id="content" data-testid="admin-landpage-submissions-page">
+  {% set rms_actions = [] %}
+  {% if export_csv %}
+    {% set rms_actions = rms_actions|merge([
+      {
+        href: export_csv,
+        class: 'btn btn-success',
+        icon: 'fa-solid fa-download',
+        text: button_export_csv,
+        testid: 'admin-landpage-submissions-export'
+      }
+    ]) %}
+  {% endif %}
+  {% if has_filters %}
+    {% set rms_actions = rms_actions|merge([
+      {
+        href: clear,
+        class: 'btn btn-light',
+        icon: 'fa-solid fa-eraser',
+        text: button_clear,
+        testid: 'admin-landpage-submissions-clear'
+      }
+    ]) %}
+  {% endif %}
+  {% include 'common/rms_page_header.twig' with {
+    rms_heading_title: heading_title,
+    rms_breadcrumbs: breadcrumbs,
+    rms_actions: rms_actions
+  } %}
+  <div class="container-fluid">
+    {% if success %}
+      {% set rms_alert_class = 'alert alert-success' %}
+      {% set rms_alert_icon = 'fa-solid fa-circle-check' %}
+      {% set rms_alert_text = success %}
+      {% include 'common/rms_alert.twig' %}
+    {% endif %}
+
+    {% set rms_filter_body %}
+      <form action="{{ filter_action }}" method="get" class="row g-3 align-items-end" data-testid="admin-landpage-submissions-filter-form">
+        <input type="hidden" name="user_token" value="{{ user_token }}" />
+        <div class="col-md-4 col-xl-3">
+          <label class="form-label" for="input-filter-page">{{ text_filter_page }}</label>
+          <select name="filter_page_id" id="input-filter-page" class="form-select" data-testid="admin-landpage-submissions-filter-page">
+            <option value="0">{{ text_all_pages }}</option>
+            {% for page_option in pages %}
+              <option value="{{ page_option.page_id }}" {{ page_option.page_id == filter_page_id ? 'selected' : '' }}>{{ page_option.title }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3 col-xl-2">
+          <label class="form-label" for="input-filter-status">{{ text_filter_status }}</label>
+          <select name="filter_status" id="input-filter-status" class="form-select" data-testid="admin-landpage-submissions-filter-status">
+            <option value="">{{ text_all_statuses }}</option>
+            {% for status_value, status_label in statuses %}
+              <option value="{{ status_value }}" {{ status_value == filter_status ? 'selected' : '' }}>{{ status_label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2 col-xl-2">
+          <label class="form-label" for="input-filter-date-from">{{ text_filter_date_from }}</label>
+          <input type="date" name="filter_date_from" value="{{ filter_date_from }}" id="input-filter-date-from" class="form-control" data-testid="admin-landpage-submissions-filter-date-from" />
+        </div>
+        <div class="col-md-2 col-xl-2">
+          <label class="form-label" for="input-filter-date-to">{{ text_filter_date_to }}</label>
+          <input type="date" name="filter_date_to" value="{{ filter_date_to }}" id="input-filter-date-to" class="form-control" data-testid="admin-landpage-submissions-filter-date-to" />
+        </div>
+        <div class="col-md-auto">
+          <button type="submit" class="btn btn-primary" data-testid="admin-landpage-submissions-filter-submit">
+            <i class="fa-solid fa-filter"></i> {{ text_filters }}
+          </button>
+        </div>
+        <div class="col-md-auto">
+          <a href="{{ clear }}" class="btn btn-outline-secondary" data-testid="admin-landpage-submissions-filter-clear">
+            <i class="fa-solid fa-eraser"></i> {{ button_clear }}
+          </a>
+        </div>
+      </form>
+    {% endset %}
+    {% include 'common/rms_admin_card.twig' with {
+      rms_card_icon: 'fa-solid fa-filter',
+      rms_card_title: text_filters,
+      rms_card_body: rms_filter_body
+    } %}
+
+    {% if summary_cards %}
+      {% set rms_summary_body %}
+        <div class="row g-3" data-testid="admin-landpage-submissions-summary">
+          {% for summary_card in summary_cards %}
+            <div class="col-12 col-md-6 col-xl">
+              <a href="{{ summary_card.href }}" class="text-decoration-none text-reset d-block" data-testid="admin-landpage-submissions-summary-card">
+                {% include 'common/rms_metric_tile.twig' with {
+                  rms_metric_class: summary_card.metric_class,
+                  rms_metric_label: summary_card.label,
+                  rms_metric_value: summary_card.value,
+                  rms_metric_value_class: 'display-6 mb-0'
+                } %}
+              </a>
+            </div>
+          {% endfor %}
+        </div>
+      {% endset %}
+      {% include 'common/rms_admin_card.twig' with {
+        rms_card_icon: 'fa-solid fa-chart-column',
+        rms_card_title: text_submission_summary,
+        rms_card_body: rms_summary_body
+      } %}
+    {% endif %}
+
+    {% set rms_campaign_body %}
+      <div class="rms-admin-table-responsive">
+        <table class="table table-bordered table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th>{{ column_campaign }}</th>
+              <th>{{ column_source }}</th>
+              <th>{{ column_medium }}</th>
+              <th>{{ column_total }}</th>
+              <th>{{ column_converted }}</th>
+              <th>{{ column_conversion_rate }}</th>
+              <th>{{ column_last_submission }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if campaign_summary %}
+              {% for campaign in campaign_summary %}
+                <tr data-testid="admin-landpage-submissions-campaign-row">
+                  <td>
+                    <div class="fw-semibold">{{ campaign.campaign_label }}</div>
+                  </td>
+                  <td>{{ campaign.source_label }}</td>
+                  <td>{{ campaign.medium_label }}</td>
+                  <td>{{ campaign.total }}</td>
+                  <td>{{ campaign.converted }}</td>
+                  <td>{{ campaign.conversion_rate_label }}</td>
+                  <td>{{ campaign.last_created_at ?: '-' }}</td>
+                </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="7">
+                  {% set rms_empty_icon = 'fa-solid fa-chart-line' %}
+                  {% set rms_empty_text = text_no_results %}
+                  {% include 'common/rms_empty_state.twig' %}
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    {% endset %}
+    {% include 'common/rms_admin_card.twig' with {
+      rms_card_icon: 'fa-solid fa-bullhorn',
+      rms_card_title: text_submission_campaigns,
+      rms_card_body: rms_campaign_body
+    } %}
+
+    {% set rms_card_body %}
+      <p class="text-muted" data-testid="admin-landpage-submissions-intro">{{ text_submissions_intro }}</p>
+      <div class="rms-admin-table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+          <thead>
+            <tr>
+              <th>{{ column_page }}</th>
+              <th>{{ column_name }}</th>
+              <th>{{ column_email }}</th>
+              <th>{{ column_phone }}</th>
+              <th>{{ column_status }}</th>
+              <th>{{ column_campaign }}</th>
+              <th>{{ column_source }}</th>
+              <th>{{ column_date }}</th>
+              <th class="text-end">{{ column_action }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if submissions %}
+              {% for submission in submissions %}
+                <tr data-testid="admin-landpage-submission-row" data-submission-id="{{ submission.submission_id }}">
+                  <td>
+                    <div class="fw-semibold">{{ submission.page_title ?: ('#' ~ submission.page_id) }}</div>
+                    <div class="small text-muted">#{{ submission.page_id }}</div>
+                  </td>
+                  <td>
+                    <div>{{ submission.name ?: '-' }}</div>
+                    <details class="mt-2">
+                      <summary>{{ text_submission_details }}</summary>
+                      {% if submission.payload_pretty %}
+                        <pre class="mt-2 mb-0" style="white-space: pre-wrap;">{{ submission.payload_pretty }}</pre>
+                      {% else %}
+                        <div class="small text-muted mt-2">{{ text_payload_empty }}</div>
+                      {% endif %}
+                    </details>
+                  </td>
+                  <td>
+                    {% if submission.email %}
+                      <a href="mailto:{{ submission.email }}">{{ submission.email }}</a>
+                    {% else %}
+                      -
+                    {% endif %}
+                  </td>
+                  <td>{{ submission.phone ?: '-' }}</td>
+                  <td>
+                    <span class="rms-status-badge {{ submission.status_class }}">{{ submission.status_label }}</span>
+                  </td>
+                  <td>
+                    {% if submission.campaign %}
+                      <div class="fw-semibold">{{ submission.campaign }}</div>
+                    {% else %}
+                      <div>-</div>
+                    {% endif %}
+                    {% if submission.medium %}
+                      <div class="small text-muted">{{ submission.medium }}</div>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if submission.source %}
+                      <div>{{ submission.source }}</div>
+                    {% elseif submission.submitted_from %}
+                      <div><code>{{ submission.submitted_from }}</code></div>
+                    {% else %}
+                      <div>-</div>
+                    {% endif %}
+                    {% if submission.referer %}
+                      <div class="small text-muted text-break">{{ submission.referer }}</div>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <div>{{ submission.created_at }}</div>
+                    {% if submission.updated_at %}
+                      <div class="small text-muted">{{ submission.updated_at }}</div>
+                    {% endif %}
+                  </td>
+                  <td class="text-end">
+                    <a href="{{ submission.edit }}" class="btn btn-outline-primary btn-sm" title="{{ button_edit }}" data-testid="admin-landpage-submission-edit">
+                      <i class="fa-solid fa-pen"></i>
+                    </a>
+                    {% if submission.page_edit %}
+                      <a href="{{ submission.page_edit }}" class="btn btn-outline-secondary btn-sm" title="{{ button_open_page }}" data-testid="admin-landpage-submission-open-page">
+                        <i class="fa-solid fa-up-right-from-square"></i>
+                      </a>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="9">
+                  {% set rms_empty_icon = 'fa-solid fa-inbox' %}
+                  {% set rms_empty_text = text_no_results %}
+                  {% include 'common/rms_empty_state.twig' %}
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mt-3">
+        <div class="text-muted" data-testid="admin-landpage-submissions-results">{{ results }}</div>
+        <div data-testid="admin-landpage-submissions-pagination">{{ pagination }}</div>
+      </div>
+    {% endset %}
+    {% include 'common/rms_admin_card.twig' with {
+      rms_card_icon: 'fa-solid fa-inbox',
+      rms_card_title: text_submissions,
+      rms_card_body: rms_card_body
+    } %}
+  </div>
+</div>
+{{ footer }}

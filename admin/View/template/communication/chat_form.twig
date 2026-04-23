@@ -1,0 +1,66 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end">
+        <button type="submit" form="form-chat" data-bs-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa-solid fa-save"></i></button>
+        <a href="{{ cancel }}" data-bs-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-light"><i class="fa-solid fa-reply"></i></a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    <div class="card">
+      <div class="card-header"><i class="fa-solid fa-pencil"></i> {{ text_form }}</div>
+      <div class="card-body">
+        <form action="{{ action }}" method="post" id="form-chat">
+          <div class="row mb-3">
+            <label class="col-sm-2 col-form-label">{{ entry_user_type }}</label>
+            <div class="col-sm-10">
+              <select name="participant_type" id="input-user-type" class="form-select">
+                <option value="user">{{ text_user }}</option>
+                <option value="customer">{{ text_customer }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label class="col-sm-2 col-form-label">{{ entry_participant }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="participant" value="" placeholder="{{ entry_participant }}" id="input-participant" class="form-control" autocomplete="off" />
+              <input type="hidden" name="participant_id" value="" id="input-participant-id" />
+              <div id="participant-list" class="form-control overflow-auto" style="height: 150px; display: none;"></div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/javascript">
+$('#input-participant').autocomplete({
+    'source': function(request, response) {
+        $.ajax({
+            url: 'index.php?route=communication/chat.autocomplete&user_token={{ user_token }}&user_type=' + $('#input-user-type').val() + '&filter_name=' +  encodeURIComponent(request),
+            dataType: 'json',
+            success: function(json) {
+                response($.map(json, function(item) {
+                    return {
+                        label: item['name'],
+                        value: item['id']
+                    }
+                }));
+            }
+        });
+    },
+    'select': function(item) {
+        $('#input-participant').val(item['label']);
+        $('#input-participant-id').val(item['value']);
+    }
+});
+</script>
+{{ footer }}
