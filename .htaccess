@@ -1,0 +1,18 @@
+RewriteEngine On
+
+# Protege arquivos e diretorios internos contra acesso HTTP direto
+RewriteRule ^system/ - [F,L,NC]
+RewriteRule ^config\.php$ - [F,L,NC]
+RewriteRule ^\.env(?:\.example)?$ - [F,L,NC]
+RewriteRule ^install/sql/ - [F,L,NC]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [L,QSA]
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "geolocation=(), camera=(), microphone=()"
+</IfModule>

@@ -43,9 +43,10 @@ Indice geral: [`docs/README.md`](docs/README.md)
 6. [`docs/banco-de-dados.md`](docs/banco-de-dados.md) - tabelas, relacionamentos e enums
 7. [`docs/instalacao-configuracao-operacao.md`](docs/instalacao-configuracao-operacao.md) - instalacao, configuracao e rotina operacional
 8. [`docs/integracoes-automacoes-e-manutencao.md`](docs/integracoes-automacoes-e-manutencao.md) - passo a passo das integracoes, operacao e manutencao futura
-9. [`docs/plano-comercial-e-monetizacao.md`](docs/plano-comercial-e-monetizacao.md) - plano de negocios completo com monetizacao, super admin, planos e pagamentos
-10. [`docs/seguranca-e-sanitizacao-producao.md`](docs/seguranca-e-sanitizacao-producao.md) - bateria de testes de seguranca, endurecimentos aplicados e checklist para producao
-11. [`docs/deploy-producao-apache-nginx-env.md`](docs/deploy-producao-apache-nginx-env.md) - roteiro pronto de deploy com variaveis de ambiente no host (Apache/Nginx)
+9. [`docs/integracao-wordpress.md`](docs/integracao-wordpress.md) - guia tecnico completo para integrar publicacao do Solis com WordPress, com analise sobre plugin dedicado
+10. [`docs/plano-comercial-e-monetizacao.md`](docs/plano-comercial-e-monetizacao.md) - plano de negocios completo com monetizacao, super admin, planos e pagamentos
+11. [`docs/seguranca-e-sanitizacao-producao.md`](docs/seguranca-e-sanitizacao-producao.md) - bateria de testes de seguranca, endurecimentos aplicados e checklist para producao
+12. [`docs/deploy-producao-apache-nginx-env.md`](docs/deploy-producao-apache-nginx-env.md) - roteiro pronto de deploy com variaveis de ambiente no host (Apache/Nginx)
 
 ## Fluxo Rapido De Operacao
 
