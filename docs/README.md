@@ -12,10 +12,11 @@ Este diretorio concentra a documentacao funcional e tecnica do Solis dentro do e
 6. [Banco de Dados](banco-de-dados.md)
 7. [Instalacao, Configuracao e Operacao](instalacao-configuracao-operacao.md)
 8. [Integracoes, Automacoes e Manutencao](integracoes-automacoes-e-manutencao.md)
-9. [Plano Comercial e Monetizacao](plano-comercial-e-monetizacao.md)
-10. [Seguranca e Sanitizacao para Producao](seguranca-e-sanitizacao-producao.md)
-11. [Deploy Producao com Apache e Nginx](deploy-producao-apache-nginx-env.md)
-12. [Changelog](CHANGELOG.md)
+9. [Integracao com WordPress](integracao-wordpress.md)
+10. [Plano Comercial e Monetizacao](plano-comercial-e-monetizacao.md)
+11. [Seguranca e Sanitizacao para Producao](seguranca-e-sanitizacao-producao.md)
+12. [Deploy Producao com Apache e Nginx](deploy-producao-apache-nginx-env.md)
+13. [Changelog](CHANGELOG.md)
 
 ## Objetivo Deste Pacote
 
