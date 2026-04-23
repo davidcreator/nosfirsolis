@@ -20,6 +20,8 @@ return [
     'common.context_seasonal' => 'Sazonal',
     'common.feature_disabled_message' => 'Este recurso esta desabilitado por feature flag.',
     'common.feature_disabled_title' => 'Recurso indisponivel',
+    'common.flash_language_invalid' => 'Idioma invalido selecionado.',
+    'common.flash_language_updated' => 'Idioma atualizado com sucesso.',
     'common.flash_invalid_request' => 'Requisicao invalida.',
     'common.no' => 'Nao',
     'common.option_select' => 'Selecione',

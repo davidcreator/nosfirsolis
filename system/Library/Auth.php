@@ -7,9 +7,12 @@ use System\Library\SecurityService;
 
 class Auth
 {
+    private const SUPPORTED_LANGUAGE_CODES = ['en-us', 'pt-br'];
+
     private ?array $user = null;
     private string $lastErrorCode = '';
     private string $lastErrorMessage = '';
+    private ?bool $languageColumnAvailable = null;
 
     public function __construct(private readonly Registry $registry, private readonly string $area)
     {
@@ -45,6 +48,9 @@ class Auth
                 LIMIT 1';
 
         $this->user = $db->fetch($sql, ['id' => $userId]);
+        if (is_array($this->user)) {
+            $this->syncSessionLanguageFromUser($this->user);
+        }
 
         return $this->user;
     }
@@ -101,6 +107,7 @@ class Auth
         $session->set('user_id', (int) $user['id']);
         $session->set('session_fingerprint', $this->sessionFingerprint((int) $user['id']));
         $session->set('session_started_at', time());
+        $session->set('language_code', $this->resolveUserLanguageCode($user));
 
         $this->security()->registerLoginAttempt($this->area, $email, true, (int) $user['id'], 'login_success');
         $this->security()->audit('login_success', 'info', (int) $user['id'], $this->area, [
@@ -126,6 +133,7 @@ class Auth
         $session->remove('user_id');
         $session->remove('session_fingerprint');
         $session->remove('session_started_at');
+        $session->remove('language_code');
         $this->user = null;
     }
 
@@ -150,6 +158,42 @@ class Auth
         }
 
         return in_array($permission, $permissions, true);
+    }
+
+    public function supportedLanguageCodes(): array
+    {
+        return self::SUPPORTED_LANGUAGE_CODES;
+    }
+
+    public function updateLanguagePreference(string $languageCode): bool
+    {
+        $normalized = $this->normalizeLanguageCode($languageCode);
+        if ($normalized === null) {
+            return false;
+        }
+
+        $session = $this->registry->get('session');
+        $session->set('language_code', $normalized);
+
+        $user = $this->user();
+        if (!$user) {
+            return true;
+        }
+
+        $db = $this->registry->get('db');
+        if ($db && $db->connected() && $this->usersLanguageColumnAvailable()) {
+            try {
+                $db->update('users', [
+                    'language_code' => $normalized,
+                    'updated_at' => date('Y-m-d H:i:s'),
+                ], 'id = :id', ['id' => (int) $user['id']]);
+                $this->user['language_code'] = $normalized;
+            } catch (\Throwable) {
+                // Mantem fallback em sessao quando persistencia falhar.
+            }
+        }
+
+        return true;
     }
 
     public function lastErrorCode(): string
@@ -218,6 +262,7 @@ class Auth
         $session->remove('user_id');
         $session->remove('session_fingerprint');
         $session->remove('session_started_at');
+        $session->remove('language_code');
         $this->user = null;
     }
 
@@ -253,6 +298,69 @@ class Auth
         }
 
         return false;
+    }
+
+    private function syncSessionLanguageFromUser(array $user): void
+    {
+        $session = $this->registry->get('session');
+        $session->set('language_code', $this->resolveUserLanguageCode($user));
+    }
+
+    private function resolveUserLanguageCode(array $user): string
+    {
+        $normalized = $this->normalizeLanguageCode((string) ($user['language_code'] ?? ''));
+        if ($normalized !== null) {
+            return $normalized;
+        }
+
+        return $this->defaultLanguageCode();
+    }
+
+    private function defaultLanguageCode(): string
+    {
+        $config = $this->registry->get('config');
+        $configured = is_object($config) && method_exists($config, 'get')
+            ? (string) $config->get('app.default_language', 'en-us')
+            : 'en-us';
+
+        return $this->normalizeLanguageCode($configured) ?? 'en-us';
+    }
+
+    private function normalizeLanguageCode(string $languageCode): ?string
+    {
+        $languageCode = strtolower(trim($languageCode));
+        $languageCode = str_replace('_', '-', $languageCode);
+
+        return in_array($languageCode, self::SUPPORTED_LANGUAGE_CODES, true) ? $languageCode : null;
+    }
+
+    private function usersLanguageColumnAvailable(): bool
+    {
+        if ($this->languageColumnAvailable !== null) {
+            return $this->languageColumnAvailable;
+        }
+
+        $db = $this->registry->get('db');
+        if (!$db || !$db->connected()) {
+            $this->languageColumnAvailable = false;
+            return false;
+        }
+
+        try {
+            $column = $db->fetch("SHOW COLUMNS FROM users LIKE 'language_code'");
+            if ($column) {
+                $this->languageColumnAvailable = true;
+                return true;
+            }
+
+            $db->execute("ALTER TABLE users ADD COLUMN language_code VARCHAR(10) NOT NULL DEFAULT 'en-us' AFTER avatar");
+            $column = $db->fetch("SHOW COLUMNS FROM users LIKE 'language_code'");
+            $this->languageColumnAvailable = (bool) $column;
+            return $this->languageColumnAvailable;
+        } catch (\Throwable) {
+            $this->languageColumnAvailable = false;
+            return false;
+        }
     }
 
     private function accessDeniedMessage(): string

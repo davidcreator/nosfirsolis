@@ -13,6 +13,8 @@ return [
     'common.auth_too_many_attempts' => 'Too many attempts detected. Try again in about {minutes} minute(s).',
     'common.feature_disabled_message' => 'This feature is disabled by feature flag.',
     'common.feature_disabled_title' => 'Feature unavailable',
+    'common.flash_language_invalid' => 'Invalid selected language.',
+    'common.flash_language_updated' => 'Language updated successfully.',
     'common.flash_invalid_request' => 'Invalid request.',
     'common.router_action_not_found' => 'Action not found: {action}',
     'common.router_controller_not_found' => 'Controller not found: {controller}',

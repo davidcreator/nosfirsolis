@@ -13,6 +13,8 @@ return [
     'common.auth_too_many_attempts' => 'Muitas tentativas detectadas. Tente novamente em aproximadamente {minutes} minuto(s).',
     'common.feature_disabled_message' => 'Este recurso esta desabilitado por feature flag.',
     'common.feature_disabled_title' => 'Recurso indisponivel',
+    'common.flash_language_invalid' => 'Idioma invalido selecionado.',
+    'common.flash_language_updated' => 'Idioma atualizado com sucesso.',
     'common.flash_invalid_request' => 'Requisicao invalida.',
     'common.router_action_not_found' => 'Acao nao encontrada: {action}',
     'common.router_controller_not_found' => 'Controller nao encontrada: {controller}',

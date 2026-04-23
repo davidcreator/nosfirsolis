@@ -184,8 +184,8 @@ class InstallerModel extends Model
     {
         $groupId = $this->resolveAdminGroup($pdo);
 
-        $sql = 'INSERT INTO users (user_group_id, name, email, password_hash, status, created_at, updated_at)
-                VALUES (:user_group_id, :name, :email, :password_hash, 1, NOW(), NOW())';
+        $sql = 'INSERT INTO users (user_group_id, name, email, password_hash, language_code, status, created_at, updated_at)
+                VALUES (:user_group_id, :name, :email, :password_hash, :language_code, 1, NOW(), NOW())';
 
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
@@ -193,6 +193,7 @@ class InstallerModel extends Model
             'name' => $data['admin_name'],
             'email' => $data['admin_email'],
             'password_hash' => password_hash((string) $data['admin_password'], PASSWORD_DEFAULT),
+            'language_code' => $this->normalizeLanguageCode((string) ($data['language_code'] ?? 'en-us')),
         ]);
     }
 
@@ -343,5 +344,13 @@ class InstallerModel extends Model
         }
 
         return strtr($text, $tokens);
+    }
+
+    private function normalizeLanguageCode(string $code): string
+    {
+        $code = strtolower(trim($code));
+        $code = str_replace('_', '-', $code);
+
+        return in_array($code, ['en-us', 'pt-br'], true) ? $code : 'en-us';
     }
 }

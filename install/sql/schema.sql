@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(190) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     avatar VARCHAR(255) NULL,
+    language_code VARCHAR(10) NOT NULL DEFAULT 'en-us',
     status TINYINT(1) NOT NULL DEFAULT 1,
     last_login_at DATETIME NULL,
     created_at DATETIME NOT NULL,
