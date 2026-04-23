@@ -1,0 +1,86 @@
+{{ header }}
+{{ column_left }}
+<div id="content" data-testid="admin-blog-stats-page">
+  {% set rms_heading_title = heading_title %}
+  {% set rms_breadcrumbs = breadcrumbs %}
+  {% include 'common/rms_page_header.twig' %}
+  <div class="container-fluid">
+    <div class="row g-3 mb-4">
+      <div class="col-md-3">
+        {% set rms_metric_label = text_blog_views %}
+        {% set rms_metric_value_class = 'display-6' %}
+        {% set rms_metric_note_html = '' %}
+        {% set rms_metric_value_html = summary.views %}
+        {% include 'common/rms_metric_tile.twig' %}
+      </div>
+      <div class="col-md-3">
+        {% set rms_metric_label = text_blog_unique_views %}
+        {% set rms_metric_value_class = 'display-6' %}
+        {% set rms_metric_note_html = '' %}
+        {% set rms_metric_value_html = summary.unique_views %}
+        {% include 'common/rms_metric_tile.twig' %}
+      </div>
+      <div class="col-md-3">
+        {% set rms_metric_label = text_blog_likes %}
+        {% set rms_metric_value_class = 'display-6' %}
+        {% set rms_metric_note_html = '' %}
+        {% set rms_metric_value_html = summary.likes %}
+        {% include 'common/rms_metric_tile.twig' %}
+      </div>
+      <div class="col-md-3">
+        {% set rms_metric_label = text_blog_shares %}
+        {% set rms_metric_value_class = 'display-6' %}
+        {% set rms_metric_note_html = '' %}
+        {% set rms_metric_value_html = summary.shares %}
+        {% include 'common/rms_metric_tile.twig' %}
+      </div>
+    </div>
+
+    {% set rms_card_body %}
+      {% if top_posts %}
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover" data-testid="admin-blog-stats-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>{{ column_title }}</th>
+                <th>{{ column_status }}</th>
+                <th>{{ text_blog_views }}</th>
+                <th>{{ text_blog_unique_views }}</th>
+                <th>{{ text_blog_likes }}</th>
+                <th>{{ text_blog_shares }}</th>
+                <th>{{ column_date }}</th>
+              </tr>
+            </thead>
+            <tbody>
+            {% for post in top_posts %}
+              <tr data-testid="admin-blog-stats-row">
+                <td>{{ post.post_id }}</td>
+                <td>{{ post.title }}</td>
+                <td>
+                  <span class="rms-status-badge {{ post.status ? 'bg-success-subtle text-success-emphasis' : 'bg-secondary-subtle text-secondary-emphasis' }}">
+                    {{ post.status ? text_enabled : text_disabled }}
+                  </span>
+                </td>
+                <td>{{ post.views }}</td>
+                <td>{{ post.unique_views }}</td>
+                <td>{{ post.likes }}</td>
+                <td>{{ post.shares }}</td>
+                <td>{{ post.published_at ?: post.date_added }}</td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        {% set rms_empty_icon = 'fa-solid fa-chart-line' %}
+        {% set rms_empty_text = text_no_results %}
+        {% include 'common/rms_empty_state.twig' %}
+      {% endif %}
+    {% endset %}
+    {% set rms_card_icon = 'fa-solid fa-chart-line' %}
+    {% set rms_card_title = text_blog_top_posts %}
+    {% include 'common/rms_admin_card.twig' %}
+  </div>
+</div>
+{{ footer }}

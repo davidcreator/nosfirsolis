@@ -1,0 +1,109 @@
+{{ header }}{{ column_left }}
+<div id="content">
+	<div class="page-header">
+		<div class="container-fluid">
+			<div class="float-end">
+				<a href="{{ add }}" data-bs-toggle="tooltip" title="{{ button_add }}" class="btn btn-primary">
+					<i class="fa-solid fa-plus"></i>
+				</a>
+				<button type="submit" form="form-user-group" formaction="{{ delete }}" data-bs-toggle="tooltip" title="{{ button_delete }}" onclick="return confirm('{{ text_confirm }}');" class="btn btn-danger">
+					<i class="fa-regular fa-trash-can"></i>
+				</button>
+			</div>
+			<h1>{{ heading_title }}</h1>
+			<ol class="breadcrumb">
+				{% for breadcrumb in breadcrumbs %}
+					<li class="breadcrumb-item">
+						{% if breadcrumb.href %}
+							<a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a>
+						{% else %}
+							{{ breadcrumb.text }}
+						{% endif %}
+					</li>
+				{% endfor %}
+			</ol>
+		</div>
+	</div>
+	<div class="container-fluid">
+		<div class="card">
+			<div class="card-header">
+				<i class="fa-solid fa-list"></i> {{ text_list }}
+			</div>
+			<div id="user-group" class="card-body">
+				{{ list }}
+			</div>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript"><!--
+$(document).ready(function() {
+	// Prevenir múltiplos cliques no botão de adicionar
+	$('a[href="{{ add }}"]').on('click', function(e) {
+		var $this = $(this);
+		if ($this.hasClass('disabled')) {
+			e.preventDefault();
+			return false;
+		}
+		$this.addClass('disabled');
+		
+		// Reabilitar após navegação
+		setTimeout(function() {
+			$this.removeClass('disabled');
+		}, 1000);
+	});
+	
+	// Prevenir múltiplos cliques no botão de deletar
+	$('button[formaction="{{ delete }}"]').on('click', function(e) {
+		var $this = $(this);
+		if ($this.hasClass('disabled')) {
+			e.preventDefault();
+			return false;
+		}
+		
+		if (confirm('{{ text_confirm }}')) {
+			$this.addClass('disabled');
+			// Não reabilitar - deixar o form processar
+		} else {
+			e.preventDefault();
+			return false;
+		}
+	});
+});
+
+// Função para carregar conteúdo via AJAX
+$('#user-group').on('click', 'thead a, .pagination a', function (e) {
+    e.preventDefault();
+    
+    var $this = $(this);
+    var url = this.href;
+    
+    // Prevenir múltiplos cliques
+    if ($this.hasClass('loading')) {
+        return false;
+    }
+    
+    $this.addClass('loading');
+    
+    // Mostrar indicador de carregamento
+    $('#user-group').html('<div class="text-center"><i class="fa fa-spinner fa-spin"></i> {{ text_loading }}</div>');
+    
+    // Carregar conteúdo
+    $('#user-group').load(url, function(response, status, xhr) {
+        $this.removeClass('loading');
+        
+        if (status == "error") {
+            $('#user-group').html('<div class="alert alert-danger">{{ text_error_load }}</div>');
+        }
+    });
+});
+
+// Prevenir recarregamento acidental da página
+$(window).on('beforeunload', function() {
+    // Verificar se há operações pendentes
+    if ($('.loading').length > 0 || $('.disabled').length > 0) {
+        return '{{ text_confirm_leave }}';
+    }
+});
+//--></script>
+{{ footer }}

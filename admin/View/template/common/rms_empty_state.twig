@@ -1,0 +1,6 @@
+<div class="rms-empty-state"{% if rms_empty_testid is defined and rms_empty_testid %} data-testid="{{ rms_empty_testid }}"{% endif %}>
+  {% if rms_empty_icon is defined and rms_empty_icon %}
+    <div class="rms-empty-state-icon"><i class="{{ rms_empty_icon }}"></i></div>
+  {% endif %}
+  <div class="rms-empty-state-text">{{ rms_empty_text }}</div>
+</div>

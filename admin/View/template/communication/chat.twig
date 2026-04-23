@@ -1,0 +1,396 @@
+{{ header }}{{ column_left }}
+<link rel="stylesheet" href="view/css/chat/chat.css">
+<div id="content" class="chat-page">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end d-flex gap-2 align-items-center">
+        <div class="input-group" style="max-width: 260px;">
+          <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+          <input type="text" id="chat-search" class="form-control" placeholder="{{ text_search }}">
+        </div>
+        <a href="{{ add }}" data-bs-toggle="tooltip" title="{{ button_add }}" class="btn btn-primary"><i class="fa-solid fa-plus"></i></a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    <div class="chat-wrapper">
+      <div class="chat-sidebar">
+        <div class="chat-list" id="chat-list-container">
+          <div class="text-center p-4"><i class="fa-solid fa-spinner fa-spin"></i> {{ text_loading }}</div>
+        </div>
+      </div>
+
+      <div class="chat-main">
+        {% if current_chat_id %}
+        <div class="chat-main-header">
+          <div class="chat-avatar" id="active-chat-avatar">?</div>
+          <div class="chat-main-info">
+            <span class="chat-main-name" id="active-chat-name">{{ text_loading }}</span>
+            <span class="chat-main-status" id="active-chat-status">{{ text_online }}</span>
+          </div>
+          <div class="chat-main-actions">
+            <button class="btn btn-light btn-sm" type="button"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+          </div>
+        </div>
+
+        <div class="chat-ops-panel">
+          <div class="chat-ops-header">
+            <strong>{{ text_ops_title }}</strong>
+            <span id="chat-meta-feedback" class="chat-meta-feedback"></span>
+          </div>
+
+          {% if supports_operational_meta %}
+          <div class="chat-ops-grid">
+            <div class="chat-ops-field">
+              <label for="chat-status">{{ text_status }}</label>
+              <select id="chat-status" class="form-select form-select-sm">
+                {% for status in chat_statuses %}
+                <option value="{{ status.key }}"{% if status.key == chat_operational_meta.status %} selected{% endif %}>{{ status.label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="chat-ops-field">
+              <label for="chat-priority">{{ text_priority }}</label>
+              <select id="chat-priority" class="form-select form-select-sm">
+                {% for priority in chat_priorities %}
+                <option value="{{ priority.key }}"{% if priority.key == chat_operational_meta.priority %} selected{% endif %}>{{ priority.label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            {% if supports_chat_routing %}
+            <div class="chat-ops-field">
+              <label for="chat-department">{{ text_department }}</label>
+              <select id="chat-department" class="form-select form-select-sm">
+                <option value="0">{{ text_unrouted }}</option>
+                {% for department in chat_departments %}
+                <option value="{{ department.chat_department_id }}"{% if department.chat_department_id == chat_operational_meta.chat_department_id %} selected{% endif %}>{{ department.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="chat-ops-field">
+              <label for="chat-queue">{{ text_queue }}</label>
+              <select id="chat-queue" class="form-select form-select-sm">
+                <option value="0">{{ text_unrouted }}</option>
+                {% for queue in chat_queues %}
+                <option value="{{ queue.chat_queue_id }}" data-department-id="{{ queue.chat_department_id }}"{% if queue.chat_queue_id == chat_operational_meta.chat_queue_id %} selected{% endif %}>{{ queue.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            {% endif %}
+            <div class="chat-ops-field">
+              <label for="chat-assignee">{{ text_assignee }}</label>
+              <select id="chat-assignee" class="form-select form-select-sm">
+                <option value="0">{{ text_unassigned }}</option>
+                {% for agent in chat_agents %}
+                <option value="{{ agent.user_id }}" data-department-ids="{{ agent.department_ids|join(',') }}"{% if agent.user_id == chat_operational_meta.assigned_user_id %} selected{% endif %}>{{ agent.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            {% if supports_chat_tags %}
+            <div class="chat-ops-field chat-ops-field-wide">
+              <label for="chat-tags">{{ text_tags }}</label>
+              <input type="text" id="chat-tags" class="form-control form-control-sm" value="{{ chat_operational_meta.tag_list }}" placeholder="{{ text_tag_placeholder }}">
+              <div class="chat-field-help">{{ text_tag_help }}</div>
+            </div>
+            {% endif %}
+            <div class="chat-ops-actions">
+              <button id="chat-assign-me" type="button" class="btn btn-outline-primary btn-sm">{{ button_assign_me }}</button>
+              <button id="chat-mark-resolved" type="button" class="btn btn-outline-success btn-sm">{{ button_mark_resolved }}</button>
+            </div>
+          </div>
+          <div class="chat-ops-summary">
+            <span class="chat-pill chat-pill-status chat-pill-status-{{ chat_operational_meta.status|replace({'_':'-'}) }}" id="chat-status-pill">{{ text_current_status }}: {{ chat_operational_meta.status_label }}</span>
+            <span class="chat-pill chat-pill-priority chat-pill-priority-{{ chat_operational_meta.priority }}" id="chat-priority-pill">{{ text_current_priority }}: {{ chat_operational_meta.priority_label }}</span>
+            {% if supports_chat_routing %}
+            <span class="chat-pill chat-pill-routing" id="chat-department-pill">{{ text_current_department }}: <span id="chat-department-label">{% if chat_operational_meta.department_name %}{{ chat_operational_meta.department_name }}{% else %}{{ text_unrouted }}{% endif %}</span></span>
+            <span class="chat-pill chat-pill-routing" id="chat-queue-pill">{{ text_current_queue }}: <span id="chat-queue-label">{% if chat_operational_meta.queue_name %}{{ chat_operational_meta.queue_name }}{% else %}{{ text_unrouted }}{% endif %}</span></span>
+            {% endif %}
+            <span class="chat-pill chat-pill-assignee" id="chat-assignee-pill">{{ text_current_assignee }}: <span id="chat-assignee-label">{% if chat_operational_meta.assigned_user_name %}{{ chat_operational_meta.assigned_user_name }}{% else %}{{ text_unassigned }}{% endif %}</span></span>
+            {% if supports_chat_tags %}
+            <span class="chat-pill chat-pill-tags" id="chat-tags-pill">{{ text_current_tags }}: <span id="chat-tags-label">{% if chat_operational_meta.tag_list %}{{ chat_operational_meta.tag_list }}{% else %}-{% endif %}</span></span>
+            {% endif %}
+          </div>
+          <div class="chat-playbook-panel" id="chat-playbook-panel">
+            <div class="chat-playbook-header">
+              <strong>{{ text_playbook_title }}</strong>
+            </div>
+            <div class="chat-playbook-summary" id="chat-playbook-summary">{{ text_playbook_idle }}</div>
+            <div class="chat-playbook-actions" id="chat-playbook-actions"></div>
+          </div>
+          {% if supports_engagement %}
+          <div class="chat-engagement-panel" id="chat-engagement-panel">
+            <div class="chat-engagement-header">
+              <strong>{{ text_engagement_title }}</strong>
+            </div>
+            <div class="chat-engagement-grid">
+              <div class="chat-engagement-card" id="chat-engagement-owner">
+                <span class="chat-engagement-card-label">{{ text_engagement_waiting_on }}</span>
+                <span class="chat-engagement-card-value" data-role="value">{{ text_engagement_wait_none }}</span>
+                <span class="chat-engagement-card-meta" data-role="meta">{{ text_engagement_state_idle }}</span>
+              </div>
+              <div class="chat-engagement-card" id="chat-engagement-wait">
+                <span class="chat-engagement-card-label">{{ text_engagement_wait_time }}</span>
+                <span class="chat-engagement-card-value" data-role="value">{{ text_engagement_no_clock }}</span>
+                <span class="chat-engagement-card-meta" data-role="meta">{{ text_engagement_no_clock }}</span>
+              </div>
+            </div>
+            <div class="chat-engagement-hint" id="chat-engagement-hint">{{ text_engagement_hint_idle }}</div>
+          </div>
+          {% endif %}
+          {% if supports_sla %}
+          <div class="chat-sla-panel" id="chat-sla-panel">
+            <div class="chat-sla-header">
+              <strong>{{ text_sla_title }}</strong>
+            </div>
+            <div class="chat-sla-grid">
+              <div class="chat-sla-card" id="chat-sla-first-response">
+                <span class="chat-sla-card-label">{{ text_sla_first_response }}</span>
+                <span class="chat-sla-card-state" data-role="state">{{ text_sla_no_clock }}</span>
+                <span class="chat-sla-card-time" data-role="time">{{ text_sla_no_clock }}</span>
+              </div>
+              <div class="chat-sla-card" id="chat-sla-resolution">
+                <span class="chat-sla-card-label">{{ text_sla_resolution }}</span>
+                <span class="chat-sla-card-state" data-role="state">{{ text_sla_no_clock }}</span>
+                <span class="chat-sla-card-time" data-role="time">{{ text_sla_no_clock }}</span>
+              </div>
+            </div>
+            <div class="chat-sla-hint" id="chat-sla-hint">{{ text_sla_hint_default }}</div>
+          </div>
+          {% endif %}
+          {% if supports_audit_logs %}
+          <div class="chat-activity-panel" id="chat-activity-panel">
+            <div class="chat-activity-header">
+              <strong>{{ text_activity_title }}</strong>
+            </div>
+            <div id="chat-activity-list">
+              {% if chat_activity %}
+              {% for item in chat_activity %}
+              <div class="chat-activity-item">
+                <div class="chat-activity-summary">{{ item.summary }}</div>
+                <div class="chat-activity-meta">
+                  {% if item.actor_name %}<span>{{ item.actor_name }}</span>{% endif %}
+                  {% if item.actor_name and item.created_at_label %}<span>&bull;</span>{% endif %}
+                  {% if item.created_at_label %}<span>{{ item.created_at_label }}</span>{% endif %}
+                </div>
+              </div>
+              {% endfor %}
+              {% else %}
+              <div class="chat-activity-empty">{{ text_activity_empty }}</div>
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
+          {% else %}
+          <div class="alert alert-warning mb-0">{{ text_operational_unavailable }}</div>
+          {% endif %}
+        </div>
+
+        <div class="chat-messages" id="chat-messages-container">
+          {% for message in chat_messages %}
+          <div class="message {% if message.is_internal_note %}internal-note{% elseif message.is_me %}sent{% else %}received{% endif %}" data-id="{{ message.message_id }}">
+            {% if not message.is_internal_note %}
+            <div class="message-info" style="font-size: 10px; margin-bottom: 2px; opacity: 0.8;">{{ message.sender_name }}</div>
+            {% endif %}
+            {% if message.is_internal_note %}
+            <div class="message-note-label">
+              <i class="fa-solid fa-lock"></i>
+              <span>{{ text_internal_note_label }}</span>
+              <span class="message-note-author">{{ message.sender_name }}</span>
+            </div>
+            <div class="message-content">{{ message.message|e|nl2br }}</div>
+            {% elseif message.is_image %}
+            <div class="message-content message-image"><a href="{{ message.file_url }}" target="_blank" rel="noopener"><img src="{{ message.file_url }}" class="img-fluid" style="max-width: 200px; border-radius: 8px;"></a></div>
+            {% elseif message.is_file %}
+            <div class="message-content message-file"><a href="{{ message.file_url }}" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-file"></i> {{ message.file_name }}</a></div>
+            {% else %}
+            <div class="message-content">{{ message.message }}</div>
+            {% endif %}
+            <div class="message-footer" style="display: flex; align-items: center; justify-content: flex-end; gap: 5px;">
+              <div class="message-time">{{ message.created_at_label }}</div>
+              {% if message.is_me and not message.is_internal_note %}
+              <span class="message-status" style="margin-left: 5px;"><i class="fa-solid {% if message.status == 'read' %}fa-check-double text-primary{% else %}fa-check{% endif %}"></i></span>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="chat-input-area">
+          <div class="chat-composer-tools">
+            <div class="chat-composer-group">
+              <label class="chat-composer-label" for="chat-quick-reply">{{ text_quick_replies }}</label>
+              <div class="input-group input-group-sm">
+                <select id="chat-quick-reply" class="form-select">
+                  <option value="">{{ text_quick_reply_placeholder }}</option>
+                  {% for reply in quick_replies %}
+                  <option value="{{ loop.index0 }}" data-message="{{ reply.message|e('html_attr') }}">{{ reply.label }}</option>
+                  {% endfor %}
+                </select>
+                <button id="chat-quick-reply-apply" type="button" class="btn btn-outline-secondary">{{ button_insert_reply }}</button>
+              </div>
+            </div>
+            {% if supports_internal_notes %}
+            <div class="chat-composer-group chat-composer-group-action">
+              <label class="chat-composer-label">{{ text_internal_notes }}</label>
+              <button id="chat-note-toggle" type="button" class="btn btn-outline-warning btn-sm">{{ button_internal_note }}</button>
+            </div>
+            {% endif %}
+          </div>
+          {% if supports_internal_notes %}
+          <div class="chat-note-panel" id="chat-note-panel" style="display: none;">
+            <div class="chat-note-toolbar">
+              <div class="chat-composer-group">
+                <label class="chat-composer-label" for="chat-mention-user">{{ text_mentions }}</label>
+                <div class="input-group input-group-sm">
+                  <select id="chat-mention-user" class="form-select">
+                    <option value="">{{ text_mention_placeholder }}</option>
+                    {% for agent in chat_agents %}
+                    {% if agent.username %}
+                    <option value="{{ agent.username }}" data-user-id="{{ agent.user_id }}" data-department-ids="{{ agent.department_ids|join(',') }}">@{{ agent.username }} - {{ agent.name }}</option>
+                    {% endif %}
+                    {% endfor %}
+                  </select>
+                  <button id="chat-insert-mention" type="button" class="btn btn-outline-secondary">{{ button_insert_mention }}</button>
+                </div>
+                <div class="chat-field-help">{{ text_mention_help }}</div>
+              </div>
+            </div>
+            <textarea id="chat-note-input" class="form-control" rows="3" placeholder="{{ text_internal_note_placeholder }}"></textarea>
+            <div class="chat-note-actions">
+              <button id="chat-note-send" type="button" class="btn btn-warning btn-sm" onclick="if (window.sendAdminInternalNote) { window.sendAdminInternalNote(); } return false;">{{ button_save_internal_note }}</button>
+            </div>
+          </div>
+          {% endif %}
+          <div class="typing-indicator" style="display: none; font-size: 11px; padding: 5px 0;">{{ text_typing_placeholder }}</div>
+          <div class="chat-input-wrapper">
+            <button class="emoji-toggle" id="chat-emoji-btn" title="{{ text_insert_emoji }}" type="button"><i class="fa-regular fa-face-smile"></i></button>
+            <button class="btn btn-link text-muted p-1" id="chat-attachment-btn" title="{{ text_send_file }}" type="button"><i class="fa-solid fa-paperclip"></i></button>
+            <input type="file" id="chat-file-input" style="display: none;" accept="image/*,.pdf,.doc,.docx,.zip,.rar">
+            <input type="text" id="chat-message-input" placeholder="{{ text_message_placeholder }}" autocomplete="off">
+            <button id="send-message-btn" type="button"><i class="fa-solid fa-paper-plane"></i></button>
+            <div class="emoji-picker" id="emoji-picker">
+              <div class="emoji-grid">
+                {% set emojis = ['&#128512;','&#128513;','&#128514;','&#129315;','&#128522;','&#128525;','&#128536;','&#128526;','&#129321;','&#128519;','&#128546;','&#128557;','&#128545;','&#128077;','&#128078;','&#128591;','&#128079;','&#128588;','&#129309;','&#128170;','&#128293;','&#128175;','&#127881;','&#10024;','&#9989;','&#10060;','&#10084;&#65039;','&#128148;','&#11088;','&#9889;'] %}
+                {% for emoji in emojis %}
+                <button type="button" class="emoji">{{ emoji|raw }}</button>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <div class="chat-empty">
+          <i class="fa-solid fa-comments"></i>
+          <h4>{{ text_empty_title }}</h4>
+          <p>{{ text_empty_subtitle }}</p>
+          <a href="{{ add }}" class="btn btn-primary mt-2">{{ button_add }}</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const current_user_id = {{ current_user_id }};
+  const current_chat_id = {{ current_chat_id }};
+  const current_chat_last_message_id = {{ current_chat_last_message_id }};
+  const user_token = '{{ user_token }}';
+  const adminChatText = {
+    noResults: {{ text_no_results|json_encode|raw }},
+    typingSuffix: {{ text_typing_suffix|json_encode|raw }},
+    onlineNow: {{ text_online_now|json_encode|raw }},
+    away: {{ text_away|json_encode|raw }},
+    offline: {{ text_offline|json_encode|raw }},
+    lastSeenLabel: {{ text_last_seen|json_encode|raw }},
+    presenceUnknown: {{ text_presence_unknown|json_encode|raw }},
+    assignedToPrefix: {{ text_assigned_to_prefix|json_encode|raw }},
+    unassigned: {{ text_unassigned|json_encode|raw }},
+    metaSaved: {{ text_meta_saved|json_encode|raw }},
+    metaSaveError: {{ text_meta_save_error|json_encode|raw }},
+    noteSaved: {{ text_note_saved|json_encode|raw }},
+    noteSaveError: {{ text_note_save_error|json_encode|raw }},
+    noteEmpty: {{ text_note_empty|json_encode|raw }},
+    internalNoteLabel: {{ text_internal_note_label|json_encode|raw }},
+    currentTagsLabel: {{ text_current_tags|json_encode|raw }},
+    currentDepartmentLabel: {{ text_current_department|json_encode|raw }},
+    currentQueueLabel: {{ text_current_queue|json_encode|raw }},
+    meLabel: {{ text_me|json_encode|raw }},
+    unrouted: {{ text_unrouted|json_encode|raw }},
+    playbookTitle: {{ text_playbook_title|json_encode|raw }},
+    playbookIdle: {{ text_playbook_idle|json_encode|raw }},
+    playbookAssign: {{ text_playbook_assign|json_encode|raw }},
+    playbookReply: {{ text_playbook_reply|json_encode|raw }},
+    playbookEscalate: {{ text_playbook_escalate|json_encode|raw }},
+    playbookFollowUp: {{ text_playbook_follow_up|json_encode|raw }},
+    playbookResolved: {{ text_playbook_resolved|json_encode|raw }},
+    playbookFollowUpMessage: {{ text_playbook_follow_up_message|json_encode|raw }},
+    playbookFollowUpDrafted: {{ text_playbook_follow_up_drafted|json_encode|raw }},
+    playbookFocusReplyLabel: {{ button_playbook_focus_reply|json_encode|raw }},
+    playbookDraftFollowUpLabel: {{ button_playbook_draft_follow_up|json_encode|raw }},
+    playbookRaisePriorityLabel: {{ button_playbook_raise_priority|json_encode|raw }},
+    playbookAssignMeLabel: {{ button_playbook_assign_me|json_encode|raw }},
+    playbookMarkResolvedLabel: {{ button_playbook_mark_resolved|json_encode|raw }},
+    engagementTitle: {{ text_engagement_title|json_encode|raw }},
+    engagementWaitingOn: {{ text_engagement_waiting_on|json_encode|raw }},
+    engagementWaitTime: {{ text_engagement_wait_time|json_encode|raw }},
+    engagementWaitNone: {{ text_engagement_wait_none|json_encode|raw }},
+    engagementNoClock: {{ text_engagement_no_clock|json_encode|raw }},
+    engagementSinceLabel: {{ text_engagement_since|json_encode|raw }},
+    engagementStateIdle: {{ text_engagement_state_idle|json_encode|raw }},
+    engagementStateFresh: {{ text_engagement_state_fresh|json_encode|raw }},
+    engagementStateAging: {{ text_engagement_state_aging|json_encode|raw }},
+    engagementStateStale: {{ text_engagement_state_stale|json_encode|raw }},
+    engagementWaitTeam: {{ text_engagement_wait_team|json_encode|raw }},
+    engagementWaitCustomer: {{ text_engagement_wait_customer|json_encode|raw }},
+    engagementWaitTeammate: {{ text_engagement_wait_teammate|json_encode|raw }},
+    engagementHintIdle: {{ text_engagement_hint_idle|json_encode|raw }},
+    engagementHintTeam: {{ text_engagement_hint_team|json_encode|raw }},
+    engagementHintCustomer: {{ text_engagement_hint_customer|json_encode|raw }},
+    engagementHintTeammate: {{ text_engagement_hint_teammate|json_encode|raw }},
+    slaDueAtLabel: {{ text_sla_due_at|json_encode|raw }},
+    slaCompletedAtLabel: {{ text_sla_completed_at|json_encode|raw }},
+    slaNoClock: {{ text_sla_no_clock|json_encode|raw }},
+    slaHintDefault: {{ text_sla_hint_default|json_encode|raw }},
+    slaStateIdle: {{ text_sla_no_clock|json_encode|raw }},
+    slaStateOnTrack: {{ text_sla_state_on_track|json_encode|raw }},
+    slaStateDueSoon: {{ text_sla_state_due_soon|json_encode|raw }},
+    slaStateBreached: {{ text_sla_state_breached|json_encode|raw }},
+    slaStateMet: {{ text_sla_state_met|json_encode|raw }},
+    slaStateMissed: {{ text_sla_state_missed|json_encode|raw }},
+    slaHintReply: {{ text_sla_hint_reply|json_encode|raw }},
+    slaHintResolution: {{ text_sla_hint_resolution|json_encode|raw }},
+    slaHintFollowUp: {{ text_sla_hint_follow_up|json_encode|raw }},
+    slaHintResolved: {{ text_sla_hint_resolved|json_encode|raw }},
+    slaHintReview: {{ text_sla_hint_review|json_encode|raw }},
+    activityEmpty: {{ text_activity_empty|json_encode|raw }},
+    supportsOperationalMeta: {{ supports_operational_meta ? 'true' : 'false' }},
+    supportsChatRouting: {{ supports_chat_routing ? 'true' : 'false' }},
+    supportsInternalNotes: {{ supports_internal_notes ? 'true' : 'false' }},
+    supportsChatTags: {{ supports_chat_tags ? 'true' : 'false' }},
+    supportsSla: {{ supports_sla ? 'true' : 'false' }},
+    supportsAuditLogs: {{ supports_audit_logs ? 'true' : 'false' }},
+    supportsPresence: {{ supports_presence ? 'true' : 'false' }},
+    supportsEngagement: {{ supports_engagement ? 'true' : 'false' }}
+  };
+  const currentChatListFilters = {{ chat_list_filters|default({})|json_encode|raw }};
+  const currentChatMeta = {{ chat_operational_meta|json_encode|raw }};
+  const currentChatRouting = {
+    departments: {{ chat_departments|default([])|json_encode|raw }},
+    queues: {{ chat_queues|default([])|json_encode|raw }}
+  };
+  const currentChatAgents = {{ chat_agents|default([])|json_encode|raw }};
+  window.current_chat_id = current_chat_id;
+  window.current_chat_last_message_id = current_chat_last_message_id;
+  window.currentChatMeta = currentChatMeta;
+  window.currentChatRouting = currentChatRouting;
+  window.currentChatAgents = currentChatAgents;
+</script>
+<script src="view/js/chat/chat-ui.js"></script>
+<script src="view/js/chat/chat.js"></script>
+{{ footer }}

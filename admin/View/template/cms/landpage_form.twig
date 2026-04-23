@@ -1,0 +1,247 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  {% set rms_actions = [
+    {
+      tag: 'button',
+      type: 'submit',
+      form: 'form-page',
+      class: 'btn btn-primary',
+      title: button_save,
+      icon: 'fa-solid fa-floppy-disk',
+      text: button_save
+    },
+    {
+      href: cancel,
+      class: 'btn btn-light',
+      title: button_cancel,
+      icon: 'fa-solid fa-reply',
+      text: button_cancel
+    }
+  ] %}
+  {% set rms_heading_title = heading_title %}
+  {% set rms_breadcrumbs = breadcrumbs %}
+  {% include 'common/rms_page_header.twig' %}
+  <div class="container-fluid">
+    {% if errors.warning %}
+      {% set rms_alert_class = 'alert alert-danger' %}
+      {% set rms_alert_icon = 'fa-solid fa-circle-exclamation' %}
+      {% set rms_alert_text = errors.warning %}
+      {% include 'common/rms_alert.twig' %}
+    {% endif %}
+    {% set rms_card_body %}
+      <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-page" data-testid="admin-landpage-form">
+        <div class="row g-4">
+          <div class="col-lg-8">
+            <div class="row mb-3 required">
+              <label class="col-sm-3 col-form-label" for="input-title">{{ entry_title }}</label>
+              <div class="col-sm-9">
+                <input type="text" name="title" value="{{ page.title }}" id="input-title" class="form-control" data-testid="admin-landpage-title" />
+                {% if errors.title %}<div class="text-danger">{{ errors.title }}</div>{% endif %}
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-sm-3 col-form-label" for="input-slug">{{ entry_slug }}</label>
+              <div class="col-sm-9">
+                <input type="text" name="slug" value="{{ page.slug }}" id="input-slug" class="form-control" data-testid="admin-landpage-slug" />
+              </div>
+            </div>
+            <div class="row mb-3 editor-html-panel">
+              <label class="col-sm-3 col-form-label" for="input-html">{{ entry_html }}</label>
+              <div class="col-sm-9">
+                <div class="card rms-admin-card mb-3">
+                  <div class="card-body">
+                    <div class="row g-3 align-items-end">
+                      <div class="col-md-7">
+                        <label class="form-label">{{ text_snippet }}</label>
+                        <small class="text-muted d-block">{{ text_snippet_help }}</small>
+                      </div>
+                      <div class="col-md-3">
+                        <select id="snippet-select" class="form-select">
+                          <option value="hero">Hero</option>
+                          <option value="features">Features</option>
+                          <option value="cta">CTA</option>
+                          <option value="form">Form</option>
+                        </select>
+                      </div>
+                      <div class="col-md-2">
+                        <button type="button" id="btn-insert-snippet" class="btn btn-outline-primary w-100">{{ button_insert_snippet }}</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <textarea name="html" id="input-html" rows="16" data-rms-toggle="ckeditor" data-lang="{{ ckeditor }}" class="form-control">{{ page.html }}</textarea>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-sm-3 col-form-label" for="input-custom-css">{{ entry_custom_css }}</label>
+              <div class="col-sm-9">
+                <textarea name="custom_css" id="input-custom-css" rows="5" class="form-control" placeholder="/* CSS da pagina */">{{ page.custom_css }}</textarea>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-sm-3 col-form-label" for="input-meta-title">{{ entry_meta_title }}</label>
+              <div class="col-sm-9">
+                <input type="text" name="meta_title" value="{{ page.meta_title }}" id="input-meta-title" class="form-control"/>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-sm-3 col-form-label" for="input-meta-description">{{ entry_meta_description }}</label>
+              <div class="col-sm-9">
+                <textarea name="meta_description" id="input-meta-description" rows="3" class="form-control">{{ page.meta_description }}</textarea>
+              </div>
+            </div>
+            <div class="row mb-0">
+              <label class="col-sm-3 col-form-label" for="input-meta-keyword">{{ entry_meta_keyword }}</label>
+              <div class="col-sm-9">
+                <input type="text" name="meta_keyword" value="{{ page.meta_keyword }}" id="input-meta-keyword" class="form-control"/>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-4">
+            <div class="row mb-3">
+              <label class="col-form-label" for="input-editor-mode">{{ entry_editor_mode }}</label>
+              <div>
+                <select name="editor_mode" id="input-editor-mode" class="form-select">
+                  <option value="html" {{ page.editor_mode == 'html' ? 'selected' : '' }}>{{ text_editor_html }}</option>
+                  <option value="builder" {{ page.editor_mode == 'builder' ? 'selected' : '' }}>{{ text_editor_builder }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-form-label" for="input-status">{{ entry_status }}</label>
+              <div>
+                <select name="status" id="input-status" class="form-select" data-testid="admin-landpage-status">
+                  <option value="draft" {{ page.status == 'draft' ? 'selected' : '' }}>{{ text_draft }}</option>
+                  <option value="published" {{ page.status == 'published' ? 'selected' : '' }}>{{ text_published }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-form-label" for="input-template">{{ entry_template }}</label>
+              <div>
+                <select name="template" id="input-template" class="form-select" data-testid="admin-landpage-template">
+                  <option value="default" {{ page.template == 'default' ? 'selected' : '' }}>{{ text_template_default }}</option>
+                  <option value="hero" {{ page.template == 'hero' ? 'selected' : '' }}>{{ text_template_hero }}</option>
+                  <option value="split" {{ page.template == 'split' ? 'selected' : '' }}>{{ text_template_split }}</option>
+                  <option value="lead" {{ page.template == 'lead' ? 'selected' : '' }}>{{ text_template_lead }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-form-label">{{ text_builder_manage }}</label>
+              <div>
+                <div class="card border shadow-sm">
+                  <div class="card-body">
+                    <div class="small text-muted mb-2">{{ text_builder_intro }}</div>
+                    {% if builder_url %}
+                      <a href="{{ builder_url }}" class="btn btn-outline-primary w-100">
+                        <i class="fa-solid fa-up-right-and-down-left-from-center"></i> {{ button_builder }}
+                      </a>
+                      <div class="small text-muted mt-2">{{ text_builder_block_count }}: {{ builder_block_count }}</div>
+                    {% else %}
+                      <div class="small text-muted">{{ text_builder_requires_save }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-form-label">{{ text_submissions }}</label>
+              <div>
+                <div class="card border shadow-sm">
+                  <div class="card-body">
+                    <div class="small text-muted mb-2">{{ text_submissions_intro }}</div>
+                    {% if submissions_url %}
+                      <a href="{{ submissions_url }}" class="btn btn-outline-success w-100">
+                        <i class="fa-solid fa-inbox"></i> {{ button_submissions }}
+                      </a>
+                      <div class="small text-muted mt-2">{{ text_submissions }}: {{ submission_count }}</div>
+                    {% else %}
+                      <div class="small text-muted">{{ text_submissions_intro }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col-12">
+                <input type="hidden" name="is_premium" value="0"/>
+                <div class="rms-form-check-card">
+                  <input class="form-check-input" type="checkbox" name="is_premium" value="1" id="input-is-premium" {{ page.is_premium ? 'checked' : '' }} data-testid="admin-landpage-premium"/>
+                  <label class="form-check-label" for="input-is-premium">{{ entry_is_premium }} - {{ text_enabled }}</label>
+                </div>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-form-label" for="input-price">{{ entry_price }}</label>
+              <div>
+                <input type="text" name="price" value="{{ page.price }}" id="input-price" class="form-control"/>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-form-label" for="input-owner">{{ entry_owner }}</label>
+              <div>
+                <input type="number" name="owner_id" value="{{ page.owner_id }}" id="input-owner" class="form-control" placeholder="ID do responsavel (opcional)"/>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-form-label" for="input-payout-share">{{ entry_payout_share }}</label>
+              <div>
+                <div class="input-group">
+                  <input type="text" name="payout_share" value="{{ page.payout_share }}" id="input-payout-share" class="form-control"/>
+                  <span class="input-group-text">%</span>
+                </div>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-form-label" for="input-published">{{ entry_published_at }}</label>
+              <div>
+                <input type="datetime-local" name="published_at" value="{{ page.published_at }}" id="input-published" class="form-control"/>
+              </div>
+            </div>
+            <div class="row mb-0">
+              <label class="col-form-label" for="input-image">{{ entry_featured_image }}</label>
+              <div>
+                <div class="d-flex flex-column gap-3">
+                  <a href="" id="thumb-image" data-rms-toggle="image" data-rms-target="#input-image" data-rms-thumb="#thumb-image" class="img-thumbnail">
+                    <img src="{{ thumb }}" alt="" title="" data-placeholder="{{ placeholder }}" />
+                  </a>
+                  <div class="d-flex gap-2">
+                    <button type="button" data-rms-toggle="image" data-rms-target="#input-image" data-rms-thumb="#thumb-image" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-pen"></i> {{ button_edit }}</button>
+                    <button type="button" data-rms-toggle="clear" data-rms-target="#input-image" data-rms-thumb="#thumb-image" class="btn btn-outline-secondary btn-sm"><i class="fa-regular fa-trash-can"></i> {{ button_clear }}</button>
+                  </div>
+                </div>
+                <input type="hidden" name="featured_image" value="{{ page.featured_image }}" id="input-image"/>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    {% endset %}
+    {% set rms_card_icon = 'fa-solid fa-layer-group' %}
+    {% set rms_card_title = text_form %}
+    {% include 'common/rms_admin_card.twig' %}
+  </div>
+</div>
+<script type="text/javascript">
+  const snippets = {{ snippets|json_encode(constant('JSON_UNESCAPED_SLASHES')) }};
+  const toggleEditorMode = function () {
+    const mode = $('#input-editor-mode').val();
+    $('.editor-html-panel').toggle(mode === 'html');
+  };
+  $('#btn-insert-snippet').on('click', function () {
+    const key = $('#snippet-select').val();
+    const html = snippets[key] || '';
+    const editor = $('#input-html');
+    if (editor.data('ckeditorInstance')) {
+      editor.data('ckeditorInstance').insertHtml(html);
+    } else {
+      editor.val(editor.val() + '\n\n' + html);
+    }
+  });
+  $('textarea[data-rms-toggle=\'ckeditor\']').each(function(){ $(this).ckeditor({language:'{{ ckeditor }}'}); });
+  $('#input-editor-mode').on('change', toggleEditorMode);
+  toggleEditorMode();
+</script>
+{{ footer }}

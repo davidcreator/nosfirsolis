@@ -1,0 +1,11 @@
+{% if rms_event_status == 'success' %}
+  <span class="label label-success"{% if rms_event_status_testid is defined and rms_event_status_testid %} data-testid="{{ rms_event_status_testid }}"{% endif %}>{{ text_status_success }}</span>
+{% elseif rms_event_status == 'noop' %}
+  <span class="label label-warning"{% if rms_event_status_testid is defined and rms_event_status_testid %} data-testid="{{ rms_event_status_testid }}"{% endif %}>{{ text_status_noop }}</span>
+{% elseif rms_event_status == 'failed' %}
+  <span class="label label-danger"{% if rms_event_status_testid is defined and rms_event_status_testid %} data-testid="{{ rms_event_status_testid }}"{% endif %}>{{ text_status_failed }}</span>
+{% elseif rms_event_status == 'pending' %}
+  <span class="label label-info"{% if rms_event_status_testid is defined and rms_event_status_testid %} data-testid="{{ rms_event_status_testid }}"{% endif %}>{{ text_status_pending }}</span>
+{% else %}
+  <span class="label label-default"{% if rms_event_status_testid is defined and rms_event_status_testid %} data-testid="{{ rms_event_status_testid }}"{% endif %}>{{ rms_event_status }}</span>
+{% endif %}

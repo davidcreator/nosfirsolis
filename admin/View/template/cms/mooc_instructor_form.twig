@@ -1,0 +1,182 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  {% set rms_actions = [
+    {
+      tag: 'button',
+      type: 'submit',
+      form: 'form-instructor',
+      class: 'btn btn-primary',
+      title: button_save,
+      icon: 'fa-solid fa-floppy-disk',
+      text: button_save
+    },
+    {
+      href: cancel,
+      class: 'btn btn-light',
+      title: button_cancel,
+      icon: 'fa-solid fa-reply',
+      text: button_cancel
+    }
+  ] %}
+  {% set rms_heading_title = heading_title %}
+  {% set rms_breadcrumbs = breadcrumbs %}
+  {% include 'common/rms_page_header.twig' %}
+  <div class="container-fluid">
+    {% if success %}
+      {% set rms_alert_class = 'alert alert-success' %}
+      {% set rms_alert_icon = 'fa-solid fa-circle-check' %}
+      {% set rms_alert_text = success %}
+      {% include 'common/rms_alert.twig' %}
+    {% endif %}
+    {% if warning %}
+      {% set rms_alert_class = 'alert alert-warning' %}
+      {% set rms_alert_icon = 'fa-solid fa-triangle-exclamation' %}
+      {% set rms_alert_text = warning %}
+      {% include 'common/rms_alert.twig' %}
+    {% endif %}
+    {% if errors.warning %}
+      {% set rms_alert_class = 'alert alert-danger' %}
+      {% set rms_alert_icon = 'fa-solid fa-circle-exclamation' %}
+      {% set rms_alert_text = errors.warning %}
+      {% include 'common/rms_alert.twig' %}
+    {% endif %}
+    {% set rms_card_body %}
+      <form id="form-instructor" method="post" action="{{ action }}" data-testid="admin-mooc-instructor-form">
+        <div class="row g-4">
+          <div class="col-lg-7">
+            <div class="row mb-3">
+              <label class="col-sm-3 col-form-label">{{ entry_name }}</label>
+              <div class="col-sm-9">
+                <input type="text" name="name" value="{{ instructor.name }}" class="form-control" data-testid="admin-mooc-instructor-name">
+                {% if errors.name %}<div class="text-danger">{{ errors.name }}</div>{% endif %}
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-sm-3 col-form-label">{{ entry_headline }}</label>
+              <div class="col-sm-9">
+                <input type="text" name="headline" value="{{ instructor.headline }}" class="form-control">
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-sm-3 col-form-label">{{ entry_bio }}</label>
+              <div class="col-sm-9">
+                <textarea name="bio" rows="5" class="form-control">{{ instructor.bio }}</textarea>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-sm-3 col-form-label">{{ entry_photo }}</label>
+              <div class="col-sm-9">
+                <input type="text" name="photo" value="{{ instructor.photo }}" class="form-control" placeholder="https://...">
+              </div>
+            </div>
+            <div class="row mb-0">
+              <label class="col-sm-3 col-form-label">{{ entry_user_id }}</label>
+              <div class="col-sm-4">
+                <input type="number" name="user_id" value="{{ instructor.user_id }}" class="form-control">
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-5">
+            <div class="row mb-3">
+              <div class="col-md-12">
+                <label class="form-label">{{ entry_linkedin }}</label>
+                <input type="text" name="linkedin" value="{{ instructor.linkedin }}" class="form-control">
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col-md-12">
+                <label class="form-label">{{ entry_twitter }}</label>
+                <input type="text" name="twitter" value="{{ instructor.twitter }}" class="form-control">
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col-md-12">
+                <label class="form-label">{{ entry_website }}</label>
+                <input type="text" name="website" value="{{ instructor.website }}" class="form-control">
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col-md-12">
+                <label class="form-label">{{ entry_stripe_account }}</label>
+                <input type="text" name="stripe_account_id" value="{{ instructor.stripe_account_id }}" class="form-control" placeholder="acct_xxx">
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col-md-12">
+                <label class="form-label">{{ entry_mp_user }}</label>
+                <input type="text" name="mp_user_id" value="{{ instructor.mp_user_id }}" class="form-control" placeholder="ID Mercado Pago">
+              </div>
+            </div>
+            <div class="row mb-0">
+              <div class="col-md-12">
+                <label class="form-label">{{ entry_payout_share }}</label>
+                <input type="number" step="0.1" min="0" max="100" name="payout_share" value="{{ instructor.payout_share|default(80) }}" class="form-control">
+              </div>
+            </div>
+            <hr class="my-4">
+            <div class="card border shadow-sm">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                  <div>
+                    <h3 class="h6 mb-1">{{ text_mp_marketplace }}</h3>
+                    <p class="text-muted mb-0">{{ text_mp_marketplace_help }}</p>
+                  </div>
+                  <span class="badge bg-light text-dark">{{ marketplace_status_text }}</span>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">{{ text_mp_marketplace_status }}</label>
+                  <input type="text" value="{{ marketplace_status_text }}" class="form-control" readonly>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">{{ text_mp_marketplace_user_id }}</label>
+                  <input type="text" value="{{ instructor.mp_marketplace_user_id|default('') }}" class="form-control" readonly>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">{{ text_mp_marketplace_scope }}</label>
+                  <input type="text" value="{{ instructor.mp_marketplace_scope|default('') }}" class="form-control" readonly>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">{{ text_mp_marketplace_connected_at }}</label>
+                  <input type="text" value="{{ instructor.mp_marketplace_connected_at|default('') }}" class="form-control" readonly>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">{{ text_mp_marketplace_expires_at }}</label>
+                  <input type="text" value="{{ instructor.mp_marketplace_expires_at|default('') }}" class="form-control" readonly>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">{{ text_mp_marketplace_callback }}</label>
+                  <input type="text" value="{{ marketplace_callback_url }}" class="form-control" readonly>
+                </div>
+                {% if instructor.mp_marketplace_last_error %}
+                  <div class="mb-3">
+                    <label class="form-label">{{ text_mp_marketplace_last_error }}</label>
+                    <textarea rows="3" class="form-control" readonly>{{ instructor.mp_marketplace_last_error }}</textarea>
+                  </div>
+                {% endif %}
+
+                {% if not instructor.instructor_id %}
+                  <div class="form-text">{{ text_mp_marketplace_save_first }}</div>
+                {% elseif marketplace_configured %}
+                  <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ marketplace_connect }}" class="btn btn-outline-primary">{{ button_mp_marketplace_connect }}</a>
+                    {% if instructor.mp_marketplace_status == 'connected' or instructor.mp_marketplace_status == 'pending' or instructor.mp_marketplace_status == 'error' %}
+                      <a href="{{ marketplace_disconnect }}" class="btn btn-outline-danger">{{ button_mp_marketplace_disconnect }}</a>
+                    {% endif %}
+                  </div>
+                {% else %}
+                  <div class="form-text">{{ text_mp_marketplace_missing_config }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    {% endset %}
+    {% set rms_card_icon = 'fa-solid fa-user-graduate' %}
+    {% set rms_card_title = text_form %}
+    {% include 'common/rms_admin_card.twig' %}
+  </div>
+</div>
+{{ footer }}

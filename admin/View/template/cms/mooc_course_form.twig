@@ -1,0 +1,133 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  {% set rms_actions = [
+    {
+      tag: 'button',
+      type: 'submit',
+      form: 'form-course',
+      class: 'btn btn-primary',
+      title: button_save,
+      icon: 'fa-solid fa-floppy-disk',
+      text: button_save,
+      testid: 'admin-mooc-course-save'
+    },
+    {
+      href: cancel,
+      class: 'btn btn-light',
+      title: button_cancel,
+      icon: 'fa-solid fa-reply',
+      text: button_cancel
+    }
+  ] %}
+  {% set rms_heading_title = heading_title %}
+  {% set rms_breadcrumbs = breadcrumbs %}
+  {% include 'common/rms_page_header.twig' %}
+  <div class="container-fluid">
+    {% if errors.warning %}
+      {% set rms_alert_class = 'alert alert-danger' %}
+      {% set rms_alert_icon = 'fa-solid fa-circle-exclamation' %}
+      {% set rms_alert_text = errors.warning %}
+      {% include 'common/rms_alert.twig' %}
+    {% endif %}
+    {% set rms_card_body %}
+      <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-course" data-testid="admin-mooc-course-form">
+        <div class="row g-4">
+          <div class="col-lg-8">
+            <div class="row mb-3 required">
+              <label class="col-sm-3 col-form-label" for="input-title">{{ entry_title }}</label>
+              <div class="col-sm-9">
+                <input type="text" name="title" value="{{ course.title }}" id="input-title" class="form-control" data-testid="admin-mooc-course-title" />
+                {% if errors.title %}<div class="text-danger">{{ errors.title }}</div>{% endif %}
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-sm-3 col-form-label" for="input-slug">{{ entry_slug }}</label>
+              <div class="col-sm-9">
+                <input type="text" name="slug" value="{{ course.slug }}" id="input-slug" class="form-control" data-testid="admin-mooc-course-slug" />
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-sm-3 col-form-label" for="input-description">{{ entry_description }}</label>
+              <div class="col-sm-9">
+                <textarea name="description" id="input-description" rows="10" class="form-control">{{ course.description }}</textarea>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-sm-3 col-form-label" for="input-featured">{{ entry_featured_image }}</label>
+              <div class="col-sm-9">
+                <input type="text" name="featured_image" value="{{ course.featured_image }}" id="input-featured" class="form-control" placeholder="https://..." data-testid="admin-mooc-course-featured-image" />
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-4">
+            <div class="row mb-3">
+              <label class="col-form-label" for="input-level">{{ entry_level }}</label>
+              <div>
+                <select name="level" id="input-level" class="form-select" data-testid="admin-mooc-course-level">
+                  <option value="beginner" {{ course.level == 'beginner' ? 'selected' : '' }}>{{ text_level_beginner }}</option>
+                  <option value="intermediate" {{ course.level == 'intermediate' ? 'selected' : '' }}>{{ text_level_intermediate }}</option>
+                  <option value="advanced" {{ course.level == 'advanced' ? 'selected' : '' }}>{{ text_level_advanced }}</option>
+                  <option value="all" {{ course.level == 'all' ? 'selected' : '' }}>{{ text_level_all }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-form-label" for="input-status">{{ entry_status }}</label>
+              <div>
+                <select name="status" id="input-status" class="form-select" data-testid="admin-mooc-course-status">
+                  <option value="draft" {{ course.status == 'draft' ? 'selected' : '' }}>{{ text_draft }}</option>
+                  <option value="published" {{ course.status == 'published' ? 'selected' : '' }}>{{ text_published }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-form-label">{{ entry_category }}</label>
+              <div>
+                <select name="category_ids[]" class="form-select" multiple size="5" data-testid="admin-mooc-course-categories">
+                  {% for category in categories %}
+                    <option value="{{ category.category_id }}" {{ category.category_id in course.category_ids ? 'selected' : '' }}>{{ category.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-form-label">{{ entry_instructor }}</label>
+              <div>
+                <select name="instructor_ids[]" class="form-select" multiple size="5" data-testid="admin-mooc-course-instructors">
+                  {% for instructor in instructors %}
+                    <option value="{{ instructor.instructor_id }}" {{ instructor.instructor_id in course.instructor_ids ? 'selected' : '' }}>{{ instructor.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-form-label" for="input-duration">{{ entry_duration }}</label>
+              <div>
+                <input type="number" name="duration_minutes" value="{{ course.duration_minutes }}" id="input-duration" class="form-control" />
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-form-label" for="input-price">{{ entry_price }}</label>
+              <div>
+                <input type="text" name="price" value="{{ course.price }}" id="input-price" class="form-control" data-testid="admin-mooc-course-price" />
+              </div>
+            </div>
+            <div class="row mb-0">
+              <div class="col-12">
+                <div class="rms-form-check-card">
+                  <input class="form-check-input" type="checkbox" name="is_free" value="1" id="input-is-free" {{ course.is_free ? 'checked' : '' }} data-testid="admin-mooc-course-is-free" />
+                  <label class="form-check-label" for="input-is-free">{{ text_free }}</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    {% endset %}
+    {% set rms_card_icon = 'fa-solid fa-graduation-cap' %}
+    {% set rms_card_title = text_form %}
+    {% include 'common/rms_admin_card.twig' %}
+  </div>
+</div>
+{{ footer }}

@@ -1,0 +1,41 @@
+{{ header }}{{ column_left }}
+<div id="content" class="rms-report-page" data-testid="admin-report-index-page">
+  {% set rms_heading_title = heading_title %}
+  {% set rms_breadcrumbs = breadcrumbs %}
+  {% set rms_actions = [{
+    tag: 'button',
+    class: 'btn btn-light d-md-none d-lg-none',
+    icon: 'fa-solid fa-filter',
+    title: button_filter,
+    onclick: "$('#filter-report').toggleClass('d-none');",
+    testid: 'admin-report-filter-toggle'
+  }] %}
+  {% include 'common/rms_page_header.twig' %}
+  <div class="container-fluid">
+    {% set rms_card_body %}
+      <div class="rms-static-copy mb-3">{{ text_filter }}</div>
+      <div class="input-group">
+        <select name="report" id="input-report" class="form-select" data-testid="admin-report-select">
+          {% for report in reports %}
+            <option value="{{ report.href }}"{% if code == report.code %} selected{% endif %}>{{ report.text }}</option>
+          {% endfor %}
+        </select>
+        <div class="input-group-text">{{ text_type }}</div>
+      </div>
+    {% endset %}
+    {% set rms_card_icon = 'fa-solid fa-chart-bar' %}
+    {% set rms_card_title = text_type %}
+    {% include 'common/rms_admin_card.twig' %}
+    <div id="report" data-testid="admin-report-index-body"></div>
+  </div>
+</div>
+<script type="text/javascript"><!--
+$('#input-report').on('change', function (e) {
+    if ($(this).val()) {
+        $('#report').load(this.value);
+    }
+});
+
+$('#input-report').trigger('change');
+//--></script>
+{{ footer }}

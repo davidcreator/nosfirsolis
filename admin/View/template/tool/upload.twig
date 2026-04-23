@@ -1,0 +1,287 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end">
+        <button type="button" data-bs-toggle="tooltip" title="{{ button_filter }}" onclick="$('#filter-upload').toggleClass('d-none');" class="btn btn-light d-md-none"><i class="fa-solid fa-filter"></i></button>
+        <button type="submit" form="form-upload" formaction="{{ delete }}" data-bs-toggle="tooltip" title="{{ button_delete }}" onclick="return confirm('{{ text_confirm }}');" class="btn btn-danger"><i class="fa-regular fa-trash-can"></i></button>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  <div class="container-fluid">
+    <div class="row">
+      <div id="filter-upload" class="col-lg-3 col-md-12 order-lg-last d-none d-lg-block mb-3">
+        <div class="card">
+          <div class="card-header"><i class="fa-solid fa-filter"></i> {{ text_filter }}</div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label for="input-name" class="form-label">{{ entry_name }}</label> 
+              <input type="text" name="filter_name" value="{{ filter_name }}" placeholder="{{ entry_name }}" id="input-name" class="form-control"/>
+            </div>
+            <div class="mb-3">
+              <label for="input-date-from" class="form-label">{{ entry_date_from }}</label>
+              <div class="input-group">
+                <input type="text" name="filter_date_from" value="{{ filter_date_from }}" placeholder="{{ entry_date_from }}" id="input-date-from" class="form-control date"/>
+                <div class="input-group-text"><i class="fa-regular fa-calendar"></i></div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="input-date-to" class="form-label">{{ entry_date_to }}</label>
+              <div class="input-group">
+                <input type="text" name="filter_date_to" value="{{ filter_date_to }}" placeholder="{{ entry_date_to }}" id="input-date-to" class="form-control date"/>
+                <div class="input-group-text"><i class="fa-regular fa-calendar"></i></div>
+              </div>
+            </div>
+            <div class="text-end">
+              <button type="button" id="button-filter" class="btn btn-light"><i class="fa-solid fa-filter"></i> {{ button_filter }}</button>
+              <button type="button" id="button-clear-filter" class="btn btn-outline-secondary ms-1" title="Clear filters"><i class="fa-solid fa-times"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-9 col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <i class="fa-solid fa-list"></i> {{ text_list }}
+            <div class="float-end">
+              <button type="button" id="button-upload" data-bs-toggle="tooltip" title="{{ button_upload }}" class="btn btn-primary">
+                <i class="fa-solid fa-upload"></i> {{ button_upload }}
+              </button>
+            </div>
+          </div>
+          <div id="upload" class="card-body">{{ list }}</div>
+          <div id="upload-progress" class="card-body d-none">
+            <div class="progress">
+              <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+            </div>
+            <div class="text-center mt-2">
+              <small id="upload-status">Uploading...</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript"><!--
+$(document).ready(function() {
+    // Initialize upload functionality
+    UploadManager.init();
+});
+
+// Upload Manager Object
+var UploadManager = {
+    
+    // Configuration
+    config: {
+        maxUploadSize: parseInt('{{ max_upload_size }}') || 2097152,
+        allowedFileTypes: '{{ allowed_file_types|escape('js') }}' ? new RegExp('{{ allowed_file_types|escape('js') }}') : /.*/,
+        userToken: '{{ user_token|escape('js') }}',
+        uploadTimeout: 60000
+    },
+    
+    // Initialize the upload manager
+    init: function() {
+        try {
+            this.bindEvents();
+            this.initializeTooltips();
+        } catch (e) {
+            console.error('Failed to initialize UploadManager:', e);
+        }
+    },
+    
+    // Bind all events
+    bindEvents: function() {
+        var self = this;
+        
+        // Check if elements exist before binding
+        if ($('#upload').length) {
+            // Upload list pagination and sorting
+            $('#upload').on('click', 'thead a, .pagination a', function (e) {
+                e.preventDefault();
+                self.loadUploadList(this.href);
+            });
+        }
+        
+        // Filter button
+        if ($('#button-filter').length) {
+            $('#button-filter').off('click').on('click', function () {
+                self.applyFilters();
+            });
+        }
+        
+        // Clear filters button
+        if ($('#button-clear-filter').length) {
+            $('#button-clear-filter').off('click').on('click', function() {
+                self.clearFilters();
+            });
+        }
+        
+        // Upload button
+        if ($('#button-upload').length) {
+            $('#button-upload').off('click').on('click', function() {
+                self.initiateUpload(this);
+            });
+        }
+        
+        // Enter key support for filters
+        $('.card-body input').off('keypress').on('keypress', function(e) {
+            if (e.which === 13) { // Enter key
+                self.applyFilters();
+            }
+        });
+    },
+    
+    // Initialize Bootstrap tooltips
+    initializeTooltips: function() {
+        if (typeof $().tooltip === 'function') {
+            $('[data-bs-toggle="tooltip"]').tooltip();
+        }
+    },
+    
+    // Load upload list with optional URL
+    loadUploadList: function(url) {
+        if (!url) {
+            url = 'index.php?route=tool/upload.list&user_token=' + this.config.userToken;
+        }
+        
+        var uploadElement = $('#upload');
+        if (uploadElement.length) {
+            uploadElement.addClass('opacity-50');
+            uploadElement.load(url, function() {
+                uploadElement.removeClass('opacity-50');
+            });
+        }
+    },
+    
+    // Apply current filters
+    applyFilters: function() {
+        var url = this.buildFilterUrl();
+        this.loadUploadList('index.php?route=tool/upload.list&user_token=' + this.config.userToken + url);
+    },
+    
+    // Build filter URL parameters
+    buildFilterUrl: function() {
+        var url = '';
+        var filters = ['name', 'date_from', 'date_to'];
+        
+        filters.forEach(function(filter) {
+            var element = $('#input-' + filter.replace('_', '-'));
+            if (element.length) {
+                var value = element.val();
+                if (value && value.trim() !== '') {
+                    url += '&filter_' + filter + '=' + encodeURIComponent(value.trim());
+                }
+            }
+        });
+        
+        return url;
+    },
+    
+    // Clear all filters
+    clearFilters: function() {
+        var filterInputs = $('#input-name, #input-date-from, #input-date-to');
+        if (filterInputs.length) {
+            filterInputs.val('');
+        }
+        this.applyFilters();
+    },
+    
+    // Initiate file upload process - Modified to use native image manager
+    initiateUpload: function(element) {
+        $('#modal-image').remove();
+        
+        var userToken = this.config.userToken;
+        var self = this;
+        
+        // First ensure the upload directory exists
+        this.ensureUploadDirectory();
+        
+        // Add a target parameter to make the filemanager work correctly
+        var target = '';
+        var thumb = '';
+        
+        // Create a temporary hidden input for storing the selected file code
+        if ($('#temp-upload-target').length === 0) {
+            $('body').append('<input type="hidden" id="temp-upload-target" value="">');
+            target = '#temp-upload-target';
+        }
+        
+        var url = 'index.php?route=common/filemanager&user_token=' + userToken + '&target=' + encodeURIComponent(target);
+        
+        $.ajax({
+            url: url,
+            dataType: 'html',
+            beforeSend: function() {
+                $(element).prop('disabled', true);
+            },
+            complete: function() {
+                $(element).prop('disabled', false);
+            },
+            success: function(html) {
+                $('body').append(html);
+                
+                const modalElement = document.querySelector('#modal-image');
+                if (modalElement) {
+                    const modal = new bootstrap.Modal(modalElement);
+                    modal.show();
+                    
+                    // Add event listener for when modal is hidden
+                    $(modalElement).on('hidden.bs.modal', function() {
+                        // Check if a file was selected
+                        var selectedFile = $('#temp-upload-target').val();
+                        if (selectedFile) {
+                            // Refresh the upload list to show the newly selected file
+                            self.loadUploadList();
+                        }
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Failed to load image manager:', error);
+                self.showError('Failed to load image manager. Please try again.');
+            }
+        });
+        
+        // This code has been replaced by the native image manager
+        // The original file upload code has been removed as it's no longer needed
+    },
+    
+    // Helper method to ensure upload directory exists
+    ensureUploadDirectory: function() {
+        // This method will be called when the filemanager is opened
+        // to ensure the upload directory exists
+        $.ajax({
+            url: 'index.php?route=tool/upload.ensureDirectory&user_token=' + this.config.userToken,
+            type: 'get',
+            dataType: 'json',
+            success: function(json) {
+                if (json.error) {
+                    console.error('Error ensuring upload directory:', json.error);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Failed to ensure upload directory:', error);
+            }
+        });
+    },
+    
+    // Show error message
+    showError: function(message) {
+        alert(message);
+    },
+    
+    // Show success message
+    showSuccess: function(message) {
+        alert(message);
+    }
+};
+//--></script>
+{{ footer }}

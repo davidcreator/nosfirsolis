@@ -1,0 +1,102 @@
+{{ header }}{{ column_left }}
+<div id="content" class="rms-report-page" data-testid="admin-report-online-page">
+  {% set rms_heading_title = heading_title %}
+  {% set rms_breadcrumbs = breadcrumbs %}
+  {% set rms_actions = [
+    {
+      tag: 'button',
+      class: 'btn btn-light d-md-none',
+      icon: 'fa-solid fa-filter',
+      title: button_filter,
+      onclick: "$('#filter-online').toggleClass('d-none');",
+      testid: 'admin-online-filter-toggle'
+    },
+    {
+      tag: 'button',
+      class: 'btn btn-light',
+      id: 'button-refresh',
+      icon: 'fa-solid fa-rotate',
+      title: button_refresh,
+      testid: 'admin-online-refresh',
+      text: button_refresh
+    }
+  ] %}
+  {% include 'common/rms_page_header.twig' %}
+  <div class="container-fluid">
+    <div class="row">
+      <div id="filter-online" class="col-lg-3 col-md-12 order-lg-last d-none d-lg-block mb-3">
+        {% set rms_card_body %}
+          <div class="mb-3">
+            <label class="form-label">{{ entry_customer }}</label>
+            <input type="text" name="filter_customer" value="" placeholder="{{ entry_customer }}" id="input-customer" data-rms-target="autocomplete-customer" class="form-control" autocomplete="off"/>
+            <ul id="autocomplete-customer" class="dropdown-menu"></ul>
+          </div>
+          <div class="mb-3">
+            <label for="input-ip" class="form-label">{{ entry_ip }}</label>
+            <input type="text" name="filter_ip" value="" id="input-ip" placeholder="{{ entry_ip }}" class="form-control"/>
+          </div>
+          <div class="text-end">
+            <button type="button" id="button-filter" class="btn btn-light" data-testid="admin-online-filter"><i class="fa-solid fa-filter"></i> {{ button_filter }}</button>
+          </div>
+        {% endset %}
+        {% set rms_card_icon = 'fa-solid fa-filter' %}
+        {% set rms_card_title = text_filter %}
+        {% include 'common/rms_admin_card.twig' %}
+      </div>
+      <div class="col-lg-9 col-md-12">
+        {% set rms_card_body %}
+          <div id="online" data-testid="admin-online-list">{{ list }}</div>
+        {% endset %}
+        {% set rms_card_icon = 'fa-solid fa-list' %}
+        {% set rms_card_title = text_list %}
+        {% include 'common/rms_admin_card.twig' %}
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/javascript"><!--
+$('#online').on('click', 'thead a, .pagination a', function (e) {
+    e.preventDefault();
+
+    $('#online').load(this.href);
+});
+
+$('#button-filter, #button-refresh').on('click', function () {
+    var url = '';
+
+    var filter_customer = $('#input-customer').val();
+
+    if (filter_customer) {
+        url += '&filter_customer=' + encodeURIComponent(filter_customer);
+    }
+
+    var filter_ip = $('#input-ip').val();
+
+    if (filter_ip) {
+        url += '&filter_ip=' + encodeURIComponent(filter_ip);
+    }
+
+    $('#online').load('index.php?route=report/online.list&user_token={{ user_token }}' + url);
+});
+
+$('#input-customer').autocomplete({
+    'source': function (request, response) {
+        $.ajax({
+            url: 'index.php?route=customer/customer.autocomplete&user_token={{ user_token }}&filter_name=' + encodeURIComponent(request),
+            dataType: 'json',
+            success: function (json) {
+                response($.map(json, function (item) {
+                    return {
+                        label: item['name'],
+                        value: item['customer_id']
+                    }
+                }));
+            }
+        });
+    },
+    'select': function (item) {
+        $('#input-customer').val(item['label']);
+    }
+});
+//--></script>
+{{ footer }}

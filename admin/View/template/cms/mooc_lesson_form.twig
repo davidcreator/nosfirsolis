@@ -1,0 +1,158 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end rms-page-actions">
+        <button type="submit" form="form-lesson" class="btn btn-primary" data-bs-toggle="tooltip" title="{{ button_save }}" data-testid="admin-mooc-lesson-save">
+          <i class="fa-solid fa-floppy-disk"></i>
+          <span>{{ button_save }}</span>
+        </button>
+        <a href="{{ cancel }}" class="btn btn-light" data-bs-toggle="tooltip" title="{{ button_cancel }}">
+          <i class="fa-solid fa-reply"></i>
+          <span>{{ button_cancel }}</span>
+        </a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if errors.warning %}<div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> {{ errors.warning }}</div>{% endif %}
+    <div class="card rms-admin-card">
+      <div class="card-header"><i class="fa-solid fa-book"></i> {{ text_form }}</div>
+      <div class="card-body">
+        <form id="form-lesson" method="post" action="{{ action }}" data-testid="admin-mooc-lesson-form">
+          <div class="row g-4">
+            <div class="col-lg-8">
+              <div class="row mb-3">
+                <div class="col-md-7">
+                  <label class="form-label">{{ entry_title }}</label>
+                  <input type="text" name="title" value="{{ lesson.title }}" class="form-control" data-testid="admin-mooc-lesson-title">
+                  {% if errors.title %}<div class="text-danger">{{ errors.title }}</div>{% endif %}
+                </div>
+                <div class="col-md-5">
+                  <label class="form-label">{{ entry_slug }}</label>
+                  <input type="text" name="slug" value="{{ lesson.slug }}" class="form-control" data-testid="admin-mooc-lesson-slug">
+                </div>
+              </div>
+
+              <div class="row mb-3">
+                <div class="col-md-8">
+                  <label class="form-label">{{ entry_course }}</label>
+                  <select name="course_id" class="form-select" data-testid="admin-mooc-lesson-course">
+                    <option value="">{{ text_no_results }}</option>
+                    {% for course in courses %}
+                      <option value="{{ course.course_id }}" {% if course.course_id == lesson.course_id %}selected{% endif %}>{{ course.title }}</option>
+                    {% endfor %}
+                  </select>
+                  {% if errors.course_id %}<div class="text-danger">{{ errors.course_id }}</div>{% endif %}
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">{{ entry_sort_order }}</label>
+                  <input type="number" name="sort_order" value="{{ lesson.sort_order }}" class="form-control">
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">{{ entry_summary }}</label>
+                <textarea name="summary" rows="3" class="form-control">{{ lesson.summary }}</textarea>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">{{ entry_content }}</label>
+                <textarea name="content" rows="8" class="form-control">{{ lesson.content }}</textarea>
+              </div>
+
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label class="form-label">{{ entry_resources }}</label>
+                  <textarea name="resources" rows="4" class="form-control" data-testid="admin-mooc-lesson-resources">{{ lesson.resources }}</textarea>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">{{ entry_attachment }}</label>
+                  <input type="text" name="attachment" value="{{ lesson.attachment }}" class="form-control" placeholder="https://..." data-testid="admin-mooc-lesson-attachment">
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-4">
+              <div class="row mb-3">
+                <div class="col-12">
+                  <label class="form-label">{{ entry_content_type }}</label>
+                  <select name="content_type" class="form-select" data-testid="admin-mooc-lesson-content-type">
+                    <option value="video" {% if lesson.content_type == 'video' %}selected{% endif %}>{{ text_video }}</option>
+                    <option value="article" {% if lesson.content_type == 'article' %}selected{% endif %}>{{ text_article }}</option>
+                    <option value="quiz" {% if lesson.content_type == 'quiz' %}selected{% endif %}>{{ text_quiz }}</option>
+                    <option value="live" {% if lesson.content_type == 'live' %}selected{% endif %}>{{ text_live }}</option>
+                    <option value="slides" {% if lesson.content_type == 'slides' %}selected{% endif %}>{{ text_slides }}</option>
+                    <option value="pdf" {% if lesson.content_type == 'pdf' %}selected{% endif %}>{{ text_pdf }}</option>
+                    <option value="link" {% if lesson.content_type == 'link' %}selected{% endif %}>{{ text_link }}</option>
+                    <option value="download" {% if lesson.content_type == 'download' %}selected{% endif %}>{{ text_download }}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <div class="col-12">
+                  <label class="form-label">{{ entry_video_url }}</label>
+                  <input type="text" name="video_url" value="{{ lesson.video_url }}" class="form-control" placeholder="https://..." data-testid="admin-mooc-lesson-video-url">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <div class="col-12">
+                  <label class="form-label">{{ entry_external_url }}</label>
+                  <input type="text" name="external_url" value="{{ lesson.external_url }}" class="form-control" placeholder="https://..." data-testid="admin-mooc-lesson-external-url">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label class="form-label">{{ entry_duration }}</label>
+                  <input type="number" name="duration_minutes" value="{{ lesson.duration_minutes }}" class="form-control" min="0" data-testid="admin-mooc-lesson-duration">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">{{ entry_min_time }}</label>
+                  <input type="number" name="min_seconds" value="{{ lesson.min_seconds }}" class="form-control" min="0" data-testid="admin-mooc-lesson-min-seconds">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label class="form-label">{{ entry_status }}</label>
+                  <select name="status" class="form-select" data-testid="admin-mooc-lesson-status">
+                    <option value="1" {% if lesson.status %}selected{% endif %}>Enabled</option>
+                    <option value="0" {% if not lesson.status %}selected{% endif %}>Disabled</option>
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">{{ entry_release_at }}</label>
+                  <input type="text" name="release_at" value="{{ lesson.release_at }}" class="form-control" placeholder="YYYY-MM-DD HH:MM:SS">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <div class="col-12">
+                  <label class="form-label">{{ entry_auto_complete }}</label>
+                  <select name="auto_complete" class="form-select" data-testid="admin-mooc-lesson-auto-complete">
+                    <option value="1" {% if lesson.auto_complete %}selected{% endif %}>Yes</option>
+                    <option value="0" {% if not lesson.auto_complete %}selected{% endif %}>No</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row mb-0">
+                <div class="col-12">
+                  <label class="form-label">{{ entry_comments }}</label>
+                  <select name="comments_enabled" class="form-select" data-testid="admin-mooc-lesson-comments">
+                    <option value="1" {% if lesson.comments_enabled %}selected{% endif %}>Yes</option>
+                    <option value="0" {% if not lesson.comments_enabled %}selected{% endif %}>No</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{{ footer }}

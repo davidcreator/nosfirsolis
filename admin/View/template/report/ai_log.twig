@@ -1,0 +1,82 @@
+{{ header }}
+{{ column_left }}
+<div id="content" class="rms-report-page" data-testid="admin-ai-log-page">
+  {% set rms_heading_title = heading_title %}
+  {% set rms_breadcrumbs = breadcrumbs %}
+  {% include 'common/rms_page_header.twig' %}
+  <div class="container-fluid">
+    <div class="row g-3 mb-4">
+      <div class="col-md-6">
+        {% set rms_metric_label = text_total %}
+        {% set rms_metric_value_class = 'display-6' %}
+        {% set rms_metric_note_html = '' %}
+        {% set rms_metric_value_html = total %}
+        {% include 'common/rms_metric_tile.twig' %}
+      </div>
+      <div class="col-md-6">
+        {% set rms_metric_label = text_last_entry %}
+        {% set rms_metric_value_class = 'fs-5' %}
+        {% set rms_metric_note_html = '' %}
+        {% set rms_metric_value_html = last_ts ?: '&mdash;' %}
+        {% include 'common/rms_metric_tile.twig' %}
+      </div>
+    </div>
+
+    {% if entries %}
+      {% set rms_card_body %}
+        <div class="table-responsive">
+          <table class="table table-striped" data-testid="admin-ai-log-table">
+            <thead>
+              <tr>
+                <th>{{ column_user }}</th>
+                <th>{{ column_store }}</th>
+                <th>{{ column_total }}</th>
+                <th>{{ column_breakdown }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in entries %}
+                <tr data-testid="admin-ai-log-row">
+                  <td>{{ row.user_id }}</td>
+                  <td>{{ row.store_id }}</td>
+                  <td>{{ row.total }}</td>
+                  <td>
+                    <div class="d-flex flex-wrap gap-2">
+                      {% for name, count in row.actions %}
+                        <span class="rms-status-badge bg-light text-dark">{{ name }}: {{ count }}</span>
+                      {% endfor %}
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% endset %}
+      {% set rms_card_icon = 'fa-solid fa-table-list' %}
+      {% set rms_card_title = heading_title %}
+      {% include 'common/rms_admin_card.twig' %}
+
+      {% set rms_card_body %}
+        <div class="d-flex flex-wrap gap-2" data-testid="admin-ai-log-actions">
+          {% for name, count in actions_totals %}
+            <span class="rms-status-badge bg-primary-subtle text-primary-emphasis">{{ name }}: {{ count }}</span>
+          {% endfor %}
+        </div>
+      {% endset %}
+      {% set rms_card_icon = 'fa-solid fa-chart-column' %}
+      {% set rms_card_title = text_actions %}
+      {% include 'common/rms_admin_card.twig' %}
+    {% else %}
+      {% set rms_card_body %}
+        {% set rms_empty_icon = 'fa-solid fa-robot' %}
+        {% set rms_empty_text = text_empty %}
+        {% include 'common/rms_empty_state.twig' %}
+      {% endset %}
+      {% set rms_card_icon = 'fa-solid fa-robot' %}
+      {% set rms_card_title = heading_title %}
+      {% include 'common/rms_admin_card.twig' %}
+    {% endif %}
+  </div>
+</div>
+{{ footer }}

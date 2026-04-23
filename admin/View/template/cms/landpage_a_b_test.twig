@@ -1,0 +1,84 @@
+{{ header }}{{ column_left }}
+<div id="content" data-testid="admin-landpage-abtest-list-page">
+  {% set rms_actions = [
+    {
+      tag: 'button',
+      type: 'submit',
+      form: 'form-variant',
+      formaction: delete,
+      class: 'btn btn-danger',
+      title: button_delete,
+      icon: 'fa-solid fa-trash',
+      text: button_delete,
+      onclick: "return confirm('" ~ text_confirm ~ "');"
+    },
+    {
+      href: add,
+      class: 'btn btn-primary',
+      title: text_add,
+      icon: 'fa-solid fa-plus',
+      text: text_add,
+      testid: 'admin-landpage-abtest-add-link'
+    }
+  ] %}
+  {% set rms_heading_title = heading_title %}
+  {% set rms_breadcrumbs = breadcrumbs %}
+  {% include 'common/rms_page_header.twig' %}
+  <div class="container-fluid">
+    {% if success %}
+      {% set rms_alert_class = 'alert alert-success' %}
+      {% set rms_alert_icon = 'fa-solid fa-circle-check' %}
+      {% set rms_alert_text = success %}
+      {% set rms_alert_testid = 'admin-landpage-abtest-list-success' %}
+      {% include 'common/rms_alert.twig' %}
+    {% endif %}
+    {% set rms_card_body %}
+      <form action="{{ delete }}" method="post" enctype="multipart/form-data" id="form-variant">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th style="width:1px;" class="text-center"><input type="checkbox" onclick="$('input[name*=\\'selected\\']').prop('checked', this.checked);" /></th>
+                <th>{{ column_page }}</th>
+                <th>{{ column_variant }}</th>
+                <th class="text-end">{{ column_weight }}</th>
+                <th>{{ column_status }}</th>
+                <th class="text-end">{{ column_action }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if variants %}
+                {% for variant in variants %}
+                  <tr data-testid="admin-landpage-abtest-row">
+                    <td class="text-center"><input type="checkbox" name="selected[]" value="{{ variant.variant_id }}" /></td>
+                    <td>{{ variant.page_title }}</td>
+                    <td>{{ variant.name }}</td>
+                    <td class="text-end">{{ variant.weight }}%</td>
+                    <td>
+                      <span class="rms-status-badge {{ variant.status ? 'bg-success-subtle text-success-emphasis' : 'bg-secondary-subtle text-secondary-emphasis' }}">
+                        {{ variant.status ? text_variant_active : text_variant_disabled }}
+                      </span>
+                    </td>
+                    <td class="text-end"><a href="{{ variant.edit }}" class="btn btn-primary btn-sm" data-testid="admin-landpage-abtest-edit-link"><i class="fa-solid fa-pen"></i></a></td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="6">
+                    {% set rms_empty_icon = 'fa-solid fa-code-branch' %}
+                    {% set rms_empty_text = text_no_results %}
+                    {% include 'common/rms_empty_state.twig' %}
+                  </td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </form>
+    {% endset %}
+    {% set rms_card_icon = 'fa-solid fa-code-branch' %}
+    {% set rms_card_title = heading_title %}
+    {% include 'common/rms_admin_card.twig' %}
+  </div>
+</div>
+{{ footer }}

@@ -1,0 +1,105 @@
+{{ header }}
+{{ column_left }}
+<div id="content" data-testid="admin-blog-tag-list-page">
+  {% set rms_actions = [
+    {
+      tag: 'button',
+      type: 'submit',
+      form: 'form-tag',
+      formaction: delete,
+      class: 'btn btn-danger',
+      title: button_delete,
+      icon: 'fa-solid fa-trash',
+      text: button_delete
+    },
+    {
+      href: add,
+      class: 'btn btn-primary',
+      title: text_add,
+      icon: 'fa-solid fa-plus',
+      text: text_add,
+      testid: 'admin-blog-tag-add-link'
+    }
+  ] %}
+  {% set rms_heading_title = heading_title %}
+  {% set rms_breadcrumbs = breadcrumbs %}
+  {% include 'common/rms_page_header.twig' %}
+  <div class="container-fluid">
+    {% if success %}
+      {% set rms_alert_class = 'alert alert-success' %}
+      {% set rms_alert_icon = 'fa-solid fa-circle-check' %}
+      {% set rms_alert_text = success %}
+      {% include 'common/rms_alert.twig' %}
+    {% endif %}
+    {% set rms_card_body %}
+      <form action="" method="get" class="row g-3 align-items-end mb-4" data-testid="admin-blog-tag-filter-form">
+        <input type="hidden" name="route" value="cms/blog_tag">
+        <input type="hidden" name="user_token" value="{{ user_token }}">
+        <div class="col-md-3">
+          <label class="form-label">{{ column_status }}</label>
+          <select name="status" class="form-select" data-testid="admin-blog-tag-filter-status">
+            <option value="">{{ text_all }}</option>
+            <option value="1" {{ filter_status is same as('1') ? 'selected' : '' }}>{{ text_enabled }}</option>
+            <option value="0" {{ filter_status is same as('0') ? 'selected' : '' }}>{{ text_disabled }}</option>
+          </select>
+        </div>
+        <div class="col-md-5">
+          <label class="form-label">{{ column_title }}</label>
+          <input type="text" name="q" value="{{ filter_q }}" class="form-control" placeholder="search" data-testid="admin-blog-tag-filter-query">
+        </div>
+        <div class="col-md-2">
+          <button class="btn btn-outline-primary w-100" type="submit" data-testid="admin-blog-tag-filter-apply"><i class="fa-solid fa-filter"></i> {{ button_filter|default('Filtrar') }}</button>
+        </div>
+      </form>
+
+      <form action="" method="post" id="form-tag">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <td style="width:1px" class="text-center"><input type="checkbox" onclick="$('input[name*=\\'selected\\']').prop('checked', this.checked);"/></td>
+                <td>{{ column_title }}</td>
+                <td>{{ entry_slug }}</td>
+                <td>{{ column_status }}</td>
+                <td>{{ entry_sort_order }}</td>
+                <td>{{ column_date }}</td>
+                <td class="text-end">{{ column_action }}</td>
+              </tr>
+            </thead>
+            <tbody>
+            {% if tags %}
+              {% for tag in tags %}
+                <tr data-testid="admin-blog-tag-row">
+                  <td class="text-center"><input type="checkbox" name="selected[]" value="{{ tag.tag_id }}"/></td>
+                  <td>{{ tag.name }}</td>
+                  <td>{{ tag.slug }}</td>
+                  <td>
+                    <span class="rms-status-badge {{ tag.status ? 'bg-success-subtle text-success-emphasis' : 'bg-secondary-subtle text-secondary-emphasis' }}">
+                      {{ tag.status ? text_enabled : text_disabled }}
+                    </span>
+                  </td>
+                  <td>{{ tag.sort_order }}</td>
+                  <td>{{ tag.date_modified }}</td>
+                  <td class="text-end"><a href="{{ tag.edit }}" class="btn btn-primary btn-sm" data-testid="admin-blog-tag-edit-link"><i class="fa-solid fa-pen"></i></a></td>
+                </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="7">
+                  {% set rms_empty_icon = 'fa-solid fa-tags' %}
+                  {% set rms_empty_text = text_no_results %}
+                  {% include 'common/rms_empty_state.twig' %}
+                </td>
+              </tr>
+            {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </form>
+    {% endset %}
+    {% set rms_card_icon = 'fa-solid fa-tags' %}
+    {% set rms_card_title = heading_title %}
+    {% include 'common/rms_admin_card.twig' %}
+  </div>
+</div>
+{{ footer }}

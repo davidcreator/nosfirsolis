@@ -1,0 +1,4 @@
+<div class="{{ rms_alert_class|default('alert alert-info') }}"{% if rms_alert_testid is defined and rms_alert_testid %} data-testid="{{ rms_alert_testid }}"{% endif %}>
+  {% if rms_alert_icon is defined and rms_alert_icon %}<i class="{{ rms_alert_icon }}"></i>{% endif %}
+  {{ rms_alert_text }}
+</div>

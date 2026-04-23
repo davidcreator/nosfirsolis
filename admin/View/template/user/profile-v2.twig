@@ -1,0 +1,445 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end">
+        <button type="submit" form="form-user" data-bs-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary" aria-label="{{ button_save }}">
+          <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+          <span class="d-none d-sm-inline">{{ button_save }}</span>
+        </button>
+        <a href="{{ back }}" data-bs-toggle="tooltip" title="{{ button_back }}" class="btn btn-light" aria-label="{{ button_back }}">
+          <i class="fa-solid fa-reply" aria-hidden="true"></i>
+          <span class="d-none d-sm-inline">{{ button_back }}</span>
+        </a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          {% for breadcrumb in breadcrumbs %}
+            {% if loop.last %}
+              <li class="breadcrumb-item active" aria-current="page">{{ breadcrumb.text }}</li>
+            {% else %}
+              <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+            {% endif %}
+          {% endfor %}
+        </ol>
+      </nav>
+    </div>
+  </div>
+  
+  <div class="container-fluid">
+    <!-- Alert Messages -->
+    <div id="alert-container" class="alert-container mb-3" style="display: none;">
+      <div id="alert-success" class="alert alert-success alert-dismissible fade" role="alert" style="display: none;">
+        <i class="fa-solid fa-check-circle me-2" aria-hidden="true"></i>
+        <span id="success-message"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+      <div id="alert-error" class="alert alert-danger alert-dismissible fade" role="alert" style="display: none;">
+        <i class="fa-solid fa-exclamation-triangle me-2" aria-hidden="true"></i>
+        <span id="error-message"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <i class="fa-solid fa-pencil me-2" aria-hidden="true"></i>
+        {{ text_edit }}
+      </div>
+      <div class="card-body">
+        <form id="form-user" action="{{ save }}" method="post" data-rms-toggle="ajax" novalidate>
+          <!-- User Information Fieldset -->
+          <fieldset class="mb-4">
+            <legend class="fs-5 fw-bold text-primary border-bottom pb-2 mb-3">
+              <i class="fa-solid fa-user me-2" aria-hidden="true"></i>
+              {{ text_user }}
+            </legend>
+            
+            <!-- Username Field -->
+            <div class="row mb-3">
+              <label for="input-username" class="col-sm-2 col-form-label required">
+                {{ entry_username }}
+                <span class="text-danger" aria-label="required">*</span>
+              </label>
+              <div class="col-sm-10">
+                <input 
+                  type="text" 
+                  name="username" 
+                  value="{{ username }}" 
+                  placeholder="{{ entry_username }}" 
+                  id="input-username" 
+                  class="form-control"
+                  required
+                  minlength="3"
+                  maxlength="20"
+                  aria-describedby="error-username help-username"
+                  autocomplete="username"
+                />
+                <div id="help-username" class="form-text">{{ help_username ?? 'Username must be 3-20 characters long' }}</div>
+                <div id="error-username" class="invalid-feedback"></div>
+              </div>
+            </div>
+            
+            <!-- First Name Field -->
+            <div class="row mb-3">
+              <label for="input-firstname" class="col-sm-2 col-form-label required">
+                {{ entry_firstname }}
+                <span class="text-danger" aria-label="required">*</span>
+              </label>
+              <div class="col-sm-10">
+                <input 
+                  type="text" 
+                  name="firstname" 
+                  value="{{ firstname }}" 
+                  placeholder="{{ entry_firstname }}" 
+                  id="input-firstname" 
+                  class="form-control"
+                  required
+                  maxlength="32"
+                  aria-describedby="error-firstname"
+                  autocomplete="given-name"
+                />
+                <div id="error-firstname" class="invalid-feedback"></div>
+              </div>
+            </div>
+            
+            <!-- Last Name Field -->
+            <div class="row mb-3">
+              <label for="input-lastname" class="col-sm-2 col-form-label required">
+                {{ entry_lastname }}
+                <span class="text-danger" aria-label="required">*</span>
+              </label>
+              <div class="col-sm-10">
+                <input 
+                  type="text" 
+                  name="lastname" 
+                  value="{{ lastname }}" 
+                  placeholder="{{ entry_lastname }}" 
+                  id="input-lastname" 
+                  class="form-control"
+                  required
+                  maxlength="32"
+                  aria-describedby="error-lastname"
+                  autocomplete="family-name"
+                />
+                <div id="error-lastname" class="invalid-feedback"></div>
+              </div>
+            </div>
+            
+            <!-- Email Field -->
+            <div class="row mb-3">
+              <label for="input-email" class="col-sm-2 col-form-label required">
+                {{ entry_email }}
+                <span class="text-danger" aria-label="required">*</span>
+              </label>
+              <div class="col-sm-10">
+                <input 
+                  type="email" 
+                  name="email" 
+                  value="{{ email }}" 
+                  placeholder="{{ entry_email }}" 
+                  id="input-email" 
+                  class="form-control"
+                  required
+                  maxlength="96"
+                  aria-describedby="error-email"
+                  autocomplete="email"
+                />
+                <div id="error-email" class="invalid-feedback"></div>
+              </div>
+            </div>
+            
+            <!-- Profile Image Field -->
+            <div class="row mb-3">
+              <label for="input-image" class="col-sm-2 col-form-label">{{ entry_image }}</label>
+              <div class="col-sm-10">
+                <div class="card image" style="max-width: 200px;">
+                  <img 
+                    src="{{ thumb }}" 
+                    alt="{{ entry_image }}" 
+                    title="{{ entry_image }}" 
+                    id="thumb-image" 
+                    data-rms-placeholder="{{ placeholder }}" 
+                    class="card-img-top"
+                    loading="lazy"
+                  />
+                  <input type="hidden" name="image" value="{{ image }}" id="input-image"/>
+                  <div class="card-body p-2">
+                    <div class="d-grid gap-2">
+                      <button 
+                        type="button" 
+                        data-rms-toggle="image" 
+                        data-rms-target="#input-image" 
+                        data-rms-thumb="#thumb-image" 
+                        class="btn btn-primary btn-sm"
+                        aria-label="{{ button_edit }} {{ entry_image }}"
+                      >
+                        <i class="fa-solid fa-pencil me-1" aria-hidden="true"></i>
+                        {{ button_edit }}
+                      </button>
+                      <button 
+                        type="button" 
+                        data-rms-toggle="clear" 
+                        data-rms-target="#input-image" 
+                        data-rms-thumb="#thumb-image" 
+                        class="btn btn-outline-warning btn-sm"
+                        aria-label="{{ button_clear }} {{ entry_image }}"
+                      >
+                        <i class="fa-regular fa-trash-can me-1" aria-hidden="true"></i>
+                        {{ button_clear }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+          
+          <!-- Password Fieldset -->
+          <fieldset class="mb-4">
+            <legend class="fs-5 fw-bold text-primary border-bottom pb-2 mb-3">
+              <i class="fa-solid fa-lock me-2" aria-hidden="true"></i>
+              {{ text_password }}
+            </legend>
+            <div class="alert alert-info" role="alert">
+              <i class="fa-solid fa-info-circle me-2" aria-hidden="true"></i>
+              {{ text_password_help ?? 'Leave blank to keep current password' }}
+            </div>
+            
+            <!-- Password Field -->
+            <div class="row mb-3">
+              <label for="input-password" class="col-sm-2 col-form-label">{{ entry_password }}</label>
+              <div class="col-sm-10">
+                <div class="input-group">
+                  <input 
+                    type="password" 
+                    name="password" 
+                    value="" 
+                    placeholder="{{ entry_password }}" 
+                    id="input-password" 
+                    class="form-control" 
+                    autocomplete="new-password"
+                    minlength="4"
+                    maxlength="40"
+                    aria-describedby="error-password help-password password-toggle"
+                  />
+                  <button 
+                    type="button" 
+                    class="btn btn-outline-secondary" 
+                    id="password-toggle"
+                    aria-label="Toggle password visibility"
+                    onclick="togglePasswordVisibility('input-password')"
+                  >
+                    <i class="fa-solid fa-eye" id="password-toggle-icon"></i>
+                  </button>
+                </div>
+                <div id="help-password" class="form-text">{{ help_password ?? 'Password must be 4-40 characters long' }}</div>
+                <div id="error-password" class="invalid-feedback"></div>
+              </div>
+            </div>
+            
+            <!-- Confirm Password Field -->
+            <div class="row mb-3" id="confirm-password-group" style="display: none;">
+              <label for="input-confirm" class="col-sm-2 col-form-label">{{ entry_confirm }}</label>
+              <div class="col-sm-10">
+                <div class="input-group">
+                  <input 
+                    type="password" 
+                    name="confirm" 
+                    value="" 
+                    placeholder="{{ entry_confirm }}" 
+                    id="input-confirm" 
+                    class="form-control"
+                    autocomplete="new-password"
+                    aria-describedby="error-confirm confirm-toggle"
+                  />
+                  <button 
+                    type="button" 
+                    class="btn btn-outline-secondary" 
+                    id="confirm-toggle"
+                    aria-label="Toggle confirm password visibility"
+                    onclick="togglePasswordVisibility('input-confirm')"
+                  >
+                    <i class="fa-solid fa-eye" id="confirm-toggle-icon"></i>
+                  </button>
+                </div>
+                <div id="error-confirm" class="invalid-feedback"></div>
+              </div>
+            </div>
+          </fieldset>
+          
+          <!-- Form Actions -->
+          <div class="row">
+            <div class="col-sm-10 offset-sm-2">
+              <button type="submit" class="btn btn-primary me-2">
+                <i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>
+                {{ button_save }}
+              </button>
+              <a href="{{ back }}" class="btn btn-light">
+                <i class="fa-solid fa-reply me-1" aria-hidden="true"></i>
+                {{ button_cancel ?? button_back }}
+              </a>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Enhanced form handling
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('form-user');
+    const passwordField = document.getElementById('input-password');
+    const confirmGroup = document.getElementById('confirm-password-group');
+    const confirmField = document.getElementById('input-confirm');
+    
+    // Show/hide confirm password field based on password input
+    passwordField.addEventListener('input', function() {
+        if (this.value.length > 0) {
+            confirmGroup.style.display = 'block';
+            confirmField.required = true;
+        } else {
+            confirmGroup.style.display = 'none';
+            confirmField.required = false;
+            confirmField.value = '';
+        }
+    });
+    
+    // Real-time password matching validation
+    function validatePasswordMatch() {
+        if (passwordField.value && confirmField.value) {
+            if (passwordField.value !== confirmField.value) {
+                confirmField.setCustomValidity('Passwords do not match');
+                confirmField.classList.add('is-invalid');
+            } else {
+                confirmField.setCustomValidity('');
+                confirmField.classList.remove('is-invalid');
+            }
+        }
+    }
+    
+    passwordField.addEventListener('input', validatePasswordMatch);
+    confirmField.addEventListener('input', validatePasswordMatch);
+    
+    // Enhanced form submission
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Clear previous errors
+        clearFormErrors();
+        
+        // Show loading state
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i>Saving...';
+        
+        // Submit form via AJAX
+        fetch(form.action, {
+            method: 'POST',
+            body: new FormData(form),
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('success', data.success);
+                // Reset password fields after successful save
+                passwordField.value = '';
+                confirmField.value = '';
+                confirmGroup.style.display = 'none';
+            } else if (data.error) {
+                handleFormErrors(data.error);
+            }
+        })
+        .catch(error => {
+            showAlert('error', 'An error occurred while saving. Please try again.');
+            console.error('Form submission error:', error);
+        })
+        .finally(() => {
+            // Restore button state
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        });
+    });
+});
+
+// Toggle password visibility
+function togglePasswordVisibility(inputId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(inputId.replace('input-', '') + '-toggle-icon');
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fa-solid fa-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'fa-solid fa-eye';
+    }
+}
+
+// Show alert messages
+function showAlert(type, message) {
+    const container = document.getElementById('alert-container');
+    const alert = document.getElementById('alert-' + type);
+    const messageSpan = document.getElementById(type + '-message');
+    
+    messageSpan.textContent = message;
+    container.style.display = 'block';
+    alert.style.display = 'block';
+    alert.classList.add('show');
+    
+    // Auto-hide success messages
+    if (type === 'success') {
+        setTimeout(() => {
+            alert.classList.remove('show');
+            setTimeout(() => {
+                alert.style.display = 'none';
+                if (!document.querySelector('.alert.show')) {
+                    container.style.display = 'none';
+                }
+            }, 150);
+        }, 5000);
+    }
+}
+
+// Handle form validation errors
+function handleFormErrors(errors) {
+    for (const [field, message] of Object.entries(errors)) {
+        if (field === 'warning') {
+            showAlert('error', message);
+        } else {
+            const input = document.getElementById('input-' + field);
+            const errorDiv = document.getElementById('error-' + field);
+            
+            if (input && errorDiv) {
+                input.classList.add('is-invalid');
+                errorDiv.textContent = message;
+            }
+        }
+    }
+}
+
+// Clear form errors
+function clearFormErrors() {
+    const inputs = form.querySelectorAll('.is-invalid');
+    const errors = form.querySelectorAll('.invalid-feedback');
+    
+    inputs.forEach(input => input.classList.remove('is-invalid'));
+    errors.forEach(error => error.textContent = '');
+    
+    // Hide alert messages
+    const alerts = document.querySelectorAll('.alert.show');
+    alerts.forEach(alert => {
+        alert.classList.remove('show');
+        setTimeout(() => alert.style.display = 'none', 150);
+    });
+}
+</script>
+
+{{ footer }}

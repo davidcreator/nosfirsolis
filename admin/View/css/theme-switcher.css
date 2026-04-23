@@ -1,0 +1,26 @@
+#theme-switcher .color-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 6px;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+
+[data-admin-appearance-form] .form-control-color {
+  padding: 0;
+  width: 42px;
+  height: 34px;
+}
+
+[data-admin-appearance-form] small {
+  color: var(--bs-gray-600);
+}
+
+:root {
+  --heading-font-family: var(--bs-body-font-family);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--heading-font-family, var(--bs-body-font-family));
+}

@@ -1,0 +1,3 @@
+// Admin JS
+
+import 'bootstrap';

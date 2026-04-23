@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'commemoratives.button_new' => 'Nova data',
+    'commemoratives.col_context' => 'Contexto',
+    'commemoratives.col_date' => 'Data',
+    'commemoratives.col_name' => 'Nome',
+    'commemoratives.col_recurrence' => 'Recorrencia',
+    'commemoratives.col_status' => 'Status',
+    'commemoratives.confirm_delete' => 'Excluir esta data?',
+    'commemoratives.field_context' => 'Contexto',
+    'commemoratives.field_country_code' => 'Pais (ISO2)',
+    'commemoratives.field_date' => 'Data',
+    'commemoratives.field_description' => 'Descricao',
+    'commemoratives.field_name' => 'Nome',
+    'commemoratives.field_recurrence' => 'Recorrencia',
+    'commemoratives.field_status' => 'Status',
+    'commemoratives.flash_created' => 'Data comemorativa cadastrada.',
+    'commemoratives.flash_deleted' => 'Data comemorativa removida.',
+    'commemoratives.flash_not_found' => 'Registro nao encontrado.',
+    'commemoratives.flash_updated' => 'Data comemorativa atualizada.',
+    'commemoratives.heading_index' => 'Datas comemorativas',
+    'commemoratives.title_create' => 'Nova Data Comemorativa',
+    'commemoratives.title_edit' => 'Editar Data Comemorativa',
+    'commemoratives.title_index' => 'Datas Comemorativas',
+];

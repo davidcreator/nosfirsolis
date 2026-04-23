@@ -1,0 +1,40 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <h1>{{ heading_title }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+      <div class="float-end">
+        <a href="{{ run }}" class="btn btn-primary"><i class="fa-solid fa-database"></i> {{ button_import }}</a>
+      </div>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+      <div class="alert alert-danger alert-dismissible"><i class="fa-solid fa-circle-exclamation"></i> {{ error_warning }}</div>
+    {% endif %}
+    {% if success %}
+      <div class="alert alert-success alert-dismissible"><i class="fa-solid fa-check"></i> {{ success }}</div>
+    {% endif %}
+    <div class="card">
+      <div class="card-header">
+        <i class="fa-solid fa-book-open"></i> {{ heading_title }}
+      </div>
+      <div class="card-body">
+        <p>{{ text_description }}</p>
+        <ul>
+          <li>{{ text_posts }}</li>
+          <li>{{ text_categories }}</li>
+          <li>{{ text_tags }}</li>
+        </ul>
+        <p class="text-muted">{{ text_note }}</p>
+        <a href="{{ run }}" class="btn btn-primary"><i class="fa-solid fa-database"></i> {{ button_import }}</a>
+      </div>
+    </div>
+  </div>
+</div>
+{{ footer }}

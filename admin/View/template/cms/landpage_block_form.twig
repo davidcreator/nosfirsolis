@@ -1,0 +1,111 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  {% set rms_actions = [
+    {
+      tag: 'button',
+      type: 'submit',
+      form: 'form-block',
+      class: 'btn btn-primary',
+      title: button_save,
+      icon: 'fa-solid fa-floppy-disk',
+      text: button_save
+    },
+    {
+      href: cancel,
+      class: 'btn btn-light',
+      title: button_cancel,
+      icon: 'fa-solid fa-reply',
+      text: button_cancel
+    }
+  ] %}
+  {% include 'common/rms_page_header.twig' with {
+    rms_heading_title: heading_title,
+    rms_breadcrumbs: breadcrumbs,
+    rms_actions: rms_actions
+  } %}
+  <div class="container-fluid">
+    {% if error_warning %}
+      <div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> {{ error_warning }}</div>
+    {% endif %}
+
+    <div class="card rms-admin-card">
+      <div class="card-header">
+        <i class="fa-solid fa-grip"></i>
+        <span>{{ heading_title }}</span>
+      </div>
+      <div class="card-body">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-block" data-testid="admin-landpage-block-form">
+          <input type="hidden" name="from_builder" value="{{ from_builder ? '1' : '0' }}" />
+          <div class="row g-4">
+            <div class="col-xl-7">
+              <div class="mb-3">
+                <label class="form-label" for="input-type">{{ column_type }}</label>
+                <select name="type" id="input-type" class="form-select" data-testid="admin-landpage-block-type">
+                  {% for type in block_types %}
+                    <option value="{{ type.type }}" {{ block.type == type.type ? 'selected' : '' }}>{{ type.label }}</option>
+                  {% endfor %}
+                </select>
+                <div class="form-text">{{ text_builder_block_form_help }}</div>
+              </div>
+
+              <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+                <label class="form-label mb-0" for="input-settings">{{ entry_settings }}</label>
+                <button type="button" id="button-reset-preset" class="btn btn-outline-secondary btn-sm">{{ button_reset_preset }}</button>
+              </div>
+              <textarea name="settings" id="input-settings" rows="18" class="form-control rms-code-textarea" data-testid="admin-landpage-block-settings">{{ block.settings }}</textarea>
+              <div class="form-text">{{ text_builder_settings_help }}</div>
+            </div>
+
+            <div class="col-xl-5">
+              <div class="mb-3">
+                <label class="form-label" for="input-page">{{ column_page }}</label>
+                <select name="page_id" id="input-page" class="form-select" data-testid="admin-landpage-block-page">
+                  {% for p in pages %}
+                    <option value="{{ p.page_id }}" {% if block.page_id == p.page_id %}selected{% endif %}>{{ p.title }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label" for="input-sort-order">{{ column_sort_order }}</label>
+                <input type="number" name="sort_order" value="{{ block.sort_order }}" id="input-sort-order" class="form-control" data-testid="admin-landpage-block-sort-order" />
+              </div>
+
+              <div class="card border shadow-sm">
+                <div class="card-header bg-light">
+                  <strong>{{ text_builder_block_preview }}</strong>
+                </div>
+                <div class="card-body">
+                  <div class="rms-catalog-shell">
+                    {% if block_preview %}
+                      {{ block_preview|raw }}
+                    {% else %}
+                      <div class="rms-catalog-empty">{{ text_builder_no_blocks }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/javascript">
+  const blockPresets = {{ block_presets|json_encode(constant('JSON_UNESCAPED_SLASHES')) }};
+  $('#button-reset-preset').on('click', function () {
+    const type = $('#input-type').val();
+    const preset = blockPresets[type] || '';
+    if (!preset) {
+      return;
+    }
+
+    if ($('#input-settings').val().trim() !== '' && !confirm('{{ text_confirm|escape('js') }}')) {
+      return;
+    }
+
+    $('#input-settings').val(preset);
+  });
+</script>
+{{ footer }}

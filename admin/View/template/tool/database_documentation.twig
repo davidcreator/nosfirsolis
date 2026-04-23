@@ -1,0 +1,101 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end">
+        <a href="{{ back }}" class="btn btn-secondary"><i class="fa fa-arrow-left"></i> {{ button_back }}</a>
+        <a href="{{ export_documentation }}" class="btn btn-primary" download><i class="fa fa-download"></i> {{ button_export }}</a>
+      </div>
+      <h1>{{ heading_documentation }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  <div class="container-fluid">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title"><i class="fa fa-book"></i> {{ heading_documentation }}</h3>
+      </div>
+      <div class="card-body">
+        <p>{{ text_documentation_intro }}</p>
+        <div class="documentation-content">
+          {{ documentation|raw }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style type="text/css">
+.documentation-content {
+  margin-top: 20px;
+}
+
+.documentation-content h2 {
+  margin-top: 30px;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.documentation-content h3 {
+  margin-top: 25px;
+  margin-bottom: 10px;
+}
+
+.documentation-content table {
+  width: 100%;
+  margin-bottom: 20px;
+  border-collapse: collapse;
+}
+
+.documentation-content table, .documentation-content th, .documentation-content td {
+  border: 1px solid #ddd;
+}
+
+.documentation-content th, .documentation-content td {
+  padding: 8px;
+  text-align: left;
+}
+
+.documentation-content th {
+  background-color: #f5f5f5;
+}
+
+.documentation-content tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.documentation-content .table-name {
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.documentation-content .table-description {
+  margin-bottom: 15px;
+  color: #555;
+}
+
+.documentation-content .field-type {
+  font-family: monospace;
+  color: #e74c3c;
+}
+
+.documentation-content .field-key {
+  font-weight: bold;
+  color: #3498db;
+}
+
+.documentation-content .field-nullable {
+  color: #95a5a6;
+}
+
+.documentation-content .field-default {
+  font-style: italic;
+  color: #27ae60;
+}
+</style>
+{{ footer }}

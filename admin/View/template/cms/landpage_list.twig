@@ -1,0 +1,101 @@
+{{ header }}{{ column_left }}
+<div id="content" data-testid="admin-landpage-list-page">
+  {% set rms_actions = [
+    {
+      href: add,
+      class: 'btn btn-primary',
+      icon: 'fa-solid fa-plus',
+      text: text_add,
+      testid: 'admin-landpage-add-link'
+    },
+    {
+      tag: 'button',
+      type: 'submit',
+      form: 'form-page',
+      formaction: delete,
+      class: 'btn btn-danger',
+      icon: 'fa-regular fa-trash-can',
+      text: button_delete
+    }
+  ] %}
+  {% include 'common/rms_page_header.twig' with {
+    rms_heading_title: heading_title,
+    rms_breadcrumbs: breadcrumbs,
+    rms_actions: rms_actions
+  } %}
+  <div class="container-fluid">
+    {% if success %}
+      <div class="alert alert-success"><i class="fa-solid fa-circle-check"></i> {{ success }}</div>
+    {% endif %}
+    {% set rms_card_body %}
+      <form action="{{ delete }}" method="post" enctype="multipart/form-data" id="form-page">
+        <div class="rms-admin-table-responsive">
+          <table class="table table-bordered table-hover align-middle">
+            <thead>
+              <tr>
+                <th style="width:1px;" class="text-center"><input type="checkbox" onclick="$('input[name*=\\'selected\\']').prop('checked', this.checked);" /></th>
+                <th>{{ column_title }}</th>
+                <th>{{ column_status }}</th>
+                <th>{{ column_premium }}</th>
+                <th>{{ column_price }}</th>
+                <th>{{ column_owner }}</th>
+                <th>{{ column_date }}</th>
+                <th class="text-end">{{ column_action }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if pages %}
+                {% for page in pages %}
+                  <tr data-testid="admin-landpage-row" data-page-id="{{ page.page_id }}">
+                    <td class="text-center"><input type="checkbox" name="selected[]" value="{{ page.page_id }}" /></td>
+                    <td>
+                      <div class="fw-semibold">{{ page.title }}</div>
+                      <div class="d-flex flex-wrap gap-2 mt-1">
+                        <span class="badge text-bg-light text-dark rms-status-badge">
+                          {{ page.editor_mode == 'builder' ? text_editor_builder : text_editor_html }}
+                        </span>
+                        <span class="badge text-bg-light text-dark rms-status-badge">
+                          {{ text_submissions }}: {{ page.submission_count }}
+                        </span>
+                      </div>
+                    </td>
+                    <td>
+                      {% if page.status == 'published' %}
+                        <span class="badge text-bg-success rms-status-badge">{{ text_published }}</span>
+                      {% else %}
+                        <span class="badge text-bg-secondary rms-status-badge">{{ text_draft }}</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if page.is_premium %}
+                        <span class="badge text-bg-primary rms-status-badge">{{ text_enabled }}</span>
+                      {% else %}
+                        <span class="badge text-bg-light text-dark rms-status-badge">{{ text_disabled }}</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ page.price }}</td>
+                    <td>{{ page.owner_name }}</td>
+                    <td>{{ page.date_added }}</td>
+                    <td class="text-end">
+                      <a href="{{ page.edit }}" class="btn btn-outline-primary btn-sm" data-testid="admin-landpage-edit-link"><i class="fa-solid fa-pen"></i></a>
+                      <a href="{{ page.builder }}" class="btn btn-outline-secondary btn-sm" data-testid="admin-landpage-builder-link"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></a>
+                      <a href="{{ page.submissions }}" class="btn {{ page.submission_count ? 'btn-outline-success' : 'btn-outline-secondary' }} btn-sm" title="{{ button_submissions }}" data-testid="admin-landpage-submissions-link"><i class="fa-solid fa-inbox"></i></a>
+                    </td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr><td colspan="8" class="rms-empty-state">{{ text_no_results }}</td></tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </form>
+    {% endset %}
+    {% include 'common/rms_admin_card.twig' with {
+      rms_card_icon: 'fa-solid fa-list',
+      rms_card_title: text_list,
+      rms_card_body: rms_card_body
+    } %}
+  </div>
+</div>
+{{ footer }}

@@ -1,0 +1,155 @@
+{{ header }}{{ column_left }}
+<div id="content" data-testid="admin-landpage-submission-form-page">
+  {% set rms_actions = [
+    {
+      tag: 'button',
+      type: 'submit',
+      form: 'form-submission',
+      class: 'btn btn-primary',
+      icon: 'fa-solid fa-floppy-disk',
+      text: button_save
+    },
+    {
+      href: cancel,
+      class: 'btn btn-light',
+      icon: 'fa-solid fa-reply',
+      text: button_cancel
+    }
+  ] %}
+  {% if submission.page_edit %}
+    {% set rms_actions = rms_actions|merge([
+      {
+        href: submission.page_edit,
+        class: 'btn btn-outline-secondary',
+        icon: 'fa-solid fa-up-right-from-square',
+        text: button_open_page
+      }
+    ]) %}
+  {% endif %}
+  {% include 'common/rms_page_header.twig' with {
+    rms_heading_title: heading_title,
+    rms_breadcrumbs: breadcrumbs,
+    rms_actions: rms_actions
+  } %}
+  <div class="container-fluid">
+    {% set rms_card_body %}
+      <form action="{{ action }}" method="post" id="form-submission" data-testid="admin-landpage-submission-form">
+        <div class="row g-4">
+          <div class="col-lg-4">
+            <div class="card border shadow-sm h-100">
+              <div class="card-body">
+                <h4 class="mb-3">{{ text_submission_identity }}</h4>
+                <div class="mb-3">
+                  <div class="small text-muted">{{ column_page }}</div>
+                  <div class="fw-semibold">{{ submission.page_title ?: ('#' ~ submission.page_id) }}</div>
+                </div>
+                <div class="mb-3">
+                  <div class="small text-muted">{{ column_date }}</div>
+                  <div>{{ submission.created_at }}</div>
+                </div>
+                <div class="mb-3">
+                  <div class="small text-muted">{{ column_name }}</div>
+                  <div>{{ submission.name ?: '-' }}</div>
+                </div>
+                <div class="mb-3">
+                  <div class="small text-muted">{{ column_email }}</div>
+                  <div>
+                    {% if submission.email %}
+                      <a href="mailto:{{ submission.email }}">{{ submission.email }}</a>
+                    {% else %}
+                      -
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <div class="small text-muted">{{ column_phone }}</div>
+                  <div>{{ submission.phone ?: '-' }}</div>
+                </div>
+                <div class="mb-0">
+                  <div class="small text-muted">{{ column_status }}</div>
+                  <span class="rms-status-badge {{ submission.status_class }}">{{ submission.status_label }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-8">
+            <div class="card border shadow-sm mb-4">
+              <div class="card-body">
+                <h4 class="mb-3">{{ text_form }}</h4>
+                <div class="mb-3">
+                  <label class="form-label" for="input-status">{{ entry_status }}</label>
+                  <select name="status" id="input-status" class="form-select" data-testid="admin-landpage-submission-status">
+                    {% for status_value, status_label in statuses %}
+                      <option value="{{ status_value }}" {{ status_value == submission.status ? 'selected' : '' }}>{{ status_label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="mb-0">
+                  <label class="form-label" for="input-admin-notes">{{ entry_admin_notes }}</label>
+                  <textarea name="admin_notes" id="input-admin-notes" rows="8" class="form-control" data-testid="admin-landpage-submission-notes">{{ submission.admin_notes }}</textarea>
+                </div>
+              </div>
+            </div>
+
+            <div class="card border shadow-sm mb-4">
+              <div class="card-body">
+                <h4 class="mb-3">{{ text_submission_tracking }}</h4>
+                {% if submission.has_tracking or submission.submitted_from or submission.referer %}
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <div class="small text-muted">{{ entry_source }}</div>
+                      <div>{{ submission.source ?: '-' }}</div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="small text-muted">{{ entry_medium }}</div>
+                      <div>{{ submission.medium ?: '-' }}</div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="small text-muted">{{ entry_campaign }}</div>
+                      <div>{{ submission.campaign ?: '-' }}</div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="small text-muted">{{ entry_term }}</div>
+                      <div>{{ submission.term ?: '-' }}</div>
+                    </div>
+                    <div class="col-md-12">
+                      <div class="small text-muted">{{ entry_content }}</div>
+                      <div>{{ submission.content ?: '-' }}</div>
+                    </div>
+                    <div class="col-md-12">
+                      <div class="small text-muted">{{ column_source }}</div>
+                      <div class="text-break">{{ submission.submitted_from ?: '-' }}</div>
+                      {% if submission.referer %}
+                        <div class="small text-muted text-break mt-2">{{ submission.referer }}</div>
+                      {% endif %}
+                    </div>
+                  </div>
+                {% else %}
+                  <div class="text-muted">{{ text_submission_source_none }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="card border shadow-sm">
+              <div class="card-body">
+                <h4 class="mb-3">{{ text_submission_details }}</h4>
+                {% if submission.payload_pretty %}
+                  <pre class="mb-0" style="white-space: pre-wrap;">{{ submission.payload_pretty }}</pre>
+                {% else %}
+                  <div class="text-muted">{{ text_payload_empty }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    {% endset %}
+    {% include 'common/rms_admin_card.twig' with {
+      rms_card_icon: 'fa-solid fa-user-pen',
+      rms_card_title: text_form,
+      rms_card_body: rms_card_body
+    } %}
+  </div>
+</div>
+{{ footer }}

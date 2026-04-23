@@ -1,0 +1,11 @@
+<div class="card rms-admin-card{% if rms_card_class is defined and rms_card_class %} {{ rms_card_class }}{% endif %}">
+  {% if rms_card_icon is defined or rms_card_title is defined %}
+    <div class="card-header">
+      {% if rms_card_icon is defined and rms_card_icon %}<i class="{{ rms_card_icon }}"></i>{% endif %}
+      {% if rms_card_title is defined and rms_card_title %}<span>{{ rms_card_title }}</span>{% endif %}
+    </div>
+  {% endif %}
+  <div class="card-body">
+    {{ rms_card_body|raw }}
+  </div>
+</div>

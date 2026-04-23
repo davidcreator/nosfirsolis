@@ -1,0 +1,16 @@
+{
+  "name": "nosfirsolis/strategic-planner",
+  "description": "Plataforma estrategica anual de planejamento de conteudo em PHP MVCL",
+  "type": "project",
+  "require": {
+    "php": ">=8.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "System\\": ""
+    }
+  },
+  "config": {
+    "vendor-dir": "Vendor"
+  }
+}
