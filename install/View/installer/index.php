@@ -1,6 +1,6 @@
 <section class="card">
     <h1><?= e($title ?? $t('install.title', 'Instalador')) ?></h1>
-    <p class="subtitle"><?= e($t('install.subtitle', 'Configuracao inicial da plataforma estrategica de planejamento de conteudo.')) ?></p>
+    <p class="subtitle"><?= e($t('install.subtitle', 'Configuração inicial da plataforma estratégica de planejamento de conteúdo.')) ?></p>
 
     <?php if ($message_success): ?>
         <div class="alert success"><?= e($message_success) ?></div>
@@ -10,7 +10,7 @@
         <div class="alert error"><?= e($message_error) ?></div>
     <?php endif; ?>
 
-    <h2><?= e($t('install.step_environment', '1. Verificacao de ambiente')) ?></h2>
+    <h2><?= e($t('install.step_environment', '1. Verificação de ambiente')) ?></h2>
     <table class="table-checks">
         <thead>
             <tr>
@@ -56,7 +56,7 @@
         </label>
 
         <label>
-            <?= e($t('install.field_db_user', 'Usuario do banco')) ?>
+            <?= e($t('install.field_db_user', 'Usuário do banco')) ?>
             <input type="text" name="db_user" value="<?= e($values['db_user'] ?? '') ?>" required>
         </label>
 
@@ -71,7 +71,7 @@
         </label>
 
         <label>
-            <?= e($t('install.field_admin_email', 'Email do administrador')) ?>
+            <?= e($t('install.field_admin_email', 'E-mail do administrador')) ?>
             <input type="email" name="admin_email" value="<?= e($values['admin_email'] ?? '') ?>" required>
         </label>
 
@@ -81,7 +81,7 @@
         </label>
 
         <label>
-            <?= e($t('install.field_timezone', 'Fuso horario')) ?>
+            <?= e($t('install.field_timezone', 'Fuso horário')) ?>
             <input type="text" name="timezone" value="<?= e($values['timezone'] ?? 'America/Sao_Paulo') ?>">
         </label>
 
@@ -90,7 +90,7 @@
             <?php $selectedLanguage = strtolower((string) ($values['language_code'] ?? 'en-us')); ?>
             <select name="language_code">
                 <option value="en-us" <?= $selectedLanguage === 'en-us' ? 'selected' : '' ?>><?= e($t('install.language_en_us', 'English (United States) - en-us')) ?></option>
-                <option value="pt-br" <?= $selectedLanguage === 'pt-br' ? 'selected' : '' ?>><?= e($t('install.language_pt_br', 'Portugues (Brasil) - pt-br')) ?></option>
+                <option value="pt-br" <?= $selectedLanguage === 'pt-br' ? 'selected' : '' ?>><?= e($t('install.language_pt_br', 'Português (Brasil) - pt-br')) ?></option>
             </select>
         </label>
 

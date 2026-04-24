@@ -52,7 +52,7 @@ class CommemorativesController extends BaseController
         $item = $this->loader->model('commemorative_dates')->find($id);
 
         if (!$item) {
-            flash('error', $this->t('commemoratives.flash_not_found', 'Registro nao encontrado.'));
+            flash('error', $this->t('commemoratives.flash_not_found', 'Registro não encontrado.'));
             $this->redirectToRoute('commemoratives/index');
         }
 

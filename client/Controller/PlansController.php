@@ -38,7 +38,7 @@ class PlansController extends BaseController
         $endDate = (string) $this->request->post('end_date');
 
         if ($startDate === '' || $endDate === '') {
-            flash('error', $this->t('plans.flash_period_required', 'Informe inicio e fim do periodo.'));
+            flash('error', $this->t('plans.flash_period_required', 'Informe início e fim do período.'));
             $this->redirectToRoute('plans/index');
         }
 
@@ -92,7 +92,7 @@ class PlansController extends BaseController
         $template = $service->findTemplate($templateSlug);
 
         if (!$template) {
-            flash('error', $this->t('plans.flash_invalid_template', 'Template invalido.'));
+            flash('error', $this->t('plans.flash_invalid_template', 'Template inválido.'));
             $this->redirectToRoute('plans/index');
         }
 
@@ -138,7 +138,7 @@ class PlansController extends BaseController
 
         $plan = $planner->planByIdForUser($id, $userId);
         if (!$plan) {
-            flash('error', $this->t('plans.flash_not_found_or_forbidden', 'Plano nao encontrado ou sem permissao de acesso.'));
+            flash('error', $this->t('plans.flash_not_found_or_forbidden', 'Plano não encontrado ou sem permissão de acesso.'));
             $this->redirectToRoute('plans/index');
         }
 
@@ -168,7 +168,7 @@ class PlansController extends BaseController
         $planId = (int) $this->request->post('plan_id', 0);
 
         if ($itemId <= 0 || $planId <= 0) {
-            flash('error', $this->t('plans.flash_invalid_item_for_update', 'Item de plano invalido para atualizacao.'));
+            flash('error', $this->t('plans.flash_invalid_item_for_update', 'Item de plano inválido para atualização.'));
             $this->redirectToRoute('plans/index');
         }
 
@@ -180,7 +180,7 @@ class PlansController extends BaseController
         if ($updated) {
             flash('success', $this->t('plans.flash_item_updated', 'Item atualizado com sucesso.'));
         } else {
-            flash('error', $this->t('plans.flash_item_update_error', 'Nao foi possivel atualizar o item selecionado.'));
+            flash('error', $this->t('plans.flash_item_update_error', 'Não foi possível atualizar o item selecionado.'));
         }
 
         $query = $this->showQueryFromPost();
@@ -196,13 +196,13 @@ class PlansController extends BaseController
         $planId = (int) $this->request->post('plan_id', 0);
 
         if ($planId <= 0) {
-            flash('error', $this->t('plans.flash_invalid_plan_for_bulk_update', 'Plano invalido para atualizacao em lote.'));
+            flash('error', $this->t('plans.flash_invalid_plan_for_bulk_update', 'Plano inválido para atualização em lote.'));
             $this->redirectToRoute('plans/index');
         }
 
         $status = $this->normalizeItemStatus((string) $this->request->post('bulk_status', ''));
         if ($status === null) {
-            flash('error', $this->t('plans.flash_invalid_bulk_status', 'Status de lote invalido.'));
+            flash('error', $this->t('plans.flash_invalid_bulk_status', 'Status de lote inválido.'));
             $query = $this->showQueryFromPost();
             $this->redirectToRoute('plans/show/' . $planId . ($query !== '' ? '?' . $query : ''));
         }
@@ -222,7 +222,7 @@ class PlansController extends BaseController
                 ['count' => $updated]
             ));
         } else {
-            flash('error', $this->t('plans.flash_bulk_update_no_changes', 'Nenhum item foi atualizado. Verifique a selecao e as permissoes do plano.'));
+            flash('error', $this->t('plans.flash_bulk_update_no_changes', 'Nenhum item foi atualizado. Verifique a seleção e as permissões do plano.'));
         }
 
         $query = $this->showQueryFromPost();
@@ -239,7 +239,7 @@ class PlansController extends BaseController
         $plan = $planner->planByIdForUser($id, $userId);
 
         if (!$plan) {
-            flash('error', $this->t('plans.flash_not_found_for_export', 'Plano nao encontrado para exportacao.'));
+            flash('error', $this->t('plans.flash_not_found_for_export', 'Plano não encontrado para exportação.'));
             $this->redirectToRoute('plans/index');
         }
 
@@ -266,12 +266,12 @@ class PlansController extends BaseController
         $exporter = new ExportService();
         $csv = $exporter->exportCsv($rows, [
             $this->t('plans.csv_header_planned_date', 'Data planejada'),
-            $this->t('plans.csv_header_title', 'Titulo'),
+            $this->t('plans.csv_header_title', 'Título'),
             $this->t('plans.csv_header_format', 'Formato'),
             $this->t('plans.csv_header_status', 'Status'),
             $this->t('plans.csv_header_channels', 'Canais'),
-            $this->t('plans.csv_header_description', 'Descricao'),
-            $this->t('plans.csv_header_note', 'Observacao'),
+            $this->t('plans.csv_header_description', 'Descrição'),
+            $this->t('plans.csv_header_note', 'Observação'),
         ]);
 
         $rawName = strtolower((string) ($plan['name'] ?? ('plano-' . $id)));
@@ -299,7 +299,7 @@ class PlansController extends BaseController
         $noteText = trim((string) $this->request->post('note_text'));
 
         if ($noteDate === '' || $noteText === '') {
-            flash('error', $this->t('plans.flash_note_required', 'Data e observacao sao obrigatorias.'));
+            flash('error', $this->t('plans.flash_note_required', 'Data e observação são obrigatórias.'));
             $this->redirectToRoute('calendar/index?mode=monthly');
         }
 
@@ -312,7 +312,7 @@ class PlansController extends BaseController
 
         flash('success', $this->t(
             'plans.flash_note_saved',
-            'Observacao salva para {date}.',
+            'Observação salva para {date}.',
             ['date' => $noteDate]
         ));
         $this->redirectToRoute('calendar/index?mode=monthly&year=' . date('Y', strtotime($noteDate)) . '&month=' . date('n', strtotime($noteDate)));

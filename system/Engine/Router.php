@@ -45,7 +45,7 @@ class Router
             $response->setOutput($this->translate(
                 $language,
                 'common.router_controller_not_found',
-                'Controller nao encontrada: {controller}',
+                'Controlador não encontrado: {controller}',
                 ['controller' => $controllerClass]
             ));
             return;
@@ -58,7 +58,7 @@ class Router
             $response->setOutput($this->translate(
                 $language,
                 'common.router_action_not_found',
-                'Acao nao encontrada: {action}',
+                'Ação não encontrada: {action}',
                 ['action' => $actionMethod]
             ));
             return;
@@ -71,7 +71,7 @@ class Router
                 $response->setOutput($this->translate(
                     $language,
                     'common.router_action_not_found',
-                    'Acao nao encontrada: {action}',
+                    'Ação não encontrada: {action}',
                     ['action' => $actionMethod]
                 ));
                 return;
@@ -81,7 +81,7 @@ class Router
             $response->setOutput($this->translate(
                 $language,
                 'common.router_action_not_found',
-                'Acao nao encontrada: {action}',
+                'Ação não encontrada: {action}',
                 ['action' => $actionMethod]
             ));
             return;

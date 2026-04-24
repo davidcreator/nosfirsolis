@@ -1,13 +1,13 @@
 <?php
-$monthNames = [1 => 'Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-$weekNames = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom'];
+$monthNames = [1 => 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+$weekNames = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
 ?>
 <section class="panel">
     <div class="panel-head-inline">
-        <h2>Calendario Mensal: <?= e($monthNames[(int) $month] ?? '') ?> / <?= (int) $year ?></h2>
+        <h2>Calendário Mensal: <?= e($monthNames[(int) $month] ?? '') ?> / <?= (int) $year ?></h2>
         <div class="inline-links">
-            <a href="<?= e(route_url('calendar/monthly?year=' . $year . '&month=' . max(1, $month - 1))) ?>">Mes anterior</a>
-            <a href="<?= e(route_url('calendar/monthly?year=' . $year . '&month=' . min(12, $month + 1))) ?>">Proximo mes</a>
+            <a href="<?= e(route_url('calendar/monthly?year=' . $year . '&month=' . max(1, $month - 1))) ?>">Mês anterior</a>
+            <a href="<?= e(route_url('calendar/monthly?year=' . $year . '&month=' . min(12, $month + 1))) ?>">Próximo mês</a>
         </div>
     </div>
 
@@ -16,7 +16,7 @@ $weekNames = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom'];
         <label>Ano
             <input type="number" name="year" value="<?= (int) $year ?>" min="1970" max="2100">
         </label>
-        <label>Mes
+        <label>Mês
             <input type="number" name="month" value="<?= (int) $month ?>" min="1" max="12">
         </label>
         <?php include __DIR__ . '/../partials/filters.php'; ?>
@@ -55,7 +55,7 @@ $weekNames = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom'];
                             <?php endif; ?>
                             <?php if (!empty($events['suggestions'])): ?>
                                 <?php foreach ($events['suggestions'] as $suggestion): ?>
-                                    <div class="tag suggestion">Sugestao: <?= e($suggestion['title']) ?></div>
+                                    <div class="tag suggestion">Sugestão: <?= e($suggestion['title']) ?></div>
                                 <?php endforeach; ?>
                             <?php endif; ?>
                             <?php if (!empty($events['notes'])): ?>
@@ -71,7 +71,7 @@ $weekNames = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom'];
         </tbody>
     </table>
 
-    <h3>Registrar observacao manual por dia</h3>
+    <h3>Registrar observação manual por dia</h3>
     <form method="post" action="<?= e(route_url('plans/saveNote')) ?>" class="filters-grid">
         <?= csrf_field() ?>
         <label>Data
@@ -85,9 +85,9 @@ $weekNames = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom'];
                 <option value="editorial">Editorial</option>
             </select>
         </label>
-        <label class="wide">Observacao
+        <label class="wide">Observação
             <input type="text" name="note_text" placeholder="Ex.: alinhar pauta com campanha de leads" required>
         </label>
-        <button type="submit"><i class="fa-solid fa-note-sticky"></i> Salvar observacao</button>
+        <button type="submit"><i class="fa-solid fa-note-sticky"></i> Salvar observação</button>
     </form>
 </section>

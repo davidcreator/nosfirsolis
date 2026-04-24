@@ -9,7 +9,7 @@ class SuggestionsController extends BaseController
         $this->boot('admin.suggestions');
 
         $this->render('suggestions/index', [
-            'title' => $this->t('suggestions.title_index', 'Sugestoes Estrategicas'),
+            'title' => $this->t('suggestions.title_index', 'Sugestões Estratégicas'),
             'items' => $this->loader->model('content_suggestions')->allDetailed(),
         ]);
     }
@@ -19,7 +19,7 @@ class SuggestionsController extends BaseController
         $this->boot('admin.suggestions');
 
         $this->render('suggestions/form', [
-            'title' => $this->t('suggestions.title_create', 'Nova Sugestao'),
+            'title' => $this->t('suggestions.title_create', 'Nova Sugestão'),
             'action' => 'suggestions/store',
             'item' => null,
             'selected_channels' => [],
@@ -60,7 +60,7 @@ class SuggestionsController extends BaseController
             $model->setChannels($id, array_map('intval', $channels));
         }
 
-        flash('success', $this->t('suggestions.flash_created', 'Sugestao cadastrada.'));
+        flash('success', $this->t('suggestions.flash_created', 'Sugestão cadastrada.'));
         $this->redirectToRoute('suggestions/index');
     }
 
@@ -71,12 +71,12 @@ class SuggestionsController extends BaseController
         $item = $model->find($id);
 
         if (!$item) {
-            flash('error', $this->t('suggestions.flash_not_found', 'Sugestao nao encontrada.'));
+            flash('error', $this->t('suggestions.flash_not_found', 'Sugestão não encontrada.'));
             $this->redirectToRoute('suggestions/index');
         }
 
         $this->render('suggestions/form', [
-            'title' => $this->t('suggestions.title_edit', 'Editar Sugestao'),
+            'title' => $this->t('suggestions.title_edit', 'Editar Sugestão'),
             'action' => 'suggestions/update/' . $id,
             'item' => $item,
             'selected_channels' => $model->getChannels($id),
@@ -115,7 +115,7 @@ class SuggestionsController extends BaseController
         $channels = $this->request->post('channels', []);
         $model->setChannels($id, is_array($channels) ? array_map('intval', $channels) : []);
 
-        flash('success', $this->t('suggestions.flash_updated', 'Sugestao atualizada.'));
+        flash('success', $this->t('suggestions.flash_updated', 'Sugestão atualizada.'));
         $this->redirectToRoute('suggestions/index');
     }
 
@@ -125,7 +125,7 @@ class SuggestionsController extends BaseController
         $this->requirePostAndCsrf();
         $this->loader->model('content_suggestions')->deleteById($id);
 
-        flash('success', $this->t('suggestions.flash_deleted', 'Sugestao removida.'));
+        flash('success', $this->t('suggestions.flash_deleted', 'Sugestão removida.'));
         $this->redirectToRoute('suggestions/index');
     }
 }

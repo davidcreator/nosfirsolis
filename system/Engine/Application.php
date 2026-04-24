@@ -62,7 +62,7 @@ class Application
             }
         }
 
-        // Compatibilidade com configuracao legada em system/Storage/config.php.
+        // Compatibilidade com configuração legada em system/Storage/config.php.
         $storageConfigFile = DIR_SYSTEM . DIRECTORY_SEPARATOR . 'Storage' . DIRECTORY_SEPARATOR . 'config.php';
         if (is_file($storageConfigFile)) {
             $runtime = require $storageConfigFile;
@@ -172,7 +172,7 @@ class Application
             header('Content-Type: text/plain; charset=UTF-8');
         }
 
-        echo 'Bad Request: host nao permitido.';
+        echo 'Bad Request: host não permitido.';
         exit;
     }
 

@@ -32,6 +32,11 @@ class Response
     {
         if (!headers_sent()) {
             http_response_code($this->statusCode);
+
+            if (!$this->hasHeaderPrefix('Content-Type:')) {
+                header('Content-Type: text/html; charset=UTF-8', true);
+            }
+
             foreach ($this->headers as $header) {
                 header($header, true);
             }
@@ -46,5 +51,18 @@ class Response
             header('Location: ' . $url, true, 302);
         }
         exit;
+    }
+
+    private function hasHeaderPrefix(string $prefix): bool
+    {
+        $prefixLength = strlen($prefix);
+
+        foreach ($this->headers as $header) {
+            if (strncasecmp($header, $prefix, $prefixLength) === 0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

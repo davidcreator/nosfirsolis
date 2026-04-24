@@ -10,7 +10,7 @@
             <tr>
                 <th><?= e($t('campaigns.col_name', 'Nome')) ?></th>
                 <th><?= e($t('campaigns.col_objective', 'Objetivo')) ?></th>
-                <th><?= e($t('campaigns.col_period', 'Periodo')) ?></th>
+                <th><?= e($t('campaigns.col_period', 'Período')) ?></th>
                 <th><?= e($t('campaigns.col_status', 'Status')) ?></th>
                 <th></th>
             </tr>

@@ -53,15 +53,15 @@ class TrackingController extends BaseController
         $job = new JobMonitorService($this->registry);
         $job->checkin('tracking.create_link', $result ? 'ok' : 'warning', null, [
             'user_id' => $userId,
-        ], $result ? null : $this->t('tracking.log_create_error', 'Falha ao criar link rastreavel'));
+        ], $result ? null : $this->t('tracking.log_create_error', 'Falha ao criar link rastreável'));
 
         $obs = new ObservabilityService($this->registry);
         $obs->log(
             $result ? 'info' : 'warning',
             'tracking',
             $result
-                ? $this->t('tracking.log_created', 'Novo link rastreavel criado.')
-                : $this->t('tracking.log_create_error', 'Falha ao criar link rastreavel.'),
+                ? $this->t('tracking.log_created', 'Novo link rastreável criado.')
+                : $this->t('tracking.log_create_error', 'Falha ao criar link rastreável.'),
             [
                 'user_id' => $userId,
                 'channel_slug' => (string) $this->request->post('channel_slug', ''),
@@ -71,7 +71,7 @@ class TrackingController extends BaseController
         );
 
         if (!$result) {
-            flash('error', $this->t('tracking.flash_create_error', 'Nao foi possivel criar o link rastreavel. Verifique a URL e os parametros.'));
+            flash('error', $this->t('tracking.flash_create_error', 'Não foi possível criar o link rastreável. Verifique a URL e os parâmetros.'));
             $this->redirectToRoute('tracking/index');
         }
 
@@ -87,7 +87,7 @@ class TrackingController extends BaseController
             'user_id' => $userId,
         ]);
 
-        flash('success', $this->t('tracking.flash_created', 'Link rastreavel criado com sucesso.'));
+        flash('success', $this->t('tracking.flash_created', 'Link rastreável criado com sucesso.'));
         $this->redirectToRoute('tracking/index');
     }
 
@@ -100,7 +100,7 @@ class TrackingController extends BaseController
         $tracking = new CampaignTrackingService($this->registry);
         $tracking->archiveById($id, $userId);
 
-        flash('success', $this->t('tracking.flash_archived', 'Link rastreavel arquivado.'));
+        flash('success', $this->t('tracking.flash_archived', 'Link rastreável arquivado.'));
         $this->redirectToRoute('tracking/index');
     }
 
@@ -111,7 +111,7 @@ class TrackingController extends BaseController
 
         if ($url === null || $url === '') {
             $this->response->setStatusCode(404);
-            $this->response->setOutput($this->t('tracking.output_not_found', 'Link nao encontrado ou inativo.'));
+            $this->response->setOutput($this->t('tracking.output_not_found', 'Link não encontrado ou inativo.'));
             $this->response->send();
             exit;
         }

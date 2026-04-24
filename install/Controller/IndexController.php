@@ -13,7 +13,7 @@ class IndexController extends Controller
             $this->response->setStatusCode(403);
             $this->render('installer/locked', [
                 'title' => $this->t('install.locked_title', 'Instalador protegido'),
-                'message' => $this->t('install.locked_message', 'O sistema ja esta instalado. Reinstalacao exige permissao administrativa e chave de autorizacao.'),
+                'message' => $this->t('install.locked_message', 'O sistema já está instalado. Reinstalação exige permissão administrativa e chave de autorização.'),
             ]);
             return;
         }
@@ -47,7 +47,7 @@ class IndexController extends Controller
         }
 
         if (!verify_csrf($this->request->post('_token'))) {
-            flash('error', $this->t('install.flash_invalid_csrf', 'Token CSRF invalido.'));
+            flash('error', $this->t('install.flash_invalid_csrf', 'Token CSRF inválido.'));
             $this->redirectToRoute('index/index');
         }
 
@@ -55,7 +55,7 @@ class IndexController extends Controller
         if ($this->isInstalled()) {
             $allowReinstall = $this->hasReinstallPermission();
             if (!$allowReinstall) {
-                flash('error', $this->t('install.flash_reinstall_blocked', 'Reinstalacao bloqueada sem permissao valida.'));
+                flash('error', $this->t('install.flash_reinstall_blocked', 'Reinstalação bloqueada sem permissão válida.'));
                 $this->redirectToRoute('index/index');
             }
         }
@@ -81,7 +81,7 @@ class IndexController extends Controller
             $this->redirectToRoute('index/index');
         }
 
-        flash('success', $this->t('install.flash_success', 'Instalacao concluida. Acesse o painel do cliente para iniciar.'));
+        flash('success', $this->t('install.flash_success', 'Instalação concluída. Acesse o painel do cliente para iniciar.'));
         $this->response->redirect($this->clientUrl());
     }
 

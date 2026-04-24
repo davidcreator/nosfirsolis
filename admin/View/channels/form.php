@@ -12,7 +12,7 @@
             <?php $type = $item['platform_type'] ?? 'social'; ?>
             <select name="platform_type">
                 <option value="social" <?= $type === 'social' ? 'selected' : '' ?>><?= e($t('channels.type_social', 'Social')) ?></option>
-                <option value="video" <?= $type === 'video' ? 'selected' : '' ?>><?= e($t('channels.type_video', 'Video')) ?></option>
+                <option value="video" <?= $type === 'video' ? 'selected' : '' ?>><?= e($t('channels.type_video', 'Vídeo')) ?></option>
                 <option value="blog" <?= $type === 'blog' ? 'selected' : '' ?>><?= e($t('channels.type_blog', 'Blog')) ?></option>
                 <option value="podcast" <?= $type === 'podcast' ? 'selected' : '' ?>><?= e($t('channels.type_podcast', 'Podcast')) ?></option>
                 <option value="email" <?= $type === 'email' ? 'selected' : '' ?>><?= e($t('channels.type_email', 'E-mail')) ?></option>

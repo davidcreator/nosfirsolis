@@ -38,7 +38,7 @@ $statusBarTotal = max(1, array_sum($statusBreakdown));
         <div>
             <h2><?= e($planName) ?></h2>
             <p class="calendar-subtitle">
-                Periodo: <?= e($planPeriod) ?> | Status: <strong><?= e($planStatus) ?></strong>
+                Período: <?= e($planPeriod) ?> | Status: <strong><?= e($planStatus) ?></strong>
                 <?php if ($campaignName !== ''): ?> | Campanha: <strong><?= e($campaignName) ?></strong><?php endif; ?>
             </p>
         </div>
@@ -60,7 +60,7 @@ $statusBarTotal = max(1, array_sum($statusBreakdown));
             <strong><?= (float) $completionRate ?>%</strong>
         </article>
         <article class="plan-insight-card">
-            <span>Taxa de publicacao</span>
+            <span>Taxa de publicação</span>
             <strong><?= (float) $publicationRate ?>%</strong>
         </article>
         <article class="plan-insight-card<?= $overdueItems > 0 ? ' warn' : '' ?>">
@@ -106,7 +106,7 @@ $statusBarTotal = max(1, array_sum($statusBreakdown));
         </label>
 
         <label>Busca
-            <input type="text" name="q" value="<?= e($searchQuery) ?>" placeholder="Buscar por titulo, descricao ou observacao">
+            <input type="text" name="q" value="<?= e($searchQuery) ?>" placeholder="Buscar por título, descrição ou observação">
         </label>
 
         <button type="submit"><i class="fa-solid fa-filter"></i> Aplicar filtros</button>
@@ -133,7 +133,7 @@ $statusBarTotal = max(1, array_sum($statusBreakdown));
         <div class="plan-bulk-actions">
             <button type="submit" class="btn-compact"><i class="fa-solid fa-layer-group"></i> Atualizar selecionados</button>
             <button type="button" class="btn-link" id="selectAllItemsBtn"><i class="fa-solid fa-check-double"></i> Marcar todos</button>
-            <button type="button" class="btn-link" id="clearSelectedItemsBtn"><i class="fa-solid fa-eraser"></i> Limpar selecao</button>
+            <button type="button" class="btn-link" id="clearSelectedItemsBtn"><i class="fa-solid fa-eraser"></i> Limpar seleção</button>
         </div>
 
         <span class="meta-text">Selecionados: <strong id="selectedItemsCount">0</strong></span>
@@ -145,7 +145,7 @@ $statusBarTotal = max(1, array_sum($statusBreakdown));
             <tr>
                 <th class="bulk-check-col"><input type="checkbox" id="selectAllItemsToggle" aria-label="Selecionar todos os itens"></th>
                 <th>Data planejada</th>
-                <th>Conteudo</th>
+                <th>Conteúdo</th>
                 <th>Formato</th>
                 <th>Execucao</th>
             </tr>
@@ -198,8 +198,8 @@ $statusBarTotal = max(1, array_sum($statusBreakdown));
                                         </select>
                                     </label>
 
-                                    <label>Observacao
-                                        <textarea name="manual_note" rows="2" placeholder="Registrar aprendizado, bloqueio ou acao tomada"><?= e($item['manual_note'] ?? '') ?></textarea>
+                                    <label>Observação
+                                        <textarea name="manual_note" rows="2" placeholder="Registrar aprendizado, bloqueio ou ação tomada"><?= e($item['manual_note'] ?? '') ?></textarea>
                                     </label>
 
                                     <button type="submit" class="btn-compact"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
@@ -294,7 +294,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (ids.length === 0) {
             event.preventDefault();
-            alert('Selecione ao menos um item para aplicar a atualizacao em lote.');
+            alert('Selecione ao menos um item para aplicar a atualização em lote.');
         }
     });
 

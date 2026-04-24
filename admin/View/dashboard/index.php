@@ -7,10 +7,10 @@ $campaigns = (int) ($summary['campaigns'] ?? 0);
 $platforms = (int) ($summary['platforms'] ?? 0);
 
 $metrics = [
-    ['label' => $t('dashboard.metric_users', 'Usuarios'), 'value' => $users, 'icon' => 'fa-solid fa-users', 'accent' => 'blue'],
+    ['label' => $t('dashboard.metric_users', 'Usuários'), 'value' => $users, 'icon' => 'fa-solid fa-users', 'accent' => 'blue'],
     ['label' => $t('dashboard.metric_holidays', 'Feriados'), 'value' => $holidays, 'icon' => 'fa-solid fa-calendar-day', 'accent' => 'red'],
     ['label' => $t('dashboard.metric_commemoratives', 'Comemorativas'), 'value' => $commemoratives, 'icon' => 'fa-solid fa-star', 'accent' => 'amber'],
-    ['label' => $t('dashboard.metric_suggestions', 'Sugestoes'), 'value' => $suggestions, 'icon' => 'fa-solid fa-lightbulb', 'accent' => 'green'],
+    ['label' => $t('dashboard.metric_suggestions', 'Sugestões'), 'value' => $suggestions, 'icon' => 'fa-solid fa-lightbulb', 'accent' => 'green'],
     ['label' => $t('dashboard.metric_campaigns', 'Campanhas'), 'value' => $campaigns, 'icon' => 'fa-solid fa-bullhorn', 'accent' => 'purple'],
     ['label' => $t('dashboard.metric_platforms', 'Plataformas'), 'value' => $platforms, 'icon' => 'fa-solid fa-share-nodes', 'accent' => 'cyan'],
 ];
@@ -18,8 +18,8 @@ $metrics = [
 $baseTotal = max(1, $holidays + $commemoratives + $suggestions + $campaigns);
 $formatCounter = [];
 foreach ($recent_suggestions as $suggestionItem) {
-    $format = trim((string) ($suggestionItem['format_type'] ?? $t('dashboard.undefined_format', 'Nao definido')));
-    $key = $format !== '' ? $format : $t('dashboard.undefined_format', 'Nao definido');
+    $format = trim((string) ($suggestionItem['format_type'] ?? $t('dashboard.undefined_format', 'Não definido')));
+    $key = $format !== '' ? $format : $t('dashboard.undefined_format', 'Não definido');
     $formatCounter[$key] = (int) ($formatCounter[$key] ?? 0) + 1;
 }
 arsort($formatCounter);
@@ -29,11 +29,11 @@ $topFormats = array_slice($formatCounter, 0, 4, true);
 <section class="panel dashboard-hero">
     <div class="hero-content">
         <span class="hero-badge"><i class="fa-solid fa-gauge-high"></i> <?= e($app_name ?? 'Solis') ?></span>
-        <h1><?= e($t('dashboard.hero_title', '{app} - Visao Administrativa', ['app' => ($app_name ?? 'Solis')])) ?></h1>
-        <p><?= e($t('dashboard.hero_description', 'Monitore a operacao editorial anual, valide consistencia de dados estrategicos e acelere a curadoria de conteudos.')) ?></p>
+        <h1><?= e($t('dashboard.hero_title', '{app} - Visão Administrativa', ['app' => ($app_name ?? 'Solis')])) ?></h1>
+        <p><?= e($t('dashboard.hero_description', 'Monitore a operação editorial anual, valide consistência de dados estratégicos e acelere a curadoria de conteúdos.')) ?></p>
     </div>
     <div class="hero-actions">
-        <a class="btn" href="<?= e(route_url('suggestions/create')) ?>"><i class="fa-solid fa-plus"></i> <?= e($t('dashboard.button_new_suggestion', 'Nova sugestao')) ?></a>
+        <a class="btn" href="<?= e(route_url('suggestions/create')) ?>"><i class="fa-solid fa-plus"></i> <?= e($t('dashboard.button_new_suggestion', 'Nova sugestão')) ?></a>
         <a class="btn" href="<?= e(route_url('holidays/create')) ?>"><i class="fa-solid fa-calendar-plus"></i> <?= e($t('dashboard.button_new_holiday', 'Novo feriado')) ?></a>
         <a class="btn" href="<?= e(route_url('campaigns/create')) ?>"><i class="fa-solid fa-bullhorn"></i> <?= e($t('dashboard.button_new_campaign', 'Nova campanha')) ?></a>
     </div>
@@ -55,8 +55,8 @@ $topFormats = array_slice($formatCounter, 0, 4, true);
 
 <section class="panel">
     <div class="panel-header">
-        <h2><?= e($t('dashboard.section_distribution_title', 'Distribuicao da base estrategica')) ?></h2>
-        <span class="meta-text"><?= e($t('dashboard.section_distribution_subtitle', 'Participacao relativa por tipo de conteudo cadastrado')) ?></span>
+        <h2><?= e($t('dashboard.section_distribution_title', 'Distribuição da base estratégica')) ?></h2>
+        <span class="meta-text"><?= e($t('dashboard.section_distribution_subtitle', 'Participação relativa por tipo de conteúdo cadastrado')) ?></span>
     </div>
     <div class="metric-stack">
         <div class="metric-row">
@@ -72,7 +72,7 @@ $topFormats = array_slice($formatCounter, 0, 4, true);
         <div class="metric-progress"><span style="width: <?= (float) round(($commemoratives / $baseTotal) * 100, 2) ?>%"></span></div>
 
         <div class="metric-row">
-            <span><?= e($t('dashboard.metric_suggestions_strategic', 'Sugestoes estrategicas')) ?></span>
+            <span><?= e($t('dashboard.metric_suggestions_strategic', 'Sugestões estratégicas')) ?></span>
             <strong><?= (int) round(($suggestions / $baseTotal) * 100) ?>%</strong>
         </div>
         <div class="metric-progress"><span style="width: <?= (float) round(($suggestions / $baseTotal) * 100, 2) ?>%"></span></div>
@@ -87,7 +87,7 @@ $topFormats = array_slice($formatCounter, 0, 4, true);
 
 <section class="panel">
     <div class="panel-header">
-        <h2><?= e($t('dashboard.section_recent_suggestions_title', 'Sugestoes recentes')) ?></h2>
+        <h2><?= e($t('dashboard.section_recent_suggestions_title', 'Sugestões recentes')) ?></h2>
         <span class="meta-text"><?= e($t('dashboard.highlighted_items', '{count} item(ns) em destaque', ['count' => (int) count($recent_suggestions)])) ?></span>
     </div>
     <div class="table-wrap">
@@ -95,7 +95,7 @@ $topFormats = array_slice($formatCounter, 0, 4, true);
             <thead>
                 <tr>
                     <th><?= e($t('dashboard.col_date', 'Data')) ?></th>
-                    <th><?= e($t('dashboard.col_title', 'Titulo')) ?></th>
+                    <th><?= e($t('dashboard.col_title', 'Título')) ?></th>
                     <th><?= e($t('dashboard.col_format', 'Formato')) ?></th>
                     <th><?= e($t('dashboard.col_pillar', 'Pilar')) ?></th>
                     <th><?= e($t('dashboard.col_objective', 'Objetivo')) ?></th>
@@ -104,7 +104,7 @@ $topFormats = array_slice($formatCounter, 0, 4, true);
             <tbody>
                 <?php if (empty($recent_suggestions)): ?>
                     <tr>
-                        <td colspan="5"><?= e($t('dashboard.empty_recent_suggestions', 'Sem sugestoes recentes cadastradas.')) ?></td>
+                        <td colspan="5"><?= e($t('dashboard.empty_recent_suggestions', 'Sem sugestões recentes cadastradas.')) ?></td>
                     </tr>
                 <?php else: ?>
                     <?php foreach ($recent_suggestions as $item): ?>
@@ -126,7 +126,7 @@ $topFormats = array_slice($formatCounter, 0, 4, true);
     <section class="panel">
         <div class="panel-header">
             <h2><?= e($t('dashboard.section_top_formats_title', 'Formatos mais recorrentes')) ?></h2>
-            <span class="meta-text"><?= e($t('dashboard.section_top_formats_subtitle', 'Baseado nas sugestoes recentes')) ?></span>
+            <span class="meta-text"><?= e($t('dashboard.section_top_formats_subtitle', 'Baseado nas sugestões recentes')) ?></span>
         </div>
         <div class="metric-stack">
             <?php $maxFormats = max(1, (int) max($topFormats)); ?>

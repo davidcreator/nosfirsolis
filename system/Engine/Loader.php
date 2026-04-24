@@ -14,7 +14,7 @@ class Loader
         $modelClass = $targetArea . '\\Model\\' . $this->studly($name) . 'Model';
 
         if (!class_exists($modelClass)) {
-            throw new \RuntimeException('Model nao encontrada: ' . $modelClass);
+            throw new \RuntimeException('Model não encontrada: ' . $modelClass);
         }
 
         return new $modelClass($this->registry);

@@ -1,5 +1,5 @@
 <section class="panel">
-    <h2>Calendario por periodo personalizado</h2>
+    <h2>Calendário por período personalizado</h2>
 
     <form method="get" class="filters-grid">
         <input type="hidden" name="route" value="calendar/period">
@@ -18,9 +18,9 @@
             <th>Data</th>
             <th>Feriados</th>
             <th>Comemorativas</th>
-            <th>Sugestoes</th>
+            <th>Sugestões</th>
             <th>Campanhas</th>
-            <th>Observacoes</th>
+            <th>Observações</th>
         </tr>
         </thead>
         <tbody>

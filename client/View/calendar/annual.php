@@ -1,9 +1,9 @@
 <?php
-$monthNames = [1 => 'Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-$weekNames = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom'];
+$monthNames = [1 => 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+$weekNames = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
 ?>
 <section class="panel">
-    <h2>Calendario Anual <?= (int) $year ?></h2>
+    <h2>Calendário Anual <?= (int) $year ?></h2>
 
     <form method="get" class="filters-grid">
         <input type="hidden" name="route" value="calendar/annual">
@@ -34,8 +34,8 @@ $weekNames = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom'];
                                             <?php if (!empty($events['holidays'])): ?><span class="mk holiday" title="Feriado"></span><?php endif; ?>
                                             <?php if (!empty($events['commemoratives'])): ?><span class="mk commemorative" title="Comemorativa"></span><?php endif; ?>
                                             <?php if (!empty($events['campaigns'])): ?><span class="mk campaign" title="Campanha"></span><?php endif; ?>
-                                            <?php if (!empty($events['suggestions'])): ?><span class="mk suggestion" title="Sugestao"></span><?php endif; ?>
-                                            <?php if (!empty($events['notes'])): ?><span class="mk note" title="Observacao"></span><?php endif; ?>
+                                            <?php if (!empty($events['suggestions'])): ?><span class="mk suggestion" title="Sugestão"></span><?php endif; ?>
+                                            <?php if (!empty($events['notes'])): ?><span class="mk note" title="Observação"></span><?php endif; ?>
                                         </div>
                                     <?php endif; ?>
                                 </td>

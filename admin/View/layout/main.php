@@ -18,11 +18,11 @@ $navItems = [
     ['label' => $t('layout.nav_dashboard', 'Dashboard'), 'route' => 'dashboard/index', 'prefix' => 'dashboard/', 'icon' => 'fa-solid fa-chart-line'],
     ['label' => $t('layout.nav_holidays', 'Feriados'), 'route' => 'holidays/index', 'prefix' => 'holidays/', 'icon' => 'fa-solid fa-calendar-day'],
     ['label' => $t('layout.nav_commemoratives', 'Comemorativas'), 'route' => 'commemoratives/index', 'prefix' => 'commemoratives/', 'icon' => 'fa-solid fa-star'],
-    ['label' => $t('layout.nav_suggestions', 'Sugestoes'), 'route' => 'suggestions/index', 'prefix' => 'suggestions/', 'icon' => 'fa-solid fa-lightbulb'],
+    ['label' => $t('layout.nav_suggestions', 'Sugestões'), 'route' => 'suggestions/index', 'prefix' => 'suggestions/', 'icon' => 'fa-solid fa-lightbulb'],
     ['label' => $t('layout.nav_channels', 'Canais'), 'route' => 'channels/index', 'prefix' => 'channels/', 'icon' => 'fa-solid fa-share-nodes'],
     ['label' => $t('layout.nav_campaigns', 'Campanhas'), 'route' => 'campaigns/index', 'prefix' => 'campaigns/', 'icon' => 'fa-solid fa-bullhorn'],
-    ['label' => $t('layout.nav_users', 'Usuarios e Hierarquia'), 'route' => 'users/index', 'prefix' => 'users/', 'icon' => 'fa-solid fa-users'],
-    ['label' => $t('layout.nav_operations', 'Operacoes'), 'route' => 'operations/index', 'prefix' => 'operations/', 'icon' => 'fa-solid fa-gears'],
+    ['label' => $t('layout.nav_users', 'Usuários e Hierarquia'), 'route' => 'users/index', 'prefix' => 'users/', 'icon' => 'fa-solid fa-users'],
+    ['label' => $t('layout.nav_operations', 'Operações'), 'route' => 'operations/index', 'prefix' => 'operations/', 'icon' => 'fa-solid fa-gears'],
 ];
 ?>
 <body class="<?= !empty($current_user) ? 'admin-auth' : 'admin-guest' ?>">
@@ -77,7 +77,7 @@ $navItems = [
                             </label>
                             <select id="adminLanguageCode" name="language_code" onchange="this.form.submit()" style="margin-left:4px">
                                 <option value="pt-br" <?= strtolower((string) ($language_code ?? 'en-us')) === 'pt-br' ? 'selected' : '' ?>>
-                                    <?= e($t('layout.language_option_pt_br', 'Portugues')) ?>
+                                    <?= e($t('layout.language_option_pt_br', 'Português')) ?>
                                 </option>
                                 <option value="en-us" <?= strtolower((string) ($language_code ?? 'en-us')) === 'en-us' ? 'selected' : '' ?>>
                                     <?= e($t('layout.language_option_en_us', 'English')) ?>

@@ -12,7 +12,7 @@ class View
     {
         $templateFile = $this->resolve($template);
         if (!is_file($templateFile)) {
-            return 'Template nao encontrada: ' . $template;
+            return 'Template não encontrada: ' . $template;
         }
 
         $content = $this->capture($templateFile, $data);

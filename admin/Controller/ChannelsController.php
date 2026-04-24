@@ -50,7 +50,7 @@ class ChannelsController extends BaseController
         $item = $this->loader->model('content_platforms')->find($id);
 
         if (!$item) {
-            flash('error', $this->t('channels.flash_not_found', 'Canal nao encontrado.'));
+            flash('error', $this->t('channels.flash_not_found', 'Canal não encontrado.'));
             $this->redirectToRoute('channels/index');
         }
 

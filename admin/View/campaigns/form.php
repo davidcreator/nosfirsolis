@@ -25,12 +25,12 @@
             <select name="status">
                 <option value="planned" <?= $status === 'planned' ? 'selected' : '' ?>><?= e($t('campaigns.status_planned', 'Planejada')) ?></option>
                 <option value="active" <?= $status === 'active' ? 'selected' : '' ?>><?= e($t('campaigns.status_active', 'Ativa')) ?></option>
-                <option value="completed" <?= $status === 'completed' ? 'selected' : '' ?>><?= e($t('campaigns.status_completed', 'Concluida')) ?></option>
+                <option value="completed" <?= $status === 'completed' ? 'selected' : '' ?>><?= e($t('campaigns.status_completed', 'Concluída')) ?></option>
                 <option value="archived" <?= $status === 'archived' ? 'selected' : '' ?>><?= e($t('campaigns.status_archived', 'Arquivada')) ?></option>
             </select>
         </label>
 
-        <label class="full"><?= e($t('campaigns.field_description', 'Descricao')) ?>
+        <label class="full"><?= e($t('campaigns.field_description', 'Descrição')) ?>
             <textarea name="description" rows="5"><?= e($item['description'] ?? '') ?></textarea>
         </label>
 
