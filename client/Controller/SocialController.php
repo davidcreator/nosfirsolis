@@ -97,14 +97,14 @@ class SocialController extends BaseController
         }
 
         if (($target['kind'] ?? '') !== 'oauth2') {
-            flash('error', $this->t('social.flash_platform_manual_only', 'Esta plataforma usa conexao manual por token.'));
+            flash('error', $this->t('social.flash_platform_manual_only', 'Esta plataforma usa conexão manual por token.'));
             $this->redirectToRoute('social/index');
         }
 
         if (trim((string) ($target['client_id'] ?? '')) === '' || trim((string) ($target['client_secret'] ?? '')) === '') {
             flash('error', $this->t(
                 'social.flash_oauth_credentials_missing',
-                'Credenciais OAuth nao configuradas para {platform}.',
+                'Credenciais OAuth não configuradas para {platform}.',
                 ['platform' => ($target['name'] ?? $platform)]
             ));
             $this->redirectToRoute('social/index');
@@ -121,7 +121,7 @@ class SocialController extends BaseController
         $oauth = new SocialAuthService();
         $authUrl = $oauth->buildAuthorizationUrl($target, $redirectUri, $stateToken, $statePayload);
         if ($authUrl === null) {
-            flash('error', $this->t('social.flash_oauth_start_error', 'Nao foi possivel iniciar autorizacao para esta plataforma.'));
+            flash('error', $this->t('social.flash_oauth_start_error', 'Não foi possível iniciar autorização para esta plataforma.'));
             $this->redirectToRoute('social/index');
         }
 
@@ -148,7 +148,7 @@ class SocialController extends BaseController
         }
 
         if ($state === '' || $code === '') {
-            flash('error', $this->t('social.flash_oauth_invalid_return', 'Retorno OAuth invalido.'));
+            flash('error', $this->t('social.flash_oauth_invalid_return', 'Retorno OAuth inválido.'));
             $this->redirectToRoute('social/index');
         }
 
@@ -156,27 +156,27 @@ class SocialController extends BaseController
         $this->session->remove('social_oauth_state_' . $state);
 
         if (!is_array($statePayload) || empty($statePayload['platform']) || (string) $statePayload['platform'] !== $platform) {
-            flash('error', $this->t('social.flash_oauth_invalid_state', 'Estado OAuth invalido.'));
+            flash('error', $this->t('social.flash_oauth_invalid_state', 'Estado OAuth inválido.'));
             $this->redirectToRoute('social/index');
         }
 
         $stateCreatedAt = (int) ($statePayload['created_at'] ?? 0);
         if ($stateCreatedAt <= 0 || (time() - $stateCreatedAt) > 900) {
-            flash('error', $this->t('social.flash_oauth_expired_state', 'Estado OAuth expirado. Inicie a conexao novamente.'));
+            flash('error', $this->t('social.flash_oauth_expired_state', 'Estado OAuth expirado. Inicie a conexão novamente.'));
             $this->redirectToRoute('social/index');
         }
 
         $user = $this->auth->user();
         $userId = (int) ($user['id'] ?? 0);
         if ((int) ($statePayload['user_id'] ?? 0) !== $userId) {
-            flash('error', $this->t('social.flash_oauth_invalid_session', 'Sessao de autenticacao social invalida.'));
+            flash('error', $this->t('social.flash_oauth_invalid_session', 'Sessão de autenticação social inválida.'));
             $this->redirectToRoute('social/index');
         }
 
         $registry = new SocialPlatformRegistry($this->config);
         $target = $registry->get($platform);
         if (!$target) {
-            flash('error', $this->t('social.flash_platform_not_found', 'Plataforma social nao encontrada.'));
+            flash('error', $this->t('social.flash_platform_not_found', 'Plataforma social não encontrada.'));
             $this->redirectToRoute('social/index');
         }
 
@@ -230,7 +230,7 @@ class SocialController extends BaseController
 
         flash('success', $this->t(
             'social.flash_connected',
-            'Conexao com {platform} concluida.',
+            'Conexão com {platform} concluída.',
             ['platform' => ($target['name'] ?? $platform)]
         ));
         $this->redirectToRoute('social/index');
@@ -248,7 +248,7 @@ class SocialController extends BaseController
         $expiresAt = trim((string) $this->request->post('token_expires_at', ''));
 
         if ($platform === '' || $accessToken === '') {
-            flash('error', $this->t('social.flash_manual_missing_fields', 'Informe plataforma e access token para salvar a conexao manual.'));
+            flash('error', $this->t('social.flash_manual_missing_fields', 'Informe plataforma e access token para salvar a conexão manual.'));
             $this->redirectToRoute('social/index');
         }
 
@@ -286,7 +286,7 @@ class SocialController extends BaseController
 
         flash('success', $this->t(
             'social.flash_manual_saved',
-            'Conexao manual salva para {platform}.',
+            'Conexão manual salva para {platform}.',
             ['platform' => ($target['name'] ?? $platform)]
         ));
         $this->redirectToRoute('social/index');
@@ -315,7 +315,7 @@ class SocialController extends BaseController
 
         flash('success', $this->t(
             'social.flash_disconnected',
-            'Conexao removida para {platform}.',
+            'Conexão removida para {platform}.',
             ['platform' => $platform]
         ));
         $this->redirectToRoute('social/index');
@@ -343,7 +343,7 @@ class SocialController extends BaseController
         $userId = (int) ($this->auth->user()['id'] ?? 0);
         $this->loader->model('social')->saveDraft($userId, $draft);
 
-        flash('success', $this->t('social.flash_draft_generated', 'Novo conteudo estrategico gerado com sucesso.'));
+        flash('success', $this->t('social.flash_draft_generated', 'Novo conteúdo estratégico gerado com sucesso.'));
         $this->redirectToRoute('social/index');
     }
 
@@ -366,7 +366,7 @@ class SocialController extends BaseController
 
         $selectedPreset = $standards->presetFor($platformSlug, $formatType);
         if ($selectedPreset === null) {
-            flash('error', $this->t('social.flash_preset_official_not_found', 'Preset oficial nao encontrado para a plataforma/formato selecionados.'));
+            flash('error', $this->t('social.flash_preset_official_not_found', 'Preset oficial não encontrado para a plataforma/formato selecionados.'));
             $this->redirectToRoute('social/index');
         }
 
@@ -419,7 +419,7 @@ class SocialController extends BaseController
         $this->ensurePostWithCsrf();
 
         if ($presetId <= 0) {
-            flash('error', $this->t('social.flash_preset_invalid_for_delete', 'Preset invalido para exclusao.'));
+            flash('error', $this->t('social.flash_preset_invalid_for_delete', 'Preset inválido para exclusão.'));
             $this->redirectToRoute('social/index');
         }
 
@@ -464,7 +464,7 @@ class SocialController extends BaseController
             foreach (array_keys($normalized) as $platformSlug) {
                 $insert = $service->queuePublication($userId, [
                     'platform_slug' => $platformSlug,
-                    'title' => trim((string) $this->request->post('title', $this->t('social.default_single_publication_title', 'Publicacao avulsa'))),
+                    'title' => trim((string) $this->request->post('title', $this->t('social.default_single_publication_title', 'Publicação avulsa'))),
                     'message_text' => $messageText,
                     'media_url' => $mediaUrl,
                     'scheduled_at' => $scheduledAt,
@@ -482,7 +482,7 @@ class SocialController extends BaseController
             $queued > 0 ? 'ok' : 'warning',
             null,
             ['queued' => $queued, 'user_id' => $userId],
-            $queued > 0 ? null : $this->t('social.log_queue_empty', 'Nenhuma publicacao entrou na fila')
+            $queued > 0 ? null : $this->t('social.log_queue_empty', 'Nenhuma publicação entrou na fila')
         );
 
         $obs = new ObservabilityService($this->registry);
@@ -507,7 +507,7 @@ class SocialController extends BaseController
         ]);
 
         if ($queued <= 0) {
-            flash('error', $this->t('social.flash_queue_empty', 'Nenhuma publicacao foi adicionada a fila. Verifique item/plataforma e conexoes.'));
+            flash('error', $this->t('social.flash_queue_empty', 'Nenhuma publicação foi adicionada à fila. Verifique item/plataforma e conexões.'));
             $this->redirectToRoute('social/index');
         }
 
@@ -555,7 +555,7 @@ class SocialController extends BaseController
         ]);
 
         if (!empty($result['ok'])) {
-            flash('success', (string) ($result['message'] ?? $this->t('social.flash_publish_success', 'Publicacao concluida.')));
+            flash('success', (string) ($result['message'] ?? $this->t('social.flash_publish_success', 'Publicação concluída.')));
             $this->redirectToRoute('social/index');
         }
 

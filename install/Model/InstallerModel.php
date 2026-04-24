@@ -58,7 +58,7 @@ class InstallerModel extends Model
                 if (!$item['ok']) {
                     return [
                         'success' => false,
-                        'message' => $this->t('install.env_check_failed', 'Falha na verificacao de ambiente.'),
+                        'message' => $this->t('install.env_check_failed', 'Falha na verificação de ambiente.'),
                     ];
                 }
             }
@@ -71,14 +71,14 @@ class InstallerModel extends Model
 
             return [
                 'success' => true,
-                'message' => $this->t('install.completed_success', 'Instalacao concluida com sucesso.'),
+                'message' => $this->t('install.completed_success', 'Instalação concluída com sucesso.'),
             ];
         } catch (\Throwable $exception) {
             return [
                 'success' => false,
                 'message' => $this->t(
                     'install.error_during_install',
-                    'Erro durante instalacao: {error}',
+                    'Erro durante a instalação: {error}',
                     ['error' => $exception->getMessage()]
                 ),
             ];
@@ -108,11 +108,11 @@ class InstallerModel extends Model
         }
 
         if (!filter_var($data['admin_email'], FILTER_VALIDATE_EMAIL)) {
-            throw new RuntimeException($this->t('install.invalid_admin_email', 'Email administrativo invalido.'));
+            throw new RuntimeException($this->t('install.invalid_admin_email', 'E-mail administrativo inválido.'));
         }
 
         if (strlen((string) $data['admin_password']) < 8) {
-            throw new RuntimeException($this->t('install.admin_password_min_length', 'A senha do administrador deve ter no minimo 8 caracteres.'));
+            throw new RuntimeException($this->t('install.admin_password_min_length', 'A senha do administrador deve ter no mínimo 8 caracteres.'));
         }
     }
 
@@ -133,7 +133,7 @@ class InstallerModel extends Model
         } catch (PDOException $exception) {
             throw new RuntimeException($this->t(
                 'install.db_connect_error',
-                'Nao foi possivel conectar ao banco: {error}',
+                'Não foi possível conectar ao banco: {error}',
                 ['error' => $exception->getMessage()]
             ));
         }
@@ -144,7 +144,7 @@ class InstallerModel extends Model
         if (!is_file($file)) {
             throw new RuntimeException($this->t(
                 'install.sql_file_not_found',
-                'Arquivo SQL nao encontrado: {file}',
+                'Arquivo SQL não encontrado: {file}',
                 ['file' => $file]
             ));
         }
@@ -261,7 +261,7 @@ class InstallerModel extends Model
             . 'return ' . var_export($config, true) . ";\n";
 
         if (file_put_contents($target, $content) === false) {
-            throw new RuntimeException($this->t('install.write_root_config_error', 'Falha ao gravar configuracao em config.php'));
+            throw new RuntimeException($this->t('install.write_root_config_error', 'Falha ao gravar configuração em config.php'));
         }
     }
 
@@ -289,7 +289,7 @@ class InstallerModel extends Model
             . 'return ' . var_export($adminConfig, true) . ";\n";
 
         if (file_put_contents($target, $content) === false) {
-            throw new RuntimeException($this->t('install.write_admin_config_error', 'Falha ao gravar configuracao em admin/config.php'));
+            throw new RuntimeException($this->t('install.write_admin_config_error', 'Falha ao gravar configuração em admin/config.php'));
         }
     }
 
@@ -299,7 +299,7 @@ class InstallerModel extends Model
         $content = "<?php\n\nreturn " . var_export($config, true) . ";\n";
 
         if (file_put_contents($target, $content) === false) {
-            throw new RuntimeException($this->t('install.write_storage_config_error', 'Falha ao gravar configuracao em system/Storage/config.php'));
+            throw new RuntimeException($this->t('install.write_storage_config_error', 'Falha ao gravar configuração em system/Storage/config.php'));
         }
     }
 
@@ -323,7 +323,7 @@ class InstallerModel extends Model
         $allowed = !empty($data['allow_reinstall']) && (bool) $data['allow_reinstall'];
 
         if ($installed && !$allowed) {
-            throw new RuntimeException($this->t('install.reinstall_not_allowed', 'Sistema ja instalado. Reinstalacao bloqueada sem permissao.'));
+            throw new RuntimeException($this->t('install.reinstall_not_allowed', 'Sistema já instalado. Reinstalação bloqueada sem permissão.'));
         }
     }
 

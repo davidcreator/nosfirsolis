@@ -22,15 +22,15 @@
             </select>
         </label>
 
-        <label><?= e($t('commemoratives.field_recurrence', 'Recorrencia')) ?>
+        <label><?= e($t('commemoratives.field_recurrence', 'Recorrência')) ?>
             <?php $recurrence = $item['recurrence_type'] ?? 'yearly'; ?>
             <select name="recurrence_type">
                 <option value="yearly" <?= $recurrence === 'yearly' ? 'selected' : '' ?>><?= e($t('common.recurrence_yearly', 'Anual')) ?></option>
-                <option value="none" <?= $recurrence === 'none' ? 'selected' : '' ?>><?= e($t('common.recurrence_single', 'Unica')) ?></option>
+                <option value="none" <?= $recurrence === 'none' ? 'selected' : '' ?>><?= e($t('common.recurrence_single', 'Única')) ?></option>
             </select>
         </label>
 
-        <label><?= e($t('commemoratives.field_country_code', 'Pais (ISO2)')) ?>
+        <label><?= e($t('commemoratives.field_country_code', 'País (ISO2)')) ?>
             <input type="text" name="country_code" value="<?= e($item['country_code'] ?? 'BR') ?>" maxlength="2">
         </label>
 
@@ -42,7 +42,7 @@
             </select>
         </label>
 
-        <label class="full"><?= e($t('commemoratives.field_description', 'Descricao')) ?>
+        <label class="full"><?= e($t('commemoratives.field_description', 'Descrição')) ?>
             <textarea name="description" rows="4"><?= e($item['description'] ?? '') ?></textarea>
         </label>
 

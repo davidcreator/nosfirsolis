@@ -14,7 +14,7 @@ return [
     'channels.field_type' => 'Tipo',
     'channels.flash_created' => 'Canal cadastrado com sucesso.',
     'channels.flash_deleted' => 'Canal removido.',
-    'channels.flash_not_found' => 'Canal nao encontrado.',
+    'channels.flash_not_found' => 'Canal não encontrado.',
     'channels.flash_updated' => 'Canal atualizado.',
     'channels.heading_index' => 'Canais e plataformas',
     'channels.title_create' => 'Novo Canal',
@@ -25,5 +25,5 @@ return [
     'channels.type_other' => 'Outro',
     'channels.type_podcast' => 'Podcast',
     'channels.type_social' => 'Social',
-    'channels.type_video' => 'Video',
+    'channels.type_video' => 'Vídeo',
 ];

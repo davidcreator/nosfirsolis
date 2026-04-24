@@ -49,7 +49,7 @@ class CampaignsController extends BaseController
         $item = $this->loader->model('campaigns')->find($id);
 
         if (!$item) {
-            flash('error', $this->t('campaigns.flash_not_found', 'Campanha nao encontrada.'));
+            flash('error', $this->t('campaigns.flash_not_found', 'Campanha não encontrada.'));
             $this->redirectToRoute('campaigns/index');
         }
 

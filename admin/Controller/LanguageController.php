@@ -13,7 +13,7 @@ class LanguageController extends BaseController
         $redirectRoute = $this->sanitizeRedirectRoute((string) $this->request->post('redirect_route', 'dashboard/index'));
 
         if (!$this->auth->updateLanguagePreference($languageCode)) {
-            flash('error', $this->t('common.flash_language_invalid', 'Idioma invalido selecionado.'));
+            flash('error', $this->t('common.flash_language_invalid', 'Idioma inválido selecionado.'));
             $this->redirectToRoute($redirectRoute);
         }
 

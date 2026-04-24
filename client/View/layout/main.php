@@ -17,7 +17,7 @@ $userName = (string) ($current_user['name'] ?? '');
 $userInitial = strtoupper(substr($userName !== '' ? $userName : 'U', 0, 1));
 $navItems = [
     ['label' => $t('layout.nav_dashboard', 'Dashboard'), 'route' => 'dashboard/index', 'prefix' => 'dashboard/', 'icon' => 'fa-solid fa-chart-pie'],
-    ['label' => $t('layout.nav_calendar', 'Calendario'), 'route' => 'calendar/index', 'prefix' => 'calendar/', 'icon' => 'fa-solid fa-calendar-days'],
+    ['label' => $t('layout.nav_calendar', 'Calendário'), 'route' => 'calendar/index', 'prefix' => 'calendar/', 'icon' => 'fa-solid fa-calendar-days'],
     ['label' => $t('layout.nav_plans', 'Planos editoriais'), 'route' => 'plans/index', 'prefix' => 'plans/', 'icon' => 'fa-solid fa-list-check'],
     ['label' => $t('layout.nav_social', 'Central social'), 'route' => 'social/index', 'prefix' => 'social/', 'icon' => 'fa-solid fa-share-nodes'],
 ];
@@ -58,7 +58,7 @@ if (!array_key_exists('tracking.campaign_links', $featureFlags) || !empty($featu
                 </button>
                 <div class="app-title">
                     <h1><?= e($title ?? $t('layout.header_title', 'Strategic Content Planner')) ?></h1>
-                    <p><?= e($t('layout.header_subtitle', 'Planejamento anual, mensal e por periodo com camadas estrategicas.')) ?></p>
+                    <p><?= e($t('layout.header_subtitle', 'Planejamento anual, mensal e por período com camadas estratégicas.')) ?></p>
                 </div>
                 <div class="header-actions">
                     <span class="user-avatar"><?= e($userInitial) ?></span>
@@ -72,7 +72,7 @@ if (!array_key_exists('tracking.campaign_links', $featureFlags) || !empty($featu
                             </label>
                             <select id="clientLanguageCode" name="language_code" onchange="this.form.submit()" style="margin-left:4px">
                                 <option value="pt-br" <?= strtolower((string) ($language_code ?? 'en-us')) === 'pt-br' ? 'selected' : '' ?>>
-                                    <?= e($t('layout.language_option_pt_br', 'Portugues')) ?>
+                                    <?= e($t('layout.language_option_pt_br', 'Português')) ?>
                                 </option>
                                 <option value="en-us" <?= strtolower((string) ($language_code ?? 'en-us')) === 'en-us' ? 'selected' : '' ?>>
                                     <?= e($t('layout.language_option_en_us', 'English')) ?>

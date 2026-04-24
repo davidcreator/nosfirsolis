@@ -18,7 +18,7 @@ abstract class BaseController extends Controller
     protected function requirePostAndCsrf(): void
     {
         if (!$this->request->isPost() || !verify_csrf($this->request->post('_token'))) {
-            flash('error', $this->t('common.flash_invalid_request', 'Requisicao invalida.'));
+            flash('error', $this->t('common.flash_invalid_request', 'Requisição inválida.'));
             $this->redirectToRoute('dashboard/index');
         }
     }

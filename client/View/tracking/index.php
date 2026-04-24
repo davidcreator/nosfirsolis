@@ -121,7 +121,7 @@ $topChannels = (array) ($summary['top_channels'] ?? []);
                 <th>Tracking URL</th>
                 <th>Cliques</th>
                 <th>Status</th>
-                <th>Acao</th>
+                <th>Ação</th>
             </tr>
             </thead>
             <tbody>

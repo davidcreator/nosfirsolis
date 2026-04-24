@@ -11,7 +11,7 @@
                 <th><?= e($t('holidays.col_date', 'Data')) ?></th>
                 <th><?= e($t('holidays.col_name', 'Nome')) ?></th>
                 <th><?= e($t('holidays.col_type', 'Tipo')) ?></th>
-                <th><?= e($t('holidays.col_country', 'Pais')) ?></th>
+                <th><?= e($t('holidays.col_country', 'País')) ?></th>
                 <th><?= e($t('holidays.col_status', 'Status')) ?></th>
                 <th></th>
             </tr>

@@ -1,7 +1,7 @@
 <section class="panel">
     <div class="panel-header">
-        <h1><?= e($t('suggestions.heading_index', 'Sugestoes estrategicas')) ?></h1>
-        <a class="btn" href="<?= e(route_url('suggestions/create')) ?>"><i class="fa-solid fa-plus"></i> <?= e($t('suggestions.button_new', 'Nova sugestao')) ?></a>
+        <h1><?= e($t('suggestions.heading_index', 'Sugestões estratégicas')) ?></h1>
+        <a class="btn" href="<?= e(route_url('suggestions/create')) ?>"><i class="fa-solid fa-plus"></i> <?= e($t('suggestions.button_new', 'Nova sugestão')) ?></a>
     </div>
 
     <div class="table-wrap">
@@ -9,7 +9,7 @@
             <thead>
             <tr>
                 <th><?= e($t('suggestions.col_date', 'Data')) ?></th>
-                <th><?= e($t('suggestions.col_title', 'Titulo')) ?></th>
+                <th><?= e($t('suggestions.col_title', 'Título')) ?></th>
                 <th><?= e($t('suggestions.col_format', 'Formato')) ?></th>
                 <th><?= e($t('suggestions.col_category', 'Categoria')) ?></th>
                 <th><?= e($t('suggestions.col_pillar', 'Pilar')) ?></th>
@@ -30,7 +30,7 @@
                     <td><?= e($item['campaign_name'] ?? '-') ?></td>
                     <td class="actions">
                         <a href="<?= e(route_url('suggestions/edit/' . $item['id'])) ?>"><i class="fa-solid fa-pen-to-square"></i> <?= e($t('common.button_edit', 'Editar')) ?></a>
-                        <form method="post" action="<?= e(route_url('suggestions/delete/' . $item['id'])) ?>" style="display:inline" onsubmit="return confirm('<?= e($t('suggestions.confirm_delete', 'Excluir sugestao?')) ?>')">
+                        <form method="post" action="<?= e(route_url('suggestions/delete/' . $item['id'])) ?>" style="display:inline" onsubmit="return confirm('<?= e($t('suggestions.confirm_delete', 'Excluir sugestão?')) ?>')">
                             <?= csrf_field() ?>
                             <button type="submit" style="background:none;border:0;padding:0;color:inherit;font:inherit;cursor:pointer">
                                 <i class="fa-regular fa-trash-can"></i> <?= e($t('common.button_delete', 'Excluir')) ?>

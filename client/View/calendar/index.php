@@ -1,6 +1,6 @@
 <?php
-$monthNames = [1 => 'Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-$weekNames = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom'];
+$monthNames = [1 => 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+$weekNames = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
 
 $returnFields = [
     'return_mode' => $mode,
@@ -42,11 +42,11 @@ $colors = $calendar_colors ?? [];
 
 <section class="panel">
     <div class="panel-head-inline">
-        <h2>Calendario</h2>
+        <h2>Calendário</h2>
         <div class="mode-switch">
             <a class="<?= $mode === 'annual' ? 'active' : '' ?>" href="<?= e(route_url('calendar/index?' . $modeAnnualQuery)) ?>">Anual</a>
             <a class="<?= $mode === 'monthly' ? 'active' : '' ?>" href="<?= e(route_url('calendar/index?' . $modeMonthlyQuery)) ?>">Mensal</a>
-            <a class="<?= $mode === 'period' ? 'active' : '' ?>" href="<?= e(route_url('calendar/index?' . $modePeriodQuery)) ?>">Por periodo</a>
+            <a class="<?= $mode === 'period' ? 'active' : '' ?>" href="<?= e(route_url('calendar/index?' . $modePeriodQuery)) ?>">Por período</a>
         </div>
     </div>
 
@@ -76,7 +76,7 @@ $colors = $calendar_colors ?? [];
         <?php endif; ?>
 
         <?php if ($mode === 'monthly'): ?>
-            <label>Mes
+            <label>Mês
                 <input type="number" name="month" value="<?= (int) $month ?>" min="1" max="12">
             </label>
         <?php endif; ?>
@@ -124,9 +124,9 @@ $colors = $calendar_colors ?? [];
                                                     <?php endforeach; ?>
                                                     <?php if (!empty($events['commemoratives'])): ?><span class="mk commemorative" title="Comemorativa"></span><?php endif; ?>
                                                     <?php if (!empty($events['campaigns'])): ?><span class="mk campaign" title="Campanha"></span><?php endif; ?>
-                                                    <?php if (!empty($events['suggestions'])): ?><span class="mk suggestion" title="Sugestao"></span><?php endif; ?>
+                                                    <?php if (!empty($events['suggestions'])): ?><span class="mk suggestion" title="Sugestão"></span><?php endif; ?>
                                                     <?php if (!empty($events['base_events'])): ?><span class="mk base-event" title="Evento base"></span><?php endif; ?>
-                                                    <?php if (!empty($events['notes'])): ?><span class="mk note" title="Observacao"></span><?php endif; ?>
+                                                    <?php if (!empty($events['notes'])): ?><span class="mk note" title="Observação"></span><?php endif; ?>
                                                     <?php if (!empty($events['extra_events'])): ?><span class="mk extra-event" title="Evento extra"></span><?php endif; ?>
                                                 </div>
                                             <?php endif; ?>
@@ -146,8 +146,8 @@ $colors = $calendar_colors ?? [];
         <div class="panel-head-inline section-head">
             <h3><?= e($monthNames[(int) $month] ?? '') ?> / <?= (int) $year ?></h3>
             <div class="inline-links">
-                <a href="<?= e(route_url('calendar/index?' . http_build_query(array_merge(['mode' => 'monthly', 'year' => $year, 'month' => max(1, $month - 1)], $filters)))) ?>">Mes anterior</a>
-                <a href="<?= e(route_url('calendar/index?' . http_build_query(array_merge(['mode' => 'monthly', 'year' => $year, 'month' => min(12, $month + 1)], $filters)))) ?>">Proximo mes</a>
+                <a href="<?= e(route_url('calendar/index?' . http_build_query(array_merge(['mode' => 'monthly', 'year' => $year, 'month' => max(1, $month - 1)], $filters)))) ?>">Mês anterior</a>
+                <a href="<?= e(route_url('calendar/index?' . http_build_query(array_merge(['mode' => 'monthly', 'year' => $year, 'month' => min(12, $month + 1)], $filters)))) ?>">Próximo mês</a>
             </div>
         </div>
 
@@ -186,7 +186,7 @@ $colors = $calendar_colors ?? [];
                                     <?php endforeach; ?>
 
                                     <?php foreach (($events['suggestions'] ?? []) as $suggestion): ?>
-                                        <div class="tag suggestion">Sugestao: <?= e($suggestion['title']) ?></div>
+                                        <div class="tag suggestion">Sugestão: <?= e($suggestion['title']) ?></div>
                                     <?php endforeach; ?>
 
                                     <?php foreach (($events['base_events'] ?? []) as $event): ?>
@@ -220,7 +220,7 @@ $colors = $calendar_colors ?? [];
                     <th>Data</th>
                     <th>Feriados</th>
                     <th>Comemorativas</th>
-                    <th>Sugestoes</th>
+                    <th>Sugestões</th>
                     <th>Eventos base</th>
                     <th>Campanhas</th>
                     <th>Eventos extras</th>
@@ -287,8 +287,8 @@ $colors = $calendar_colors ?? [];
         <label>Data do evento
             <input type="date" name="event_date" required>
         </label>
-        <label>Titulo
-            <input type="text" name="title" placeholder="Ex.: Acao local da equipe" required>
+        <label>Título
+            <input type="text" name="title" placeholder="Ex.: Ação local da equipe" required>
         </label>
         <label>Tipo
             <select name="event_type">
@@ -302,7 +302,7 @@ $colors = $calendar_colors ?? [];
         <label>Cor personalizada
             <input type="color" name="color_hex" value="<?= e($colors['extra_event'] ?? '#9F3A03') ?>">
         </label>
-        <label class="wide">Descricao
+        <label class="wide">Descrição
             <input type="text" name="description" placeholder="Detalhes do evento adicional para este dia">
         </label>
         <button type="submit"><i class="fa-solid fa-calendar-plus"></i> Salvar evento extra</button>
@@ -314,10 +314,10 @@ $colors = $calendar_colors ?? [];
                 <thead>
                 <tr>
                     <th>Data</th>
-                    <th>Titulo</th>
+                    <th>Título</th>
                     <th>Tipo</th>
                     <th>Cor</th>
-                    <th>Descricao</th>
+                    <th>Descrição</th>
                     <th></th>
                 </tr>
                 </thead>
@@ -347,7 +347,7 @@ $colors = $calendar_colors ?? [];
 </section>
 
 <section class="panel">
-    <h3>Registrar observacao manual por dia</h3>
+    <h3>Registrar observação manual por dia</h3>
     <form method="post" action="<?= e(route_url('calendar/saveNote')) ?>" class="filters-grid">
         <?= csrf_field() ?>
         <?php foreach ($returnFields as $field => $value): ?>
@@ -365,10 +365,10 @@ $colors = $calendar_colors ?? [];
                 <option value="editorial">Editorial</option>
             </select>
         </label>
-        <label class="wide">Observacao
+        <label class="wide">Observação
             <input type="text" name="note_text" placeholder="Ex.: alinhar pauta com campanha de leads" required>
         </label>
-        <button type="submit"><i class="fa-solid fa-note-sticky"></i> Salvar observacao</button>
+        <button type="submit"><i class="fa-solid fa-note-sticky"></i> Salvar observação</button>
     </form>
 </section>
 
@@ -411,7 +411,7 @@ $colors = $calendar_colors ?? [];
                     <tr>
                         <th>Dia do ano</th>
                         <th>Data ref.</th>
-                        <th>Titulo</th>
+                        <th>Título</th>
                         <th>Detalhe</th>
                     </tr>
                     </thead>

@@ -10,6 +10,18 @@ if (!defined('DIR_SYSTEM')) {
     define('DIR_SYSTEM', DIR_ROOT . DIRECTORY_SEPARATOR . 'system');
 }
 
+if (function_exists('ini_set')) {
+    ini_set('default_charset', 'UTF-8');
+}
+
+if (function_exists('mb_internal_encoding')) {
+    mb_internal_encoding('UTF-8');
+}
+
+if (function_exists('mb_http_output')) {
+    mb_http_output('UTF-8');
+}
+
 require_once DIR_SYSTEM . DIRECTORY_SEPARATOR . 'Helper' . DIRECTORY_SEPARATOR . 'common.php';
 
 $composerAutoload = DIR_SYSTEM . DIRECTORY_SEPARATOR . 'Vendor' . DIRECTORY_SEPARATOR . 'autoload.php';

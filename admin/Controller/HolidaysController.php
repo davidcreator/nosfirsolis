@@ -59,7 +59,7 @@ class HolidaysController extends BaseController
 
         $holiday = $model->find($id);
         if (!$holiday) {
-            flash('error', $this->t('holidays.flash_not_found', 'Feriado nao encontrado.'));
+            flash('error', $this->t('holidays.flash_not_found', 'Feriado não encontrado.'));
             $this->redirectToRoute('holidays/index');
         }
 

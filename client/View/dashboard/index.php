@@ -28,10 +28,10 @@ $pipelineTotal = max(1, array_sum($statusCounter));
     <div class="hero-content">
         <span class="hero-badge"><i class="fa-solid fa-compass-drafting"></i> <?= e($app_name ?? 'Solis') ?></span>
         <h2><?= e($app_name ?? 'Solis') ?></h2>
-        <p>Organize campanhas com clareza, acompanhe o ritmo das publicacoes e execute sua estrategia com consistencia anual.</p>
+        <p>Organize campanhas com clareza, acompanhe o ritmo das publicações e execute sua estratégia com consistência anual.</p>
     </div>
     <div class="hero-actions">
-        <a class="btn" href="<?= e(route_url('calendar/index')) ?>"><i class="fa-solid fa-calendar-days"></i> Abrir calendario</a>
+        <a class="btn" href="<?= e(route_url('calendar/index')) ?>"><i class="fa-solid fa-calendar-days"></i> Abrir calendário</a>
         <a class="btn" href="<?= e(route_url('plans/index')) ?>"><i class="fa-solid fa-list-check"></i> Gerar plano</a>
         <a class="btn" href="<?= e(route_url('social/index')) ?>"><i class="fa-solid fa-share-nodes"></i> Central social</a>
         <?php if (!array_key_exists('tracking.campaign_links', $featureFlags) || !empty($featureFlags['tracking.campaign_links'])): ?>
@@ -56,7 +56,7 @@ $pipelineTotal = max(1, array_sum($statusCounter));
         </article>
         <article class="kpi-card accent-amber">
             <span class="kpi-icon"><i class="fa-solid fa-lightbulb"></i></span>
-            <div><strong><?= $suggestionsTotal ?></strong><span>Sugestoes estrategicas</span></div>
+            <div><strong><?= $suggestionsTotal ?></strong><span>Sugestões estratégicas</span></div>
         </article>
     </div>
 </section>
@@ -65,7 +65,7 @@ $pipelineTotal = max(1, array_sum($statusCounter));
 <section class="panel">
     <div class="panel-header">
         <h3>Painel executivo</h3>
-        <span class="meta-text">Visao operacional consolidada do Solis</span>
+        <span class="meta-text">Visão operacional consolidada do Solis</span>
     </div>
 
     <div class="stats-grid kpi-grid">
@@ -79,7 +79,7 @@ $pipelineTotal = max(1, array_sum($statusCounter));
         </article>
         <article class="kpi-card accent-purple">
             <span class="kpi-icon"><i class="fa-solid fa-paper-plane"></i></span>
-            <div><strong><?= (int) ($executive['publications_published'] ?? 0) ?></strong><span>Publicacoes concluidas</span></div>
+            <div><strong><?= (int) ($executive['publications_published'] ?? 0) ?></strong><span>Publicações concluídas</span></div>
         </article>
         <article class="kpi-card accent-red">
             <span class="kpi-icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
@@ -89,11 +89,11 @@ $pipelineTotal = max(1, array_sum($statusCounter));
 
     <div class="plan-insights-grid">
         <article class="plan-insight-card">
-            <span>Fila de publicacao</span>
+            <span>Fila de publicação</span>
             <strong><?= (int) ($executive['publications_queued'] ?? 0) ?></strong>
         </article>
         <article class="plan-insight-card">
-            <span>Falhas de publicacao</span>
+            <span>Falhas de publicação</span>
             <strong><?= (int) ($executive['publications_failed'] ?? 0) ?></strong>
         </article>
         <article class="plan-insight-card">
@@ -126,8 +126,8 @@ $pipelineTotal = max(1, array_sum($statusCounter));
 
 <section class="panel">
     <div class="panel-header">
-        <h3>Pipeline de execucao</h3>
-        <span class="meta-text">Distribuicao dos proximos itens por status</span>
+        <h3>Pipeline de execução</h3>
+        <span class="meta-text">Distribuição dos próximos itens por status</span>
     </div>
 
     <div class="metric-stack">
@@ -147,7 +147,7 @@ $pipelineTotal = max(1, array_sum($statusCounter));
 
 <section class="panel">
     <div class="panel-header">
-        <h3>Proximas publicacoes</h3>
+        <h3>Próximas publicações</h3>
         <span class="meta-text"><?= count($upcomingItems) ?> item(ns) futuros</span>
     </div>
     <div class="table-wrap">
@@ -155,7 +155,7 @@ $pipelineTotal = max(1, array_sum($statusCounter));
             <thead>
                 <tr>
                     <th>Data</th>
-                    <th>Titulo</th>
+                    <th>Título</th>
                     <th>Status</th>
                     <th>Plano</th>
                 </tr>
@@ -163,7 +163,7 @@ $pipelineTotal = max(1, array_sum($statusCounter));
             <tbody>
                 <?php if (empty($upcomingItems)): ?>
                     <tr>
-                        <td colspan="4">Nenhuma publicacao futura encontrada. Gere um plano editorial para iniciar.</td>
+                        <td colspan="4">Nenhuma publicação futura encontrada. Gere um plano editorial para iniciar.</td>
                     </tr>
                 <?php else: ?>
                     <?php foreach ($upcomingItems as $item): ?>

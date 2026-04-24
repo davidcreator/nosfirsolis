@@ -4,11 +4,11 @@
     <form method="post" action="<?= e(route_url($action)) ?>" class="form-grid">
         <?= csrf_field() ?>
 
-        <label class="full"><?= e($t('suggestions.field_title', 'Titulo')) ?>
+        <label class="full"><?= e($t('suggestions.field_title', 'Título')) ?>
             <input type="text" name="title" value="<?= e($item['title'] ?? '') ?>" required>
         </label>
 
-        <label><?= e($t('suggestions.field_date', 'Data da sugestao')) ?>
+        <label><?= e($t('suggestions.field_date', 'Data da sugestão')) ?>
             <input type="date" name="suggestion_date" value="<?= e($item['suggestion_date'] ?? date('Y-m-d')) ?>" required>
         </label>
 
@@ -52,12 +52,12 @@
             </select>
         </label>
 
-        <label><?= e($t('suggestions.field_recurrence', 'Recorrencia')) ?>
+        <label><?= e($t('suggestions.field_recurrence', 'Recorrência')) ?>
             <?php $recurrence = $item['recurrence_type'] ?? 'yearly'; ?>
             <select name="recurrence_type">
                 <option value="yearly" <?= $recurrence === 'yearly' ? 'selected' : '' ?>><?= e($t('common.recurrence_yearly', 'Anual')) ?></option>
                 <option value="monthly" <?= $recurrence === 'monthly' ? 'selected' : '' ?>><?= e($t('common.recurrence_monthly', 'Mensal')) ?></option>
-                <option value="none" <?= $recurrence === 'none' ? 'selected' : '' ?>><?= e($t('common.recurrence_single', 'Unica')) ?></option>
+                <option value="none" <?= $recurrence === 'none' ? 'selected' : '' ?>><?= e($t('common.recurrence_single', 'Única')) ?></option>
             </select>
         </label>
 
@@ -65,7 +65,7 @@
             <?php $isRecurring = (int) ($item['is_recurring'] ?? 1); ?>
             <select name="is_recurring">
                 <option value="1" <?= $isRecurring === 1 ? 'selected' : '' ?>><?= e($t('common.yes', 'Sim')) ?></option>
-                <option value="0" <?= $isRecurring === 0 ? 'selected' : '' ?>><?= e($t('common.no', 'Nao')) ?></option>
+                <option value="0" <?= $isRecurring === 0 ? 'selected' : '' ?>><?= e($t('common.no', 'Não')) ?></option>
             </select>
         </label>
 
@@ -103,7 +103,7 @@
             </div>
         </fieldset>
 
-        <label class="full"><?= e($t('suggestions.field_description', 'Descricao')) ?>
+        <label class="full"><?= e($t('suggestions.field_description', 'Descrição')) ?>
             <textarea name="description" rows="5"><?= e($item['description'] ?? '') ?></textarea>
         </label>
 

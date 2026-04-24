@@ -31,7 +31,7 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
 <?php if ($publishHubEnabled): ?>
 <section class="panel">
     <div class="panel-head-inline">
-        <h2>Central Social e Seguranca</h2>
+        <h2>Central Social e Segurança</h2>
         <span class="calendar-subtitle">Conecte cada rede individualmente e proteja seus acessos.</span>
     </div>
 
@@ -42,7 +42,7 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
             <article class="social-card">
                 <h3><?= e($platform['name']) ?></h3>
                 <p class="social-meta">Tipo: <?= e(strtoupper((string) $platform['kind'])) ?></p>
-                <p class="social-meta">Status: <strong><?= $connected ? 'Conectado' : 'Nao conectado' ?></strong></p>
+                <p class="social-meta">Status: <strong><?= $connected ? 'Conectado' : 'Não conectado' ?></strong></p>
 
                 <?php if ($connected): ?>
                     <p class="social-meta">Conta: <?= e((string) ($conn['account_name'] ?? 'Conta vinculada')) ?></p>
@@ -75,7 +75,7 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
 
 <section class="panel">
     <div class="panel-head-inline">
-        <h3>Hub de publicacao oficial</h3>
+        <h3>Hub de publicação oficial</h3>
         <span class="calendar-subtitle">Fila multi-canal com disparo manual e processamento em lote.</span>
     </div>
 
@@ -83,7 +83,7 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
         <?= csrf_field() ?>
         <label>Item do plano (opcional)
             <select name="plan_item_id">
-                <option value="0">Publicacao avulsa (sem item)</option>
+                <option value="0">Publicação avulsa (sem item)</option>
                 <?php foreach ($publishPlanItems as $item): ?>
                     <option value="<?= (int) ($item['id'] ?? 0) ?>">
                         #<?= (int) ($item['id'] ?? 0) ?> - <?= e((string) ($item['title'] ?? '')) ?>
@@ -91,13 +91,13 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
                 <?php endforeach; ?>
             </select>
         </label>
-        <label>Titulo avulso
+        <label>Título avulso
             <input type="text" name="title" placeholder="Usado apenas sem item do plano">
         </label>
         <label>Agendar para
             <input type="datetime-local" name="scheduled_at">
         </label>
-        <label class="wide">Texto da publicacao
+        <label class="wide">Texto da publicação
             <textarea name="message_text" rows="3" placeholder="Texto base para o post"></textarea>
         </label>
         <label class="wide">URL de midia (opcional)
@@ -112,7 +112,7 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
                 </label>
             <?php endforeach; ?>
         </div>
-        <button type="submit"><i class="fa-solid fa-paper-plane"></i> Enfileirar publicacao</button>
+        <button type="submit"><i class="fa-solid fa-paper-plane"></i> Enfileirar publicação</button>
     </form>
 
     <form method="post" action="<?= e(route_url('social/processQueue')) ?>" class="filters-grid">
@@ -129,17 +129,17 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
             <tr>
                 <th>ID</th>
                 <th>Plataforma</th>
-                <th>Conteudo</th>
+                <th>Conteúdo</th>
                 <th>Status</th>
                 <th>Agendamento</th>
                 <th>Publicado em</th>
-                <th>Acao</th>
+                <th>Ação</th>
             </tr>
             </thead>
             <tbody>
             <?php if (empty($publicationQueue)): ?>
                 <tr>
-                    <td colspan="7">Nenhuma publicacao registrada no hub.</td>
+                    <td colspan="7">Nenhuma publicação registrada no hub.</td>
                 </tr>
             <?php else: ?>
                 <?php foreach ($publicationQueue as $publication): ?>
@@ -151,7 +151,7 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
                         <td>#<?= (int) ($publication['id'] ?? 0) ?></td>
                         <td><?= e($platformNameBySlug[(string) ($publication['platform_slug'] ?? '')] ?? (string) ($publication['platform_slug'] ?? '-')) ?></td>
                         <td>
-                            <strong><?= e((string) ($publication['title'] ?? ($publication['plan_item_title'] ?? 'Sem titulo'))) ?></strong>
+                            <strong><?= e((string) ($publication['title'] ?? ($publication['plan_item_title'] ?? 'Sem título'))) ?></strong>
                             <?php if (!empty($publication['error_message'])): ?>
                                 <small class="plan-item-description"><?= e((string) $publication['error_message']) ?></small>
                             <?php endif; ?>
@@ -180,7 +180,7 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
 <section class="panel">
     <div class="panel-head-inline">
         <h3>Padroes de post e carrossel por rede</h3>
-        <span class="calendar-subtitle">Matriz com medidas recomendadas para padronizar criacao de conteudo multi-canal.</span>
+        <span class="calendar-subtitle">Matriz com medidas recomendadas para padronizar criação de conteúdo multi-canal.</span>
     </div>
 
     <form method="get" action="<?= e(route_url('social/index')) ?>" class="filters-grid">
@@ -225,7 +225,7 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
                 <p class="social-meta"><strong>Limites:</strong> <?= e((string) ($selectedPreset['official_limits'] ?? '-')) ?></p>
                 <p class="social-meta"><strong>Observacoes:</strong> <?= e((string) ($selectedPreset['notes'] ?? '-')) ?></p>
                 <?php if (!empty($selectedPreset['is_inference'])): ?>
-                    <p class="hint">Parte deste preset usa inferencia tecnica quando a plataforma nao publica regra consolidada.</p>
+                    <p class="hint">Parte deste preset usa inferência técnica quando a plataforma não publica regra consolidada.</p>
                 <?php endif; ?>
             </article>
 
@@ -302,14 +302,14 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
                     <td>
                         <strong><?= e((string) $row['name']) ?></strong>
                         <?php if (!empty($row['has_inference'])): ?>
-                            <span class="hint">* parcial por inferencia</span>
+                            <span class="hint">* parcial por inferência</span>
                         <?php endif; ?>
                     </td>
                     <td><?= e((string) $row['post_canvas']) ?> (<?= e((string) $row['post_ratio']) ?>)</td>
                     <td>
                         <?= e((string) $row['carousel_canvas']) ?> (<?= e((string) $row['carousel_ratio']) ?>)
                         <?php if (empty($row['carousel_supported'])): ?>
-                            <span class="hint">nao nativo</span>
+                            <span class="hint">não nativo</span>
                         <?php endif; ?>
                     </td>
                     <td><?= e((string) $row['key_rule']) ?></td>
@@ -327,7 +327,7 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
 <section class="panel">
     <h3>Presets personalizados salvos</h3>
     <?php if (empty($saved_format_presets)): ?>
-        <p>Voce ainda nao salvou presets personalizados.</p>
+        <p>Você ainda não salvou presets personalizados.</p>
     <?php else: ?>
         <div class="table-wrap">
             <table class="table">
@@ -339,8 +339,8 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
                     <th>Dimensoes</th>
                     <th>Safe area</th>
                     <th>Cor</th>
-                    <th>Atualizacao</th>
-                    <th>Acao</th>
+                    <th>Atualização</th>
+                    <th>Ação</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -384,7 +384,7 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
 </section>
 
 <section class="panel">
-    <h3>Conexao manual por token (todas as plataformas)</h3>
+    <h3>Conexão manual por token (todas as plataformas)</h3>
     <form method="post" action="<?= e(route_url('social/saveManualConnection')) ?>" class="filters-grid">
         <?= csrf_field() ?>
         <label>Plataforma
@@ -406,16 +406,16 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
         <label class="wide">Refresh token (opcional)
             <input type="text" name="refresh_token">
         </label>
-        <button type="submit"><i class="fa-solid fa-floppy-disk"></i> Salvar conexao manual</button>
+        <button type="submit"><i class="fa-solid fa-floppy-disk"></i> Salvar conexão manual</button>
     </form>
 </section>
 
 <section class="panel">
-    <h3>Criador de Conteudo Estrategico Multi-Rede</h3>
+    <h3>Criador de Conteúdo Estratégico Multi-Rede</h3>
     <form method="post" action="<?= e(route_url('social/generateDraft')) ?>" class="filters-grid">
         <?= csrf_field() ?>
         <label>Tema central
-            <input type="text" name="theme" placeholder="Ex.: Lancamento de servico premium" required>
+            <input type="text" name="theme" placeholder="Ex.: Lançamento de serviço premium" required>
         </label>
         <label>Objetivo
             <input type="text" name="objective" placeholder="Ex.: Conversao e captacao de leads" required>
@@ -445,14 +445,14 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
                 <label class="check"><input type="checkbox" name="channels[]" value="<?= e($slug) ?>" checked> <?= e($platform['name']) ?></label>
             <?php endforeach; ?>
         </div>
-        <button type="submit"><i class="fa-solid fa-wand-magic-sparkles"></i> Gerar conteudo estrategico</button>
+        <button type="submit"><i class="fa-solid fa-wand-magic-sparkles"></i> Gerar conteúdo estratégico</button>
     </form>
 </section>
 
 <section class="panel">
     <h3>Conteudos estrategicos gerados</h3>
     <?php if (empty($drafts)): ?>
-        <p>Nenhum draft ainda. Gere seu primeiro conteudo multi-rede acima.</p>
+        <p>Nenhum draft ainda. Gere seu primeiro conteúdo multi-rede acima.</p>
     <?php else: ?>
         <div class="draft-grid">
             <?php foreach ($drafts as $draft): ?>
@@ -476,9 +476,9 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
 </section>
 
 <section class="panel">
-    <h3>Monitoramento de seguranca de acesso</h3>
+    <h3>Monitoramento de segurança de acesso</h3>
     <?php if (empty($security_events)): ?>
-        <p>Sem eventos de seguranca para este usuario no momento.</p>
+        <p>Sem eventos de segurança para este usuário no momento.</p>
     <?php else: ?>
         <div class="table-wrap">
             <table class="table">

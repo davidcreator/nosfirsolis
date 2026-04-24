@@ -87,7 +87,7 @@ class CalendarController extends BaseController
         }
 
         $this->render('calendar/index', [
-            'title' => $this->t('calendar.title_index', 'Calendario'),
+            'title' => $this->t('calendar.title_index', 'Calendário'),
             'mode' => $mode,
             'year' => $year,
             'month' => $month,
@@ -161,7 +161,7 @@ class CalendarController extends BaseController
         $noteText = trim((string) $this->request->post('note_text'));
 
         if ($noteDate === '' || $noteText === '') {
-            flash('error', $this->t('calendar.flash_note_required', 'Data e observacao sao obrigatorias.'));
+            flash('error', $this->t('calendar.flash_note_required', 'Data e observação são obrigatórias.'));
             $this->response->redirect(route_url('calendar/index?' . $this->buildReturnQueryFromPost()));
         }
 
@@ -174,7 +174,7 @@ class CalendarController extends BaseController
 
         flash('success', $this->t(
             'calendar.flash_note_saved',
-            'Observacao salva para {date}.',
+            'Observação salva para {date}.',
             ['date' => $noteDate]
         ));
         $this->response->redirect(route_url('calendar/index?' . $this->buildReturnQueryFromPost()));
@@ -192,7 +192,7 @@ class CalendarController extends BaseController
         $colorHex = trim((string) $this->request->post('color_hex', ''));
 
         if ($eventDate === '' || $title === '') {
-            flash('error', $this->t('calendar.flash_extra_event_required', 'Informe data e titulo para o evento extra.'));
+            flash('error', $this->t('calendar.flash_extra_event_required', 'Informe data e título para o evento extra.'));
             $this->response->redirect(route_url('calendar/index?' . $this->buildReturnQueryFromPost()));
         }
 

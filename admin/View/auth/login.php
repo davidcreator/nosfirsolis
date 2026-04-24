@@ -2,13 +2,13 @@
     <div class="auth-head">
         <span class="auth-badge"><i class="fa-solid fa-user-shield"></i> <?= e($t('auth.badge', '{app} Admin', ['app' => ($app_name ?? 'Solis')])) ?></span>
         <h1><?= e($t('auth.heading', 'Acesso administrativo')) ?></h1>
-        <p><?= e($t('auth.description', 'Area protegida para governanca do sistema, curadoria de dados e controle de niveis hierarquicos de usuarios.')) ?></p>
+        <p><?= e($t('auth.description', 'Área protegida para governança do sistema, curadoria de dados e controle de níveis hierárquicos de usuários.')) ?></p>
     </div>
 
     <ul class="auth-feature-list">
         <li><i class="fa-solid fa-sitemap"></i> <?= e($t('auth.feature_hierarchy', 'Controle de hierarquia de grupos administrativos')) ?></li>
-        <li><i class="fa-solid fa-users-gear"></i> <?= e($t('auth.feature_users_permissions', 'Gestao de usuarios e permissoes por nivel')) ?></li>
-        <li><i class="fa-solid fa-shield-halved"></i> <?= e($t('auth.feature_security_audit', 'Acesso monitorado com trilha de seguranca')) ?></li>
+        <li><i class="fa-solid fa-users-gear"></i> <?= e($t('auth.feature_users_permissions', 'Gestão de usuários e permissões por nível')) ?></li>
+        <li><i class="fa-solid fa-shield-halved"></i> <?= e($t('auth.feature_security_audit', 'Acesso monitorado com trilha de segurança')) ?></li>
     </ul>
 
     <form method="post" action="<?= e(route_url('auth/authenticate')) ?>" class="auth-form">

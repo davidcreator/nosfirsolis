@@ -6,19 +6,19 @@ $currentHierarchyLevel = (int) ($current_hierarchy_level ?? 50);
 
 <section class="panel">
     <div class="panel-header">
-        <h1><?= e($t('users.heading_index', 'Usuarios e Hierarquia')) ?></h1>
-        <span class="meta-text"><?= e($t('users.current_level', 'Seu nivel atual: {level} (quanto menor, maior autoridade)', ['level' => (int) $currentHierarchyLevel])) ?></span>
+        <h1><?= e($t('users.heading_index', 'Usuários e Hierarquia')) ?></h1>
+        <span class="meta-text"><?= e($t('users.current_level', 'Seu nível atual: {level} (quanto menor, maior autoridade)', ['level' => (int) $currentHierarchyLevel])) ?></span>
     </div>
-    <p class="meta-text"><?= e($t('users.description_scope', 'O administrador so pode criar usuarios e ajustar niveis em grupos com nivel igual ou inferior ao seu escopo hierarquico.')) ?></p>
+    <p class="meta-text"><?= e($t('users.description_scope', 'O administrador só pode criar usuários e ajustar níveis em grupos com nível igual ou inferior ao seu escopo hierárquico.')) ?></p>
 </section>
 
 <section class="panel">
     <div class="panel-header">
-        <h2><?= e($t('users.heading_create', 'Criar usuario')) ?></h2>
+        <h2><?= e($t('users.heading_create', 'Criar usuário')) ?></h2>
     </div>
 
     <?php if (empty($groups)): ?>
-        <p><?= e($t('users.empty_groups_for_create', 'Nenhum grupo disponivel para atribuicao de usuarios no seu nivel hierarquico.')) ?></p>
+        <p><?= e($t('users.empty_groups_for_create', 'Nenhum grupo disponível para atribuição de usuários no seu nível hierárquico.')) ?></p>
     <?php else: ?>
         <form method="post" action="<?= e(route_url('users/store')) ?>" class="form-grid">
             <?= csrf_field() ?>
@@ -35,7 +35,7 @@ $currentHierarchyLevel = (int) ($current_hierarchy_level ?? 50);
                 <select name="user_group_id" required>
                     <?php foreach ($groups as $group): ?>
                         <option value="<?= (int) $group['id'] ?>">
-                            <?= e($group['name']) ?> (<?= e($t('users.group_level_label', 'Nivel')) ?> <?= (int) ($group['hierarchy_level'] ?? 50) ?>)
+                            <?= e($group['name']) ?> (<?= e($t('users.group_level_label', 'Nível')) ?> <?= (int) ($group['hierarchy_level'] ?? 50) ?>)
                         </option>
                     <?php endforeach; ?>
                 </select>
@@ -46,19 +46,19 @@ $currentHierarchyLevel = (int) ($current_hierarchy_level ?? 50);
                     <option value="0"><?= e($t('common.status_inactive', 'Inativo')) ?></option>
                 </select>
             </label>
-            <button type="submit"><i class="fa-solid fa-user-plus"></i> <?= e($t('users.button_create', 'Criar usuario')) ?></button>
+            <button type="submit"><i class="fa-solid fa-user-plus"></i> <?= e($t('users.button_create', 'Criar usuário')) ?></button>
         </form>
     <?php endif; ?>
 </section>
 
 <section class="panel">
     <div class="panel-header">
-        <h2><?= e($t('users.heading_hierarchy', 'Controle de niveis hierarquicos')) ?></h2>
-        <span class="meta-text"><?= e($t('users.hierarchy_hint', 'Menor numero = maior permissao')) ?></span>
+        <h2><?= e($t('users.heading_hierarchy', 'Controle de níveis hierárquicos')) ?></h2>
+        <span class="meta-text"><?= e($t('users.hierarchy_hint', 'Menor número = maior permissão')) ?></span>
     </div>
 
     <?php if (empty($hierarchyGroups)): ?>
-        <p><?= e($t('users.empty_hierarchy_groups', 'Sem grupos disponiveis para gerenciar neste nivel.')) ?></p>
+        <p><?= e($t('users.empty_hierarchy_groups', 'Sem grupos disponíveis para gerenciar neste nível.')) ?></p>
     <?php else: ?>
         <form method="post" action="<?= e(route_url('users/saveHierarchy')) ?>">
             <?= csrf_field() ?>
@@ -68,9 +68,9 @@ $currentHierarchyLevel = (int) ($current_hierarchy_level ?? 50);
                     <thead>
                     <tr>
                         <th><?= e($t('users.col_group', 'Grupo')) ?></th>
-                        <th><?= e($t('users.col_description', 'Descricao')) ?></th>
-                        <th><?= e($t('users.col_permissions', 'Permissoes')) ?></th>
-                        <th><?= e($t('users.col_level', 'Nivel')) ?></th>
+                        <th><?= e($t('users.col_description', 'Descrição')) ?></th>
+                        <th><?= e($t('users.col_permissions', 'Permissões')) ?></th>
+                        <th><?= e($t('users.col_level', 'Nível')) ?></th>
                         <th><?= e($t('users.col_status', 'Status')) ?></th>
                     </tr>
                     </thead>
@@ -111,14 +111,14 @@ $currentHierarchyLevel = (int) ($current_hierarchy_level ?? 50);
                 </table>
             </div>
 
-            <button type="submit"><i class="fa-solid fa-sitemap"></i> <?= e($t('users.button_save_levels', 'Salvar niveis')) ?></button>
+            <button type="submit"><i class="fa-solid fa-sitemap"></i> <?= e($t('users.button_save_levels', 'Salvar níveis')) ?></button>
         </form>
     <?php endif; ?>
 </section>
 
 <section class="panel">
     <div class="panel-header">
-        <h2><?= e($t('users.heading_registered', 'Usuarios cadastrados')) ?></h2>
+        <h2><?= e($t('users.heading_registered', 'Usuários cadastrados')) ?></h2>
     </div>
 
     <div class="table-wrap">
@@ -128,9 +128,9 @@ $currentHierarchyLevel = (int) ($current_hierarchy_level ?? 50);
                     <th><?= e($t('users.col_name', 'Nome')) ?></th>
                     <th><?= e($t('users.col_email', 'Email')) ?></th>
                     <th><?= e($t('users.col_group', 'Grupo')) ?></th>
-                    <th><?= e($t('users.col_level', 'Nivel')) ?></th>
+                    <th><?= e($t('users.col_level', 'Nível')) ?></th>
                     <th><?= e($t('users.col_status', 'Status')) ?></th>
-                    <th><?= e($t('users.col_last_login', 'Ultimo login')) ?></th>
+                    <th><?= e($t('users.col_last_login', 'Último login')) ?></th>
                 </tr>
             </thead>
             <tbody>

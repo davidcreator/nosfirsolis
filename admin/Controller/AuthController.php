@@ -20,7 +20,7 @@ class AuthController extends BaseController
     public function authenticate(): void
     {
         if (!$this->request->isPost() || !verify_csrf($this->request->post('_token'))) {
-            flash('error', $this->t('auth.flash_invalid_request', 'Requisicao invalida.'));
+            flash('error', $this->t('auth.flash_invalid_request', 'Requisição inválida.'));
             $this->redirectToRoute('auth/login');
         }
 
@@ -29,7 +29,7 @@ class AuthController extends BaseController
 
         if (!$this->auth->attempt($email, $password)) {
             $message = trim($this->auth->lastErrorMessage());
-            flash('error', $message !== '' ? $message : $this->t('auth.flash_invalid_credentials', 'Credenciais invalidas.'));
+            flash('error', $message !== '' ? $message : $this->t('auth.flash_invalid_credentials', 'Credenciais inválidas.'));
             $this->redirectToRoute('auth/login');
         }
 
@@ -45,7 +45,7 @@ class AuthController extends BaseController
     {
         $this->requirePostAndCsrf();
         $this->auth->logout();
-        flash('success', $this->t('auth.flash_logout_success', 'Sessao encerrada com sucesso.'));
+        flash('success', $this->t('auth.flash_logout_success', 'Sessão encerrada com sucesso.'));
         $this->redirectToRoute('auth/login');
     }
 }

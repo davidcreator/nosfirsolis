@@ -22,7 +22,7 @@ class UsersController extends BaseController
         ));
 
         $this->render('users/index', [
-            'title' => $this->t('users.title_index', 'Usuarios e Hierarquia'),
+            'title' => $this->t('users.title_index', 'Usuários e Hierarquia'),
             'users' => $this->loader->model('users')->allWithGroup(),
             'groups' => $groups,
             'hierarchy_groups' => $manageableGroups,
@@ -44,13 +44,13 @@ class UsersController extends BaseController
         $groupId = (int) $this->request->post('user_group_id');
         $targetGroup = $groupsModel->find($groupId);
         if (!$targetGroup) {
-            flash('error', $this->t('users.flash_invalid_group', 'Grupo de usuario invalido.'));
+            flash('error', $this->t('users.flash_invalid_group', 'Grupo de usuário inválido.'));
             $this->redirectToRoute('users/index');
         }
 
         $targetHierarchyLevel = max(1, min(999, (int) ($targetGroup['hierarchy_level'] ?? 50)));
         if ($targetHierarchyLevel < $currentHierarchyLevel) {
-            flash('error', $this->t('users.flash_group_above_hierarchy', 'Voce nao pode criar usuario em um grupo acima do seu nivel hierarquico.'));
+            flash('error', $this->t('users.flash_group_above_hierarchy', 'Você não pode criar usuário em um grupo acima do seu nível hierárquico.'));
             $this->redirectToRoute('users/index');
         }
 
@@ -59,23 +59,23 @@ class UsersController extends BaseController
         $password = (string) $this->request->post('password');
 
         if ($name === '' || $email === '' || $password === '') {
-            flash('error', $this->t('users.flash_required_fields', 'Nome, email e senha sao obrigatorios.'));
+            flash('error', $this->t('users.flash_required_fields', 'Nome, email e senha são obrigatórios.'));
             $this->redirectToRoute('users/index');
         }
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            flash('error', $this->t('users.flash_invalid_email', 'Informe um email valido.'));
+            flash('error', $this->t('users.flash_invalid_email', 'Informe um email válido.'));
             $this->redirectToRoute('users/index');
         }
 
         if (strlen($password) < 8) {
-            flash('error', $this->t('users.flash_password_min_length', 'A senha deve ter no minimo 8 caracteres.'));
+            flash('error', $this->t('users.flash_password_min_length', 'A senha deve ter no mínimo 8 caracteres.'));
             $this->redirectToRoute('users/index');
         }
 
         $existing = $this->db->fetch('SELECT id FROM users WHERE email = :email LIMIT 1', ['email' => $email]);
         if ($existing) {
-            flash('error', $this->t('users.flash_email_exists', 'Ja existe um usuario com este email.'));
+            flash('error', $this->t('users.flash_email_exists', 'Já existe um usuário com este email.'));
             $this->redirectToRoute('users/index');
         }
 
@@ -87,7 +87,7 @@ class UsersController extends BaseController
             'status' => (int) $this->request->post('status', 1),
         ]);
 
-        flash('success', $this->t('users.flash_created', 'Usuario criado.'));
+        flash('success', $this->t('users.flash_created', 'Usuário criado.'));
         $this->redirectToRoute('users/index');
     }
 
@@ -104,7 +104,7 @@ class UsersController extends BaseController
 
         $payload = (array) $this->request->post('hierarchy_level', []);
         if (empty($payload)) {
-            flash('error', $this->t('users.flash_no_hierarchy_payload', 'Nenhum nivel hierarquico foi enviado para atualizacao.'));
+            flash('error', $this->t('users.flash_no_hierarchy_payload', 'Nenhum nível hierárquico foi enviado para atualização.'));
             $this->redirectToRoute('users/index');
         }
 
@@ -156,13 +156,13 @@ class UsersController extends BaseController
         if ($updated > 0) {
             $message = $this->t(
                 'users.flash_hierarchy_updated',
-                'Niveis hierarquicos atualizados: {count}.',
+                'Níveis hierárquicos atualizados: {count}.',
                 ['count' => $updated]
             );
             if ($blocked > 0) {
                 $message .= ' ' . $this->t(
                     'users.flash_hierarchy_blocked',
-                    'Itens bloqueados por permissao: {count}.',
+                    'Itens bloqueados por permissão: {count}.',
                     ['count' => $blocked]
                 );
             }
@@ -171,11 +171,11 @@ class UsersController extends BaseController
         }
 
         if ($blocked > 0) {
-            flash('error', $this->t('users.flash_hierarchy_update_denied', 'Nao foi possivel atualizar. Alguns niveis estao acima da sua permissao.'));
+            flash('error', $this->t('users.flash_hierarchy_update_denied', 'Não foi possível atualizar. Alguns níveis estão acima da sua permissão.'));
             $this->redirectToRoute('users/index');
         }
 
-        flash('success', $this->t('users.flash_hierarchy_no_changes', 'Nenhuma alteracao de hierarquia foi necessaria.'));
+        flash('success', $this->t('users.flash_hierarchy_no_changes', 'Nenhuma alteração de hierarquia foi necessária.'));
         $this->redirectToRoute('users/index');
     }
 }

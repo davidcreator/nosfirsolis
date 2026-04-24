@@ -16,13 +16,13 @@ $observabilityEnabled = (bool) ($opsFeatureMap['observability.telemetry'] ?? tru
 <section class="panel dashboard-hero">
     <div class="hero-content">
         <span class="hero-badge"><i class="fa-solid fa-gears"></i> Ops Center</span>
-        <h1>Operacoes e Integracoes</h1>
-        <p>Governanca de feature flags, webhooks de automacao, monitoramento de jobs e observabilidade.</p>
+        <h1>Operações e Integrações</h1>
+        <p>Governança de feature flags, webhooks de automação, monitoramento de jobs e observabilidade.</p>
     </div>
     <div class="hero-actions">
         <form method="post" action="<?= e(route_url('operations/runMaintenance')) ?>">
             <?= csrf_field() ?>
-            <button class="btn" type="submit"><i class="fa-solid fa-wrench"></i> Rodar manutencao</button>
+            <button class="btn" type="submit"><i class="fa-solid fa-wrench"></i> Rodar manutenção</button>
         </form>
     </div>
 </section>
@@ -30,7 +30,7 @@ $observabilityEnabled = (bool) ($opsFeatureMap['observability.telemetry'] ?? tru
 <section class="panel">
     <div class="panel-header">
         <h2>Feature flags</h2>
-        <span class="meta-text">Controle de liberacao por area, permissao e hierarquia</span>
+        <span class="meta-text">Controle de liberação por área, permissão e hierarquia</span>
     </div>
 
     <form method="post" action="<?= e(route_url('operations/saveFeatureFlag')) ?>" class="form-grid">
@@ -38,17 +38,17 @@ $observabilityEnabled = (bool) ($opsFeatureMap['observability.telemetry'] ?? tru
         <label>Chave
             <input type="text" name="flag_key" placeholder="tracking.campaign_links" required>
         </label>
-        <label>Titulo
+        <label>Título
             <input type="text" name="label" placeholder="Rastreamento de campanhas" required>
         </label>
-        <label>Area
+        <label>Área
             <select name="target_area">
                 <option value="all">all</option>
                 <option value="admin">admin</option>
                 <option value="client">client</option>
             </select>
         </label>
-        <label>Estrategia
+        <label>Estratégia
             <select name="rollout_strategy">
                 <option value="all">all</option>
                 <option value="admins_only">admins_only</option>
@@ -57,14 +57,14 @@ $observabilityEnabled = (bool) ($opsFeatureMap['observability.telemetry'] ?? tru
                 <option value="permission">permission</option>
             </select>
         </label>
-        <label>Nivel max hierarquia (min_hierarchy)
+        <label>Nível máx. hierarquia (min_hierarchy)
             <input type="number" name="min_hierarchy_level" min="1" max="999" placeholder="50">
         </label>
-        <label>Permissao requerida (permission)
+        <label>Permissão requerida (permission)
             <input type="text" name="required_permission" placeholder="admin.operations">
         </label>
-        <label class="wide">Descricao
-            <input type="text" name="description" placeholder="Descricao funcional da flag">
+        <label class="wide">Descrição
+            <input type="text" name="description" placeholder="Descrição funcional da flag">
         </label>
         <label class="check">
             <input type="checkbox" name="enabled" value="1" checked>
@@ -78,10 +78,10 @@ $observabilityEnabled = (bool) ($opsFeatureMap['observability.telemetry'] ?? tru
             <thead>
             <tr>
                 <th>Flag</th>
-                <th>Area</th>
-                <th>Estrategia</th>
+                <th>Área</th>
+                <th>Estratégia</th>
                 <th>Status</th>
-                <th>Acao</th>
+                <th>Ação</th>
             </tr>
             </thead>
             <tbody>
@@ -116,7 +116,7 @@ $observabilityEnabled = (bool) ($opsFeatureMap['observability.telemetry'] ?? tru
 <?php if ($webhooksEnabled): ?>
 <section class="panel">
     <div class="panel-header">
-        <h2>Automacao por webhooks</h2>
+        <h2>Automação por webhooks</h2>
         <span class="meta-text">Disparo de eventos para n8n, integrações internas e terceiros</span>
     </div>
 
@@ -131,7 +131,7 @@ $observabilityEnabled = (bool) ($opsFeatureMap['observability.telemetry'] ?? tru
         <label class="wide">Endpoint
             <input type="url" name="endpoint_url" placeholder="https://seu-workflow/webhook" required>
         </label>
-        <label>Metodo
+        <label>Método
             <select name="http_method">
                 <option value="POST">POST</option>
                 <option value="PUT">PUT</option>
@@ -182,7 +182,7 @@ $observabilityEnabled = (bool) ($opsFeatureMap['observability.telemetry'] ?? tru
                 <th>Evento</th>
                 <th>Endpoint</th>
                 <th>Status</th>
-                <th>Acoes</th>
+                <th>Ações</th>
             </tr>
             </thead>
             <tbody>
@@ -214,7 +214,7 @@ $observabilityEnabled = (bool) ($opsFeatureMap['observability.telemetry'] ?? tru
         </table>
     </div>
 
-    <h3>Historico de dispatch</h3>
+    <h3>Histórico de dispatch</h3>
     <div class="table-wrap">
         <table class="table">
             <thead>
@@ -224,7 +224,7 @@ $observabilityEnabled = (bool) ($opsFeatureMap['observability.telemetry'] ?? tru
                 <th>Evento</th>
                 <th>Status</th>
                 <th>HTTP</th>
-                <th>Duracao</th>
+                <th>Duração</th>
             </tr>
             </thead>
             <tbody>
@@ -263,16 +263,16 @@ $observabilityEnabled = (bool) ($opsFeatureMap['observability.telemetry'] ?? tru
             <input type="text" name="job_key" placeholder="social.publisher_queue" required>
         </label>
         <label>Nome
-            <input type="text" name="name" placeholder="Fila de publicacao social" required>
+            <input type="text" name="name" placeholder="Fila de publicação social" required>
         </label>
         <label>Intervalo esperado (min)
             <input type="number" name="expected_interval_minutes" min="1" max="10080" value="60">
         </label>
-        <label>Tempo maximo (s)
+        <label>Tempo máximo (s)
             <input type="number" name="max_runtime_seconds" min="1" max="86400" value="300">
         </label>
-        <label class="wide">Descricao
-            <input type="text" name="description" placeholder="Descricao operacional do monitor">
+        <label class="wide">Descrição
+            <input type="text" name="description" placeholder="Descrição operacional do monitor">
         </label>
         <label class="check">
             <input type="checkbox" name="enabled" value="1" checked>
@@ -287,9 +287,9 @@ $observabilityEnabled = (bool) ($opsFeatureMap['observability.telemetry'] ?? tru
             <tr>
                 <th>Job</th>
                 <th>Status</th>
-                <th>Ultimo check-in</th>
-                <th>Ultima duracao</th>
-                <th>Acao</th>
+                <th>Último check-in</th>
+                <th>Última duração</th>
+                <th>Ação</th>
             </tr>
             </thead>
             <tbody>
@@ -356,17 +356,17 @@ $observabilityEnabled = (bool) ($opsFeatureMap['observability.telemetry'] ?? tru
 <section class="panel">
     <div class="panel-header">
         <h2>Observabilidade</h2>
-        <span class="meta-text">Eventos estruturados de integracao, seguranca e operacao</span>
+        <span class="meta-text">Eventos estruturados de integração, segurança e operação</span>
     </div>
     <div class="table-wrap">
         <table class="table">
             <thead>
             <tr>
                 <th>Data</th>
-                <th>Nivel</th>
+                <th>Nível</th>
                 <th>Categoria</th>
                 <th>Mensagem</th>
-                <th>Area</th>
+                <th>Área</th>
             </tr>
             </thead>
             <tbody>
@@ -392,7 +392,7 @@ $observabilityEnabled = (bool) ($opsFeatureMap['observability.telemetry'] ?? tru
 <?php endif; ?>
 
 <section class="panel">
-    <h2>Ultimos check-ins de jobs</h2>
+    <h2>Últimos check-ins de jobs</h2>
     <div class="table-wrap">
         <table class="table">
             <thead>
@@ -400,14 +400,14 @@ $observabilityEnabled = (bool) ($opsFeatureMap['observability.telemetry'] ?? tru
                 <th>Data</th>
                 <th>Job</th>
                 <th>Status</th>
-                <th>Duracao</th>
+                <th>Duração</th>
                 <th>Erro</th>
             </tr>
             </thead>
             <tbody>
             <?php if (empty($checkins)): ?>
                 <tr>
-                    <td colspan="5">Sem check-ins no periodo.</td>
+                    <td colspan="5">Sem check-ins no período.</td>
                 </tr>
             <?php else: ?>
                 <?php foreach ($checkins as $checkin): ?>
