@@ -1,10 +1,13 @@
 RewriteEngine On
+DirectoryIndex index.php
 
 # Protege arquivos e diretorios internos contra acesso HTTP direto
 RewriteRule ^system/ - [F,L,NC]
 RewriteRule ^config\.php$ - [F,L,NC]
 RewriteRule ^\.env(?:\.example)?$ - [F,L,NC]
 RewriteRule ^install/sql/ - [F,L,NC]
+
+RewriteRule ^$ index.php [L,QSA]
 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
