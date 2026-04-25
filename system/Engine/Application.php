@@ -162,6 +162,15 @@ class Application
     {
         $allowedHosts = (array) $config->get('security.allowed_hosts', []);
         $baseUrl = (string) $config->get('app.base_url', '');
+        $installed = (bool) $config->get('app.installed', false);
+
+        if (!$installed) {
+            $requestHost = HostGuard::requestHost($_SERVER);
+            if ($requestHost !== '') {
+                $allowedHosts[] = $requestHost;
+                $config->set('security.allowed_hosts', $allowedHosts);
+            }
+        }
 
         if (HostGuard::isAllowedRequestHost($_SERVER, $allowedHosts, $baseUrl)) {
             return;
