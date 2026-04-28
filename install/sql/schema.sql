@@ -27,6 +27,146 @@ CREATE TABLE IF NOT EXISTS users (
     CONSTRAINT fk_users_group FOREIGN KEY (user_group_id) REFERENCES user_groups(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS subscription_plans (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    slug VARCHAR(40) NOT NULL UNIQUE,
+    name VARCHAR(120) NOT NULL,
+    description VARCHAR(255) NULL,
+    currency CHAR(3) NOT NULL DEFAULT 'BRL',
+    price_monthly_cents INT UNSIGNED NOT NULL DEFAULT 0,
+    price_yearly_cents INT UNSIGNED NOT NULL DEFAULT 0,
+    is_free TINYINT(1) NOT NULL DEFAULT 0,
+    ad_supported TINYINT(1) NOT NULL DEFAULT 0,
+    is_public TINYINT(1) NOT NULL DEFAULT 1,
+    status TINYINT(1) NOT NULL DEFAULT 1,
+    sort_order INT UNSIGNED NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS plan_limits (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    plan_id INT UNSIGNED NOT NULL,
+    limit_key VARCHAR(120) NOT NULL,
+    value_type ENUM('int', 'bool', 'text') NOT NULL DEFAULT 'int',
+    int_value INT NULL,
+    bool_value TINYINT(1) NULL,
+    text_value VARCHAR(255) NULL,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
+    UNIQUE KEY ux_plan_limit_key (plan_id, limit_key),
+    CONSTRAINT fk_plan_limits_plan FOREIGN KEY (plan_id) REFERENCES subscription_plans(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS user_subscriptions (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED NOT NULL,
+    plan_id INT UNSIGNED NOT NULL,
+    status ENUM('trial', 'active', 'past_due', 'suspended', 'canceled') NOT NULL DEFAULT 'active',
+    billing_cycle ENUM('monthly', 'yearly') NOT NULL DEFAULT 'monthly',
+    started_at DATETIME NOT NULL,
+    current_period_start DATETIME NULL,
+    current_period_end DATETIME NULL,
+    next_billing_at DATETIME NULL,
+    canceled_at DATETIME NULL,
+    provider VARCHAR(40) NULL,
+    provider_subscription_id VARCHAR(120) NULL,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
+    UNIQUE KEY ux_user_subscriptions_user (user_id),
+    INDEX idx_user_subscriptions_plan (plan_id, status),
+    CONSTRAINT fk_user_subscriptions_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_user_subscriptions_plan FOREIGN KEY (plan_id) REFERENCES subscription_plans(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS billing_invoices (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED NOT NULL,
+    subscription_id INT UNSIGNED NULL,
+    plan_id INT UNSIGNED NOT NULL,
+    invoice_number VARCHAR(40) NULL UNIQUE,
+    status ENUM('open', 'paid', 'void', 'failed') NOT NULL DEFAULT 'open',
+    currency CHAR(3) NOT NULL DEFAULT 'BRL',
+    subtotal_cents INT UNSIGNED NOT NULL DEFAULT 0,
+    total_cents INT UNSIGNED NOT NULL DEFAULT 0,
+    payment_method VARCHAR(40) NULL,
+    provider VARCHAR(40) NOT NULL DEFAULT 'mock',
+    provider_invoice_id VARCHAR(120) NULL,
+    description VARCHAR(255) NULL,
+    due_at DATETIME NULL,
+    paid_at DATETIME NULL,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
+    INDEX idx_billing_invoices_user (user_id, status, created_at),
+    CONSTRAINT fk_billing_invoices_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_billing_invoices_subscription FOREIGN KEY (subscription_id) REFERENCES user_subscriptions(id) ON DELETE SET NULL,
+    CONSTRAINT fk_billing_invoices_plan FOREIGN KEY (plan_id) REFERENCES subscription_plans(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS payment_transactions (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED NOT NULL,
+    invoice_id INT UNSIGNED NOT NULL,
+    status ENUM('pending', 'paid', 'failed', 'refunded') NOT NULL DEFAULT 'pending',
+    provider VARCHAR(40) NOT NULL DEFAULT 'mock',
+    payment_method VARCHAR(40) NULL,
+    amount_cents INT UNSIGNED NOT NULL DEFAULT 0,
+    currency CHAR(3) NOT NULL DEFAULT 'BRL',
+    provider_transaction_id VARCHAR(120) NULL,
+    payload_json LONGTEXT NULL,
+    processed_at DATETIME NULL,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
+    INDEX idx_payment_transactions_user (user_id, status, created_at),
+    INDEX idx_payment_transactions_invoice (invoice_id),
+    CONSTRAINT fk_payment_transactions_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_payment_transactions_invoice FOREIGN KEY (invoice_id) REFERENCES billing_invoices(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS subscription_events (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED NOT NULL,
+    subscription_id INT UNSIGNED NULL,
+    event_key VARCHAR(80) NOT NULL,
+    message VARCHAR(255) NULL,
+    payload_json LONGTEXT NULL,
+    created_at DATETIME NOT NULL,
+    INDEX idx_subscription_events_user (user_id, created_at),
+    CONSTRAINT fk_subscription_events_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_subscription_events_subscription FOREIGN KEY (subscription_id) REFERENCES user_subscriptions(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS billing_promotions (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(140) NOT NULL,
+    code VARCHAR(60) NULL UNIQUE,
+    description VARCHAR(255) NULL,
+    plan_id INT UNSIGNED NULL,
+    discount_type ENUM('percent', 'amount') NOT NULL DEFAULT 'percent',
+    discount_value INT UNSIGNED NOT NULL DEFAULT 0,
+    starts_at DATETIME NULL,
+    ends_at DATETIME NULL,
+    is_public TINYINT(1) NOT NULL DEFAULT 1,
+    status TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
+    INDEX idx_billing_promotions_status (status, starts_at, ends_at),
+    CONSTRAINT fk_billing_promotions_plan FOREIGN KEY (plan_id) REFERENCES subscription_plans(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS billing_announcements (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(180) NOT NULL,
+    message TEXT NOT NULL,
+    announcement_type ENUM('discount', 'reajuste', 'informativo') NOT NULL DEFAULT 'informativo',
+    starts_at DATETIME NULL,
+    ends_at DATETIME NULL,
+    status TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
+    INDEX idx_billing_announcements_status (status, starts_at, ends_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS social_channels (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(120) NOT NULL,

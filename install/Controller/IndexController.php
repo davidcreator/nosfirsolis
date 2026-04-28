@@ -20,6 +20,8 @@ class IndexController extends Controller
 
         $report = $this->loader->model('installer')->environmentReport();
         $reinstallKey = (string) $this->request->get('reinstall_key', '');
+        $defaultEnvironment = $this->defaultEnvironment();
+        $selectedEnvironment = old('app_env', $defaultEnvironment);
 
         $this->render('installer/index', [
             'title' => $this->t('install.title', 'Instalador do Sistema'),
@@ -36,6 +38,8 @@ class IndexController extends Controller
                 'admin_email' => old('admin_email', ''),
                 'timezone' => old('timezone', 'America/Sao_Paulo'),
                 'language_code' => old('language_code', 'en-us'),
+                'app_env' => $selectedEnvironment,
+                'allowed_hosts' => old('allowed_hosts', $this->defaultAllowedHosts($selectedEnvironment)),
             ],
         ]);
     }
@@ -71,6 +75,8 @@ class IndexController extends Controller
             'admin_password' => (string) $this->request->post('admin_password'),
             'timezone' => trim((string) $this->request->post('timezone', 'America/Sao_Paulo')),
             'language_code' => trim((string) $this->request->post('language_code', 'en-us')),
+            'app_env' => trim((string) $this->request->post('app_env', $this->defaultEnvironment())),
+            'allowed_hosts' => trim((string) $this->request->post('allowed_hosts', $this->defaultAllowedHosts($this->defaultEnvironment()))),
             'allow_reinstall' => $allowReinstall,
         ];
 
@@ -99,15 +105,61 @@ class IndexController extends Controller
     private function clientUrl(): string
     {
         $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-        $host = HostGuard::effectiveHost(
-            $_SERVER,
-            (array) $this->config->get('security.allowed_hosts', []),
-            (string) $this->config->get('app.base_url', '')
-        );
+        $requestHost = HostGuard::requestHost($_SERVER);
+        $host = $requestHost !== ''
+            ? $requestHost
+            : HostGuard::effectiveHost(
+                $_SERVER,
+                (array) $this->config->get('security.allowed_hosts', []),
+                (string) $this->config->get('app.base_url', '')
+            );
         $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''));
         $rootDir = preg_replace('#/(admin|client|install)$#', '', $scriptDir);
 
         return rtrim($scheme . '://' . $host . $rootDir, '/') . '/client';
+    }
+
+    private function defaultEnvironment(): string
+    {
+        $requestHost = HostGuard::requestHost($_SERVER);
+        $localHosts = ['localhost', '127.0.0.1', '::1'];
+
+        if (
+            in_array($requestHost, $localHosts, true)
+            || str_ends_with($requestHost, '.local')
+            || str_ends_with($requestHost, '.test')
+        ) {
+            return 'development';
+        }
+
+        return 'production';
+    }
+
+    private function defaultAllowedHosts(string $environment): string
+    {
+        $environment = strtolower(trim($environment));
+        $hosts = [];
+
+        if ($environment === 'development') {
+            $hosts[] = 'localhost';
+            $hosts[] = '127.0.0.1';
+            $hosts[] = '::1';
+        }
+
+        $requestHost = HostGuard::requestHost($_SERVER);
+        if ($requestHost !== '') {
+            $hosts[] = $requestHost;
+        }
+
+        $normalized = [];
+        foreach ($hosts as $host) {
+            $normalizedHost = HostGuard::normalizeHost($host);
+            if ($normalizedHost !== '') {
+                $normalized[$normalizedHost] = true;
+            }
+        }
+
+        return implode(',', array_keys($normalized));
     }
 
     private function isInstalled(): bool

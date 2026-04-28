@@ -29,6 +29,8 @@ Este guia documenta como instalar, configurar e operar o Solis dentro do ecossis
    - dados de banco (`host`, `port`, `database`, `user`, `password`)
    - usuario administrador inicial (`nome`, `email`, `senha`)
    - timezone e idioma
+   - ambiente (`development` local ou `production` online)
+   - hosts permitidos (separados por virgula)
 5. Conclua a instalacao e siga o redirecionamento para `/client`.
 
 ## O Que O Instalador Gera
@@ -39,9 +41,9 @@ Durante a instalacao o sistema:
 - executa `install/sql/seed.sql`
 - cria o usuario admin inicial
 - grava configuracao de runtime em:
-  - `config.php`
   - `admin/config.php`
-  - `system/Storage/config.php`
+  - `system/Storage/config.php` (ou `system/storage/config.php`, conforme o host)
+  - `.env` (atualiza `APP_ENV`, `ALLOWED_HOSTS` e segredos de runtime)
 
 ## Ordem De Carga Das Configuracoes
 
@@ -60,8 +62,9 @@ Arquivos carregados por ultimo podem sobrescrever valores anteriores.
 
 ### Aplicacao E Sessao
 
-Revise em `config.php` e `system/Storage/config.php`:
+Revise em `config.php` (defaults) e `system/Storage/config.php`:
 
+- `app.environment`
 - `app.base_url`
 - `app.timezone`
 - `app.default_language`
@@ -84,7 +87,8 @@ Revise:
 - `security.allow_reinstall` (manter `false` em operacao normal)
 - `security.reinstall_permission`
 - `security.reinstall_key` (valor secreto)
-- `security.allowed_hosts` (hosts permitidos; em dev manter `localhost`, `127.0.0.1`, `::1`)
+- `security.allowed_hosts` (em dev inclui localhost; em producao use dominios oficiais)
+- `APP_ENV` e `ALLOWED_HOSTS` no `.env`
 - parametros de auth/rate-limit em `system/Config/app.php` (`security.auth.*`)
 
 ### Integracoes Sociais
@@ -188,7 +192,8 @@ Para liberar reinstalacao apos sistema instalado:
 - Instalador retorna bloqueado/403:
   - validar permissao admin, flag de reinstalacao e chave.
 - Mensagem `Bad Request: host nao permitido.`:
-  - revisar `ALLOWED_HOSTS` no ambiente e incluir o host/domino real de acesso.
+  - revisar `APP_ENV` (`production` online) e `ALLOWED_HOSTS` no ambiente.
+  - incluir o host/dominio real de acesso em `ALLOWED_HOSTS`.
 - Erro de conexao MySQL:
   - revisar host/porta/credenciais e permissao do usuario de banco.
 

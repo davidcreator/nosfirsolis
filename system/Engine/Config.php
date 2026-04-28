@@ -67,6 +67,11 @@ class Config
     {
         foreach ($extra as $key => $value) {
             if (isset($base[$key]) && is_array($base[$key]) && is_array($value)) {
+                if (array_is_list($base[$key]) && array_is_list($value)) {
+                    $base[$key] = $value;
+                    continue;
+                }
+
                 $base[$key] = $this->merge($base[$key], $value);
                 continue;
             }

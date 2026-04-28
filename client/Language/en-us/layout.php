@@ -7,6 +7,7 @@ return [
     'layout.language_option_en_us' => 'English',
     'layout.language_option_pt_br' => 'Portuguese',
     'layout.logout' => 'Sign out',
+    'layout.nav_billing' => 'Plans & billing',
     'layout.nav_calendar' => 'Calendar',
     'layout.nav_dashboard' => 'Dashboard',
     'layout.nav_plans' => 'Editorial plans',

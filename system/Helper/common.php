@@ -1,9 +1,72 @@
 <?php
 
+if (!function_exists('mojibake_score')) {
+    function mojibake_score(string $value): int
+    {
+        if ($value === '') {
+            return 0;
+        }
+
+        $pattern = '/(?:\x{00C3}.|\x{00C2}.|\x{00E2}[\x{0080}-\x{00BF}]|\x{00C6}.|\x{FFFD})/u';
+        if (!preg_match_all($pattern, $value, $matches)) {
+            return 0;
+        }
+
+        return count($matches[0]);
+    }
+}
+
+if (!function_exists('normalize_text_encoding')) {
+    function normalize_text_encoding(string $value): string
+    {
+        $pattern = '/(?:\x{00C3}.|\x{00C2}.|\x{00E2}[\x{0080}-\x{00BF}]|\x{00C6}.|\x{FFFD})/u';
+        if ($value === '' || !preg_match($pattern, $value)) {
+            return $value;
+        }
+
+        $best = $value;
+        $bestScore = mojibake_score($value);
+        $candidate = $value;
+
+        // Double/triple mojibake usually needs one or more UTF-8 -> Windows-1252 reversals.
+        for ($i = 0; $i < 4; $i++) {
+            $next = null;
+            if (function_exists('mb_convert_encoding')) {
+                $next = @mb_convert_encoding($candidate, 'Windows-1252', 'UTF-8');
+            } elseif (function_exists('iconv')) {
+                $next = @iconv('UTF-8', 'Windows-1252//IGNORE', $candidate);
+            }
+
+            if (!is_string($next) || $next === '' || $next === $candidate) {
+                break;
+            }
+
+            if (function_exists('mb_check_encoding') && !@mb_check_encoding($next, 'UTF-8')) {
+                break;
+            }
+
+            $score = mojibake_score($next);
+            if ($score > $bestScore) {
+                break;
+            }
+
+            $best = $next;
+            $bestScore = $score;
+            $candidate = $next;
+
+            if ($bestScore === 0) {
+                break;
+            }
+        }
+
+        return $best;
+    }
+}
+
 if (!function_exists('e')) {
     function e(?string $value): string
     {
-        return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+        return htmlspecialchars(normalize_text_encoding((string) $value), ENT_QUOTES, 'UTF-8');
     }
 }
 

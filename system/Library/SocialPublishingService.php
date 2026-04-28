@@ -75,6 +75,17 @@ class SocialPublishingService
             return 0;
         }
 
+        $subscription = new SubscriptionService($this->registry);
+        $feature = $subscription->evaluateFeature($userId, 'allow_publish_hub');
+        if (empty($feature['allowed'])) {
+            return 0;
+        }
+
+        $quota = $subscription->evaluateQuota($userId, 'max_social_publications_per_month', 1);
+        if (empty($quota['allowed'])) {
+            return 0;
+        }
+
         $connection = $this->connectionByUserAndPlatform($userId, $platformSlug);
         $status = 'queued';
         $errorMessage = null;

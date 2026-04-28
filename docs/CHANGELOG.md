@@ -2,6 +2,16 @@
 
 Todas as mudancas relevantes de codigo e seguranca registradas neste diretorio de documentacao.
 
+## 2026-04-28
+
+### Configuracao e Deploy
+
+- Padronizacao de ambiente com `APP_ENV` (`development`/`production`) no bootstrap.
+- Instalador atualizado para receber ambiente e hosts permitidos e gravar `.env` automaticamente.
+- Runtime de instalacao agora persiste `app.environment` e `security.allowed_hosts` em `system/Storage/config.php`.
+- `index.php` passou a reconhecer instalacao ativa via `system/Storage/config.php`, reduzindo dependencia de sobrescrever `config.php` raiz em reinstalacoes.
+- Merge de configuracao aprimorado para listas (`array_is_list`) com substituicao completa (evita mistura de `allowed_hosts` entre defaults e runtime).
+
 ## 2026-04-17
 
 ### Corrigido

@@ -1,6 +1,6 @@
 <section class="panel">
     <div class="panel-header">
-        <h1><?= e($t('holidays.heading_index', 'Feriados')) ?></h1>
+        <h1><i class="fa-solid fa-calendar-day"></i> <?= e($t('holidays.heading_index', 'Feriados')) ?></h1>
         <a class="btn" href="<?= e(route_url('holidays/create')) ?>"><i class="fa-solid fa-calendar-plus"></i> <?= e($t('holidays.button_new', 'Novo feriado')) ?></a>
     </div>
 

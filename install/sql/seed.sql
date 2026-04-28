@@ -3,6 +3,95 @@ VALUES
 ('Administradores', 'Acesso total ao painel administrativo', 10, '["*"]', 1, NOW(), NOW()),
 ('Clientes', 'Acesso ao planejamento e calendário', 90, '["client.*"]', 1, NOW(), NOW());
 
+INSERT INTO subscription_plans (
+    slug,
+    name,
+    description,
+    currency,
+    price_monthly_cents,
+    price_yearly_cents,
+    is_free,
+    ad_supported,
+    is_public,
+    status,
+    sort_order,
+    created_at,
+    updated_at
+)
+VALUES
+('gratuito', 'Basico Gratuito', 'Plano de entrada com propaganda, recursos essenciais e limites de uso.', 'BRL', 0, 0, 1, 1, 1, 1, 10, NOW(), NOW()),
+('bronze', 'Plano Bronze', 'Menos restricoes para operacao diaria, com mais postagens e integracoes.', 'BRL', 7900, 75840, 0, 0, 1, 1, 20, NOW(), NOW()),
+('prata', 'Plano Prata', 'Plano intermediario com mais recursos avancados, volume de posts e escalabilidade.', 'BRL', 15900, 152640, 0, 0, 1, 1, 30, NOW(), NOW()),
+('ouro', 'Plano Ouro', 'Todos os recursos liberados, sem limite de postagens e sem propaganda.', 'BRL', 32900, 315840, 0, 0, 1, 1, 40, NOW(), NOW());
+
+INSERT INTO plan_limits (plan_id, limit_key, value_type, int_value, bool_value, text_value, created_at, updated_at)
+VALUES
+((SELECT id FROM subscription_plans WHERE slug = 'gratuito' LIMIT 1), 'max_editorial_plans_per_month', 'int', 2, NULL, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'gratuito' LIMIT 1), 'max_social_publications_per_month', 'int', 20, NULL, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'gratuito' LIMIT 1), 'max_social_accounts', 'int', 1, NULL, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'gratuito' LIMIT 1), 'max_tracking_links_per_month', 'int', 15, NULL, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'gratuito' LIMIT 1), 'max_calendar_extra_events_per_month', 'int', 12, NULL, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'gratuito' LIMIT 1), 'ads_enabled', 'bool', NULL, 1, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'gratuito' LIMIT 1), 'allow_template_plans', 'bool', NULL, 0, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'gratuito' LIMIT 1), 'allow_ai_draft_generator', 'bool', NULL, 0, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'gratuito' LIMIT 1), 'allow_format_presets', 'bool', NULL, 0, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'gratuito' LIMIT 1), 'allow_publish_hub', 'bool', NULL, 1, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'gratuito' LIMIT 1), 'allow_queue_processing', 'bool', NULL, 0, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'gratuito' LIMIT 1), 'allow_tracking_links', 'bool', NULL, 1, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'gratuito' LIMIT 1), 'allow_social_connections', 'bool', NULL, 1, NULL, NOW(), NOW()),
+
+((SELECT id FROM subscription_plans WHERE slug = 'bronze' LIMIT 1), 'max_editorial_plans_per_month', 'int', 8, NULL, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'bronze' LIMIT 1), 'max_social_publications_per_month', 'int', 120, NULL, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'bronze' LIMIT 1), 'max_social_accounts', 'int', 4, NULL, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'bronze' LIMIT 1), 'max_tracking_links_per_month', 'int', 120, NULL, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'bronze' LIMIT 1), 'max_calendar_extra_events_per_month', 'int', 60, NULL, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'bronze' LIMIT 1), 'ads_enabled', 'bool', NULL, 0, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'bronze' LIMIT 1), 'allow_template_plans', 'bool', NULL, 1, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'bronze' LIMIT 1), 'allow_ai_draft_generator', 'bool', NULL, 1, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'bronze' LIMIT 1), 'allow_format_presets', 'bool', NULL, 1, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'bronze' LIMIT 1), 'allow_publish_hub', 'bool', NULL, 1, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'bronze' LIMIT 1), 'allow_queue_processing', 'bool', NULL, 1, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'bronze' LIMIT 1), 'allow_tracking_links', 'bool', NULL, 1, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'bronze' LIMIT 1), 'allow_social_connections', 'bool', NULL, 1, NULL, NOW(), NOW()),
+
+((SELECT id FROM subscription_plans WHERE slug = 'prata' LIMIT 1), 'max_editorial_plans_per_month', 'int', 20, NULL, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'prata' LIMIT 1), 'max_social_publications_per_month', 'int', 400, NULL, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'prata' LIMIT 1), 'max_social_accounts', 'int', 10, NULL, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'prata' LIMIT 1), 'max_tracking_links_per_month', 'int', 400, NULL, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'prata' LIMIT 1), 'max_calendar_extra_events_per_month', 'int', 200, NULL, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'prata' LIMIT 1), 'ads_enabled', 'bool', NULL, 0, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'prata' LIMIT 1), 'allow_template_plans', 'bool', NULL, 1, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'prata' LIMIT 1), 'allow_ai_draft_generator', 'bool', NULL, 1, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'prata' LIMIT 1), 'allow_format_presets', 'bool', NULL, 1, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'prata' LIMIT 1), 'allow_publish_hub', 'bool', NULL, 1, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'prata' LIMIT 1), 'allow_queue_processing', 'bool', NULL, 1, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'prata' LIMIT 1), 'allow_tracking_links', 'bool', NULL, 1, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'prata' LIMIT 1), 'allow_social_connections', 'bool', NULL, 1, NULL, NOW(), NOW()),
+
+((SELECT id FROM subscription_plans WHERE slug = 'ouro' LIMIT 1), 'max_editorial_plans_per_month', 'int', -1, NULL, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'ouro' LIMIT 1), 'max_social_publications_per_month', 'int', -1, NULL, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'ouro' LIMIT 1), 'max_social_accounts', 'int', -1, NULL, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'ouro' LIMIT 1), 'max_tracking_links_per_month', 'int', -1, NULL, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'ouro' LIMIT 1), 'max_calendar_extra_events_per_month', 'int', -1, NULL, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'ouro' LIMIT 1), 'ads_enabled', 'bool', NULL, 0, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'ouro' LIMIT 1), 'allow_template_plans', 'bool', NULL, 1, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'ouro' LIMIT 1), 'allow_ai_draft_generator', 'bool', NULL, 1, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'ouro' LIMIT 1), 'allow_format_presets', 'bool', NULL, 1, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'ouro' LIMIT 1), 'allow_publish_hub', 'bool', NULL, 1, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'ouro' LIMIT 1), 'allow_queue_processing', 'bool', NULL, 1, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'ouro' LIMIT 1), 'allow_tracking_links', 'bool', NULL, 1, NULL, NOW(), NOW()),
+((SELECT id FROM subscription_plans WHERE slug = 'ouro' LIMIT 1), 'allow_social_connections', 'bool', NULL, 1, NULL, NOW(), NOW());
+
+INSERT INTO settings (key_name, value_text, autoload, status, created_at, updated_at)
+VALUES
+('billing.currency', 'BRL', 1, 1, NOW(), NOW()),
+('billing.validation_mode', 'automatic', 1, 1, NOW(), NOW()),
+('billing.mock_auto_approve', '1', 1, 1, NOW(), NOW()),
+('billing.method.pix', '1', 1, 1, NOW(), NOW()),
+('billing.method.boleto', '1', 1, 1, NOW(), NOW()),
+('billing.method.card', '1', 1, 1, NOW(), NOW()),
+('billing.method.transfer', '0', 1, 1, NOW(), NOW());
+
 INSERT INTO languages (code, name, is_default, status, created_at, updated_at)
 VALUES
 ('en-us', 'English US', 1, 1, NOW(), NOW()),

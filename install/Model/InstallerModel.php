@@ -12,7 +12,9 @@ class InstallerModel extends Model
 {
     public function environmentReport(): array
     {
-        $storagePath = DIR_SYSTEM . DIRECTORY_SEPARATOR . 'Storage';
+        $storageUpper = DIR_SYSTEM . DIRECTORY_SEPARATOR . 'Storage';
+        $storageLower = DIR_SYSTEM . DIRECTORY_SEPARATOR . 'storage';
+        $storagePath = is_dir($storageUpper) ? $storageUpper : (is_dir($storageLower) ? $storageLower : $storageUpper);
 
         return [
             'php_version' => [
@@ -58,7 +60,7 @@ class InstallerModel extends Model
                 if (!$item['ok']) {
                     return [
                         'success' => false,
-                        'message' => $this->t('install.env_check_failed', 'Falha na verificação de ambiente.'),
+                        'message' => $this->t('install.env_check_failed', 'Falha na verificacao de ambiente.'),
                     ];
                 }
             }
@@ -71,14 +73,14 @@ class InstallerModel extends Model
 
             return [
                 'success' => true,
-                'message' => $this->t('install.completed_success', 'Instalação concluída com sucesso.'),
+                'message' => $this->t('install.completed_success', 'Instalacao concluida com sucesso.'),
             ];
         } catch (\Throwable $exception) {
             return [
                 'success' => false,
                 'message' => $this->t(
                     'install.error_during_install',
-                    'Erro durante a instalação: {error}',
+                    'Erro durante a instalacao: {error}',
                     ['error' => $exception->getMessage()]
                 ),
             ];
@@ -108,11 +110,16 @@ class InstallerModel extends Model
         }
 
         if (!filter_var($data['admin_email'], FILTER_VALIDATE_EMAIL)) {
-            throw new RuntimeException($this->t('install.invalid_admin_email', 'E-mail administrativo inválido.'));
+            throw new RuntimeException($this->t('install.invalid_admin_email', 'E-mail administrativo invalido.'));
         }
 
         if (strlen((string) $data['admin_password']) < 8) {
-            throw new RuntimeException($this->t('install.admin_password_min_length', 'A senha do administrador deve ter no mínimo 8 caracteres.'));
+            throw new RuntimeException($this->t('install.admin_password_min_length', 'A senha do administrador deve ter no minimo 8 caracteres.'));
+        }
+
+        $environment = $this->normalizeEnvironment((string) ($data['app_env'] ?? ''));
+        if ($environment === '') {
+            throw new RuntimeException($this->t('install.invalid_environment', 'Ambiente de execucao invalido.'));
         }
     }
 
@@ -133,7 +140,7 @@ class InstallerModel extends Model
         } catch (PDOException $exception) {
             throw new RuntimeException($this->t(
                 'install.db_connect_error',
-                'Não foi possível conectar ao banco: {error}',
+                'Nao foi possivel conectar ao banco: {error}',
                 ['error' => $exception->getMessage()]
             ));
         }
@@ -144,7 +151,7 @@ class InstallerModel extends Model
         if (!is_file($file)) {
             throw new RuntimeException($this->t(
                 'install.sql_file_not_found',
-                'Arquivo SQL não encontrado: {file}',
+                'Arquivo SQL nao encontrado: {file}',
                 ['file' => $file]
             ));
         }
@@ -217,14 +224,23 @@ class InstallerModel extends Model
     private function writeRuntimeConfig(array $data): void
     {
         $baseUrl = $this->buildBaseUrl();
+        $environment = $this->normalizeEnvironment((string) ($data['app_env'] ?? ''));
+        if ($environment === '') {
+            $environment = 'development';
+        }
+
+        $allowedHosts = $this->resolveAllowedHosts((string) ($data['allowed_hosts'] ?? ''), $baseUrl, $environment);
         $reinstallKey = bin2hex(random_bytes(32));
+
         $runtimeConfig = [
             'app' => [
                 'name' => 'Solis',
+                'environment' => $environment,
                 'base_url' => $baseUrl,
                 'installed' => true,
                 'timezone' => $data['timezone'] ?? 'America/Sao_Paulo',
-                'default_language' => $data['language_code'] ?? 'en-us',
+                'default_language' => $this->normalizeLanguageCode((string) ($data['language_code'] ?? 'en-us')),
+                'session_name' => 'nsplanner_session',
             ],
             'database' => [
                 'driver' => 'mysql',
@@ -240,29 +256,143 @@ class InstallerModel extends Model
                 'allow_reinstall' => false,
                 'reinstall_key' => $reinstallKey,
                 'reinstall_permission' => 'admin.install.reinstall',
+                'allowed_hosts' => $allowedHosts,
             ],
         ];
 
-        $this->writeRootConfig($runtimeConfig);
         $this->writeAdminConfig($baseUrl);
         $this->writeStorageConfig($runtimeConfig);
+        $this->writeEnvConfig($environment, $allowedHosts);
     }
 
-    private function writeRootConfig(array $config): void
+    private function writeEnvConfig(string $environment, array $allowedHosts): void
     {
-        $target = DIR_ROOT . DIRECTORY_SEPARATOR . 'config.php';
-        $content = "<?php\n\n"
-            . "if (!defined('DIR_ROOT')) {\n    define('DIR_ROOT', __DIR__);\n}\n\n"
-            . "if (!defined('DIR_SYSTEM')) {\n    define('DIR_SYSTEM', DIR_ROOT . DIRECTORY_SEPARATOR . 'system');\n}\n\n"
-            . "if (!defined('DIR_STORAGE')) {\n    define('DIR_STORAGE', DIR_SYSTEM . DIRECTORY_SEPARATOR . 'Storage');\n}\n\n"
-            . "if (!defined('DIR_ADMIN')) {\n    define('DIR_ADMIN', DIR_ROOT . DIRECTORY_SEPARATOR . 'admin');\n}\n\n"
-            . "if (!defined('DIR_CLIENT')) {\n    define('DIR_CLIENT', DIR_ROOT . DIRECTORY_SEPARATOR . 'client');\n}\n\n"
-            . "if (!defined('DIR_INSTALL')) {\n    define('DIR_INSTALL', DIR_ROOT . DIRECTORY_SEPARATOR . 'install');\n}\n\n"
-            . 'return ' . var_export($config, true) . ";\n";
+        $target = DIR_ROOT . DIRECTORY_SEPARATOR . '.env';
+        $env = $this->parseEnvFile($target);
 
-        if (file_put_contents($target, $content) === false) {
-            throw new RuntimeException($this->t('install.write_root_config_error', 'Falha ao gravar configuração em config.php'));
+        $tokenCipherKey = trim((string) ($env['TOKEN_CIPHER_KEY'] ?? ''));
+        if ($tokenCipherKey === '') {
+            $tokenCipherKey = bin2hex(random_bytes(48));
         }
+
+        $trustedProxies = trim((string) ($env['TRUSTED_PROXIES'] ?? ''));
+        if ($trustedProxies === '') {
+            $trustedProxies = '127.0.0.1,::1';
+        }
+
+        $allowPrivateWebhookEndpoints = trim((string) ($env['AUTOMATION_ALLOW_PRIVATE_WEBHOOK_ENDPOINTS'] ?? ''));
+        if ($allowPrivateWebhookEndpoints === '') {
+            $allowPrivateWebhookEndpoints = '0';
+        }
+
+        $env['APP_ENV'] = $environment;
+        $env['TOKEN_CIPHER_KEY'] = $tokenCipherKey;
+        if (!array_key_exists('TOKEN_CIPHER_KEY_PREVIOUS', $env)) {
+            $env['TOKEN_CIPHER_KEY_PREVIOUS'] = '';
+        }
+        $env['TRUSTED_PROXIES'] = $trustedProxies;
+        $env['ALLOWED_HOSTS'] = implode(',', $allowedHosts);
+        $env['AUTOMATION_ALLOW_PRIVATE_WEBHOOK_ENDPOINTS'] = $allowPrivateWebhookEndpoints;
+
+        $preferredOrder = [
+            'APP_ENV',
+            'TOKEN_CIPHER_KEY',
+            'TOKEN_CIPHER_KEY_PREVIOUS',
+            'TRUSTED_PROXIES',
+            'ALLOWED_HOSTS',
+            'AUTOMATION_ALLOW_PRIVATE_WEBHOOK_ENDPOINTS',
+        ];
+
+        $lines = [
+            '# Managed by Solis installer',
+            '# Update credentials/secrets as needed for your environment.',
+        ];
+
+        $written = [];
+        foreach ($preferredOrder as $key) {
+            if (!array_key_exists($key, $env)) {
+                continue;
+            }
+
+            $lines[] = $key . '=' . $this->formatEnvValue((string) $env[$key]);
+            $written[$key] = true;
+        }
+
+        foreach ($env as $key => $value) {
+            if (isset($written[$key])) {
+                continue;
+            }
+
+            $lines[] = $key . '=' . $this->formatEnvValue((string) $value);
+        }
+
+        $content = implode(PHP_EOL, $lines) . PHP_EOL;
+        if (file_put_contents($target, $content) === false) {
+            throw new RuntimeException($this->t('install.write_env_config_error', 'Falha ao gravar configuracao em .env'));
+        }
+    }
+
+    private function parseEnvFile(string $filePath): array
+    {
+        if (!is_file($filePath) || !is_readable($filePath)) {
+            return [];
+        }
+
+        $lines = file($filePath, FILE_IGNORE_NEW_LINES);
+        if (!is_array($lines)) {
+            return [];
+        }
+
+        $result = [];
+        foreach ($lines as $line) {
+            if (!is_string($line)) {
+                continue;
+            }
+
+            $line = trim($line);
+            if ($line === '' || str_starts_with($line, '#')) {
+                continue;
+            }
+
+            if (str_starts_with($line, 'export ')) {
+                $line = trim(substr($line, 7));
+            }
+
+            $separatorPos = strpos($line, '=');
+            if ($separatorPos === false) {
+                continue;
+            }
+
+            $key = trim(substr($line, 0, $separatorPos));
+            if ($key === '') {
+                continue;
+            }
+
+            $value = trim(substr($line, $separatorPos + 1));
+            if (
+                (str_starts_with($value, '"') && str_ends_with($value, '"'))
+                || (str_starts_with($value, "'") && str_ends_with($value, "'"))
+            ) {
+                $value = substr($value, 1, -1);
+            }
+
+            $result[$key] = $value;
+        }
+
+        return $result;
+    }
+
+    private function formatEnvValue(string $value): string
+    {
+        if ($value === '') {
+            return '';
+        }
+
+        if (preg_match('/\s|#|"|\'/', $value) === 1) {
+            return '"' . addcslashes($value, "\\\"") . '"';
+        }
+
+        return $value;
     }
 
     private function writeAdminConfig(string $baseUrl): void
@@ -289,32 +419,94 @@ class InstallerModel extends Model
             . 'return ' . var_export($adminConfig, true) . ";\n";
 
         if (file_put_contents($target, $content) === false) {
-            throw new RuntimeException($this->t('install.write_admin_config_error', 'Falha ao gravar configuração em admin/config.php'));
+            throw new RuntimeException($this->t('install.write_admin_config_error', 'Falha ao gravar configuracao em admin/config.php'));
         }
     }
 
     private function writeStorageConfig(array $config): void
     {
-        $target = DIR_SYSTEM . DIRECTORY_SEPARATOR . 'Storage' . DIRECTORY_SEPARATOR . 'config.php';
+        $storageUpper = DIR_SYSTEM . DIRECTORY_SEPARATOR . 'Storage';
+        $storageLower = DIR_SYSTEM . DIRECTORY_SEPARATOR . 'storage';
+        $storageDir = is_dir($storageUpper) ? $storageUpper : (is_dir($storageLower) ? $storageLower : $storageUpper);
+        $target = $storageDir . DIRECTORY_SEPARATOR . 'config.php';
         $content = "<?php\n\nreturn " . var_export($config, true) . ";\n";
 
         if (file_put_contents($target, $content) === false) {
-            throw new RuntimeException($this->t('install.write_storage_config_error', 'Falha ao gravar configuração em system/Storage/config.php'));
+            throw new RuntimeException($this->t('install.write_storage_config_error', 'Falha ao gravar configuracao em system/Storage/config.php'));
         }
     }
 
     private function buildBaseUrl(): string
     {
         $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-        $host = HostGuard::effectiveHost(
-            $_SERVER,
-            (array) $this->config->get('security.allowed_hosts', []),
-            (string) $this->config->get('app.base_url', '')
-        );
+        $requestHost = HostGuard::requestHost($_SERVER);
+        $host = $requestHost !== ''
+            ? $requestHost
+            : HostGuard::effectiveHost(
+                $_SERVER,
+                (array) $this->config->get('security.allowed_hosts', []),
+                (string) $this->config->get('app.base_url', '')
+            );
         $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''));
         $rootDir = preg_replace('#/install$#', '', rtrim($scriptDir, '/'));
 
         return rtrim($scheme . '://' . $host . $rootDir, '/') . '/';
+    }
+
+    private function resolveAllowedHosts(string $rawAllowedHosts, string $baseUrl, string $environment): array
+    {
+        $allowedHosts = $this->parseAllowedHosts($rawAllowedHosts);
+        $baseHost = HostGuard::baseUrlHost($baseUrl);
+        $requestHost = HostGuard::requestHost($_SERVER);
+
+        if ($baseHost !== '') {
+            $allowedHosts[] = $baseHost;
+        }
+
+        if ($environment === 'development') {
+            $allowedHosts[] = 'localhost';
+            $allowedHosts[] = '127.0.0.1';
+            $allowedHosts[] = '::1';
+        }
+
+        if ($requestHost !== '') {
+            if ($environment === 'development' || $allowedHosts === []) {
+                $allowedHosts[] = $requestHost;
+            }
+        }
+
+        $normalized = [];
+        foreach ($allowedHosts as $allowedHost) {
+            $host = HostGuard::normalizeHost($allowedHost);
+            if ($host !== '') {
+                $normalized[$host] = true;
+            }
+        }
+
+        return array_keys($normalized);
+    }
+
+    private function parseAllowedHosts(string $value): array
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return [];
+        }
+
+        $parts = preg_split('/[,\n\r;]+/', $value);
+        if (!is_array($parts)) {
+            return [];
+        }
+
+        $result = [];
+        foreach ($parts as $part) {
+            $host = trim($part);
+            if ($host !== '') {
+                $result[] = $host;
+            }
+        }
+
+        return $result;
     }
 
     private function guardAgainstUnauthorizedReinstall(array $data): void
@@ -323,7 +515,7 @@ class InstallerModel extends Model
         $allowed = !empty($data['allow_reinstall']) && (bool) $data['allow_reinstall'];
 
         if ($installed && !$allowed) {
-            throw new RuntimeException($this->t('install.reinstall_not_allowed', 'Sistema já instalado. Reinstalação bloqueada sem permissão.'));
+            throw new RuntimeException($this->t('install.reinstall_not_allowed', 'Sistema ja instalado. Reinstalacao bloqueada sem permissao.'));
         }
     }
 
@@ -353,4 +545,21 @@ class InstallerModel extends Model
 
         return in_array($code, ['en-us', 'pt-br'], true) ? $code : 'en-us';
     }
+
+    private function normalizeEnvironment(string $value): string
+    {
+        $value = strtolower(trim($value));
+
+        if (in_array($value, ['dev', 'development', 'local', 'localhost'], true)) {
+            return 'development';
+        }
+
+        if (in_array($value, ['prod', 'production', 'live'], true)) {
+            return 'production';
+        }
+
+        return '';
+    }
 }
+
+

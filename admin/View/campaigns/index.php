@@ -1,6 +1,6 @@
 <section class="panel">
     <div class="panel-header">
-        <h1><?= e($t('campaigns.heading_index', 'Campanhas')) ?></h1>
+        <h1><i class="fa-solid fa-bullhorn"></i> <?= e($t('campaigns.heading_index', 'Campanhas')) ?></h1>
         <a class="btn" href="<?= e(route_url('campaigns/create')) ?>"><i class="fa-solid fa-plus"></i> <?= e($t('campaigns.button_new', 'Nova campanha')) ?></a>
     </div>
 

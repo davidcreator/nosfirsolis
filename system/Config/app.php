@@ -2,6 +2,7 @@
 
 return [
     'name' => 'Solis',
+    'environment' => 'development',
     'timezone' => 'America/Sao_Paulo',
     'default_language' => 'en-us',
     'session_name' => 'nsplanner_session',
@@ -60,6 +61,10 @@ return [
         'social_publisher' => [
             'dry_run' => true,
             'linkedin_version' => '202603',
+        ],
+        'billing' => [
+            'currency' => 'BRL',
+            'mock_auto_approve' => true,
         ],
         'tracking' => [
             'bitly_access_token' => '',

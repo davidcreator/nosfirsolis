@@ -1,5 +1,5 @@
 <section class="panel">
-    <h2>Templates anuais prontos para uso rápido</h2>
+    <h2><i class="fa-solid fa-layer-group"></i> Templates anuais prontos para uso rápido</h2>
     <p class="calendar-subtitle">
         Modelos completos de janeiro a dezembro para B2C, B2B, direto/indireto, aquecimento de vendas, clientes, artistas, músicos, livros, infoprodutos e lançamentos de infoprodutos.
     </p>
@@ -64,7 +64,7 @@
 </section>
 
 <section class="panel">
-    <h2>Geração de plano editorial por período</h2>
+    <h2><i class="fa-solid fa-calendar-plus"></i> Geração de plano editorial por período</h2>
 
     <form method="post" action="<?= e(route_url('plans/store')) ?>" class="filters-grid">
         <?= csrf_field() ?>
@@ -115,7 +115,7 @@
         <button type="submit"><i class="fa-solid fa-calendar-plus"></i> Gerar plano por período</button>
     </form>
 
-    <h3>Planos gerados</h3>
+    <h3><i class="fa-solid fa-list-check"></i> Planos gerados</h3>
     <div class="table-wrap">
         <table class="table">
             <thead>

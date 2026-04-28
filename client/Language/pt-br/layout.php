@@ -7,6 +7,7 @@ return [
     'layout.language_option_en_us' => 'English',
     'layout.language_option_pt_br' => 'Português',
     'layout.logout' => 'Sair',
+    'layout.nav_billing' => 'Planos e faturamento',
     'layout.nav_calendar' => 'Calendário',
     'layout.nav_dashboard' => 'Dashboard',
     'layout.nav_plans' => 'Planos editoriais',

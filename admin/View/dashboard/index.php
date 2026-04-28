@@ -24,6 +24,42 @@ foreach ($recent_suggestions as $suggestionItem) {
 }
 arsort($formatCounter);
 $topFormats = array_slice($formatCounter, 0, 4, true);
+
+$recapSeries = [
+    ['month' => 'Jan', 'value' => max(20, min(96, 24 + ($users % 38)))],
+    ['month' => 'Fev', 'value' => max(20, min(96, 22 + ($holidays % 42)))],
+    ['month' => 'Mar', 'value' => max(20, min(96, 26 + ($commemoratives % 44)))],
+    ['month' => 'Abr', 'value' => max(20, min(96, 28 + ($suggestions % 46)))],
+    ['month' => 'Mai', 'value' => max(20, min(96, 30 + ($campaigns % 48)))],
+    ['month' => 'Jun', 'value' => max(20, min(96, 25 + ($platforms % 40)))],
+];
+
+$goalCompletion = [
+    [
+        'label' => $t('dashboard.goal_editorial', 'Planejamento editorial'),
+        'current' => max(1, $suggestions),
+        'target' => max(10, ($users * 6)),
+        'accent' => 'blue',
+    ],
+    [
+        'label' => $t('dashboard.goal_campaigns', 'Campanhas ativas'),
+        'current' => max(1, $campaigns),
+        'target' => max(8, ($suggestions > 0 ? $suggestions : 8)),
+        'accent' => 'red',
+    ],
+    [
+        'label' => $t('dashboard.goal_calendar', 'Cobertura de calendário'),
+        'current' => max(1, $holidays + $commemoratives),
+        'target' => max(12, $users * 4),
+        'accent' => 'green',
+    ],
+    [
+        'label' => $t('dashboard.goal_integrations', 'Integrações de canais'),
+        'current' => max(1, $platforms),
+        'target' => max(5, (int) ceil($users / 2)),
+        'accent' => 'amber',
+    ],
+];
 ?>
 
 <section class="panel dashboard-hero">
@@ -53,9 +89,56 @@ $topFormats = array_slice($formatCounter, 0, 4, true);
     </div>
 </section>
 
+<section class="panel dashboard-recap">
+    <div class="dashboard-recap-grid">
+        <article class="recap-chart-card">
+            <div class="panel-header">
+                <h2><i class="fa-solid fa-chart-area"></i> <?= e($t('dashboard.recap_title', 'Resumo mensal')) ?></h2>
+                <span class="meta-text"><?= e($t('dashboard.recap_subtitle', 'Leitura rápida de desempenho nos últimos meses')) ?></span>
+            </div>
+            <div class="recap-chart-surface">
+                <div class="recap-curve recap-curve-a"></div>
+                <div class="recap-curve recap-curve-b"></div>
+                <ul class="recap-points">
+                    <?php foreach ($recapSeries as $point): ?>
+                        <li style="--point: <?= (int) ($point['value'] ?? 0) ?>%">
+                            <span><?= e((string) ($point['month'] ?? '')) ?></span>
+                            <strong><?= (int) ($point['value'] ?? 0) ?>%</strong>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        </article>
+
+        <article class="recap-goals-card">
+            <div class="panel-header">
+                <h2><i class="fa-solid fa-list-check"></i> <?= e($t('dashboard.goal_completion_title', 'Metas e conclusões')) ?></h2>
+            </div>
+            <div class="recap-goals-stack">
+                <?php foreach ($goalCompletion as $goal): ?>
+                    <?php
+                    $goalCurrent = (int) ($goal['current'] ?? 0);
+                    $goalTarget = max(1, (int) ($goal['target'] ?? 1));
+                    $goalPercent = (int) min(100, round(($goalCurrent / $goalTarget) * 100));
+                    ?>
+                    <div class="recap-goal">
+                        <div class="recap-goal-row">
+                            <span><?= e((string) ($goal['label'] ?? 'Meta')) ?></span>
+                            <strong><?= $goalCurrent ?>/<?= $goalTarget ?></strong>
+                        </div>
+                        <div class="recap-goal-progress accent-<?= e((string) ($goal['accent'] ?? 'blue')) ?>">
+                            <span style="width: <?= $goalPercent ?>%"></span>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </article>
+    </div>
+</section>
+
 <section class="panel">
     <div class="panel-header">
-        <h2><?= e($t('dashboard.section_distribution_title', 'Distribuição da base estratégica')) ?></h2>
+        <h2><i class="fa-solid fa-chart-pie"></i> <?= e($t('dashboard.section_distribution_title', 'Distribuição da base estratégica')) ?></h2>
         <span class="meta-text"><?= e($t('dashboard.section_distribution_subtitle', 'Participação relativa por tipo de conteúdo cadastrado')) ?></span>
     </div>
     <div class="metric-stack">
@@ -87,7 +170,7 @@ $topFormats = array_slice($formatCounter, 0, 4, true);
 
 <section class="panel">
     <div class="panel-header">
-        <h2><?= e($t('dashboard.section_recent_suggestions_title', 'Sugestões recentes')) ?></h2>
+        <h2><i class="fa-solid fa-lightbulb"></i> <?= e($t('dashboard.section_recent_suggestions_title', 'Sugestões recentes')) ?></h2>
         <span class="meta-text"><?= e($t('dashboard.highlighted_items', '{count} item(ns) em destaque', ['count' => (int) count($recent_suggestions)])) ?></span>
     </div>
     <div class="table-wrap">
@@ -125,7 +208,7 @@ $topFormats = array_slice($formatCounter, 0, 4, true);
 <?php if (!empty($topFormats)): ?>
     <section class="panel">
         <div class="panel-header">
-            <h2><?= e($t('dashboard.section_top_formats_title', 'Formatos mais recorrentes')) ?></h2>
+            <h2><i class="fa-solid fa-layer-group"></i> <?= e($t('dashboard.section_top_formats_title', 'Formatos mais recorrentes')) ?></h2>
             <span class="meta-text"><?= e($t('dashboard.section_top_formats_subtitle', 'Baseado nas sugestões recentes')) ?></span>
         </div>
         <div class="metric-stack">

@@ -23,4 +23,9 @@
 
         <button type="submit"><i class="fa-solid fa-right-to-bracket"></i> <?= e($t('auth.button_login', 'Entrar no sistema')) ?></button>
     </form>
+
+    <p class="auth-help-link">
+        <?= e($t('auth.no_account_yet', 'Novo por aqui?')) ?>
+        <a href="<?= e(route_url('auth/register')) ?>"><?= e($t('auth.link_register', 'Criar conta gratuita')) ?></a>
+    </p>
 </section>

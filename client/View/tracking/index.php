@@ -13,7 +13,7 @@ $topChannels = (array) ($summary['top_channels'] ?? []);
 <section class="panel dashboard-hero">
     <div class="hero-content">
         <span class="hero-badge"><i class="fa-solid fa-link"></i> Tracking Hub</span>
-        <h2>Rastreamento de campanhas</h2>
+        <h2><i class="fa-solid fa-chart-line"></i> Rastreamento de campanhas</h2>
         <p>Crie URLs UTM/MTM, gere short links e acompanhe cliques por campanha, item e canal.</p>
     </div>
 </section>
@@ -32,7 +32,7 @@ $topChannels = (array) ($summary['top_channels'] ?? []);
 </section>
 
 <section class="panel">
-    <h3>Novo link rastreavel</h3>
+    <h3><i class="fa-solid fa-link"></i> Novo link rastreável</h3>
     <form method="post" action="<?= e(route_url('tracking/store')) ?>" class="filters-grid">
         <?= csrf_field() ?>
         <label class="wide">URL de destino
@@ -89,7 +89,7 @@ $topChannels = (array) ($summary['top_channels'] ?? []);
 
 <section class="panel">
     <div class="panel-head-inline">
-        <h3>Top campanhas e canais</h3>
+        <h3><i class="fa-solid fa-trophy"></i> Top campanhas e canais</h3>
     </div>
     <div class="plan-insights-grid">
         <article class="plan-insight-card">
@@ -107,7 +107,7 @@ $topChannels = (array) ($summary['top_channels'] ?? []);
 
 <section class="panel">
     <div class="panel-head-inline">
-        <h3>Links criados</h3>
+        <h3><i class="fa-solid fa-list"></i> Links criados</h3>
         <span class="meta-text"><?= count($links) ?> registro(s)</span>
     </div>
 

@@ -4,6 +4,7 @@ namespace Client\Controller;
 
 use System\Library\ExportService;
 use System\Library\PlanTemplateService;
+use System\Library\SubscriptionService;
 
 class PlansController extends BaseController
 {
@@ -33,6 +34,12 @@ class PlansController extends BaseController
 
         $user = $this->auth->user();
         $userId = (int) ($user['id'] ?? 0);
+        $subscription = new SubscriptionService($this->registry);
+        $quota = $subscription->evaluateQuota($userId, 'max_editorial_plans_per_month', 1);
+        if (empty($quota['allowed'])) {
+            flash('error', (string) ($quota['message'] ?? $this->t('plans.flash_limit_reached', 'Limite de plano atingido para este periodo.')));
+            $this->redirectToRoute('billing/index');
+        }
 
         $startDate = (string) $this->request->post('start_date');
         $endDate = (string) $this->request->post('end_date');
@@ -79,6 +86,18 @@ class PlansController extends BaseController
 
         $user = $this->auth->user();
         $userId = (int) ($user['id'] ?? 0);
+        $subscription = new SubscriptionService($this->registry);
+        $feature = $subscription->evaluateFeature($userId, 'allow_template_plans');
+        if (empty($feature['allowed'])) {
+            flash('error', (string) ($feature['message'] ?? $this->t('plans.flash_template_feature_unavailable', 'Seu plano atual nao permite templates anuais.')));
+            $this->redirectToRoute('billing/index');
+        }
+
+        $quota = $subscription->evaluateQuota($userId, 'max_editorial_plans_per_month', 1);
+        if (empty($quota['allowed'])) {
+            flash('error', (string) ($quota['message'] ?? $this->t('plans.flash_limit_reached', 'Limite de plano atingido para este periodo.')));
+            $this->redirectToRoute('billing/index');
+        }
 
         $templateSlug = trim((string) $this->request->post('template_slug'));
         $year = (int) $this->request->post('template_year', date('Y'));

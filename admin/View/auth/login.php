@@ -1,7 +1,7 @@
 <section class="auth-card auth-card-split auth-card-admin">
     <div class="auth-head">
         <span class="auth-badge"><i class="fa-solid fa-user-shield"></i> <?= e($t('auth.badge', '{app} Admin', ['app' => ($app_name ?? 'Solis')])) ?></span>
-        <h1><?= e($t('auth.heading', 'Acesso administrativo')) ?></h1>
+        <h1><i class="fa-solid fa-lock"></i> <?= e($t('auth.heading', 'Acesso administrativo')) ?></h1>
         <p><?= e($t('auth.description', 'Área protegida para governança do sistema, curadoria de dados e controle de níveis hierárquicos de usuários.')) ?></p>
     </div>
 

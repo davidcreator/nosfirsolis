@@ -1,6 +1,6 @@
 <section class="panel">
     <div class="panel-header">
-        <h1><?= e($t('suggestions.heading_index', 'Sugestões estratégicas')) ?></h1>
+        <h1><i class="fa-solid fa-lightbulb"></i> <?= e($t('suggestions.heading_index', 'Sugestões estratégicas')) ?></h1>
         <a class="btn" href="<?= e(route_url('suggestions/create')) ?>"><i class="fa-solid fa-plus"></i> <?= e($t('suggestions.button_new', 'Nova sugestão')) ?></a>
     </div>
 

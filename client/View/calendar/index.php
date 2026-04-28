@@ -1,6 +1,7 @@
 <?php
 $monthNames = [1 => 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 $weekNames = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+$periodMoonPhases = (array) ($period_moon_phases ?? []);
 
 $returnFields = [
     'return_mode' => $mode,
@@ -42,11 +43,11 @@ $colors = $calendar_colors ?? [];
 
 <section class="panel">
     <div class="panel-head-inline">
-        <h2>Calendário</h2>
+        <h2><i class="fa-solid fa-calendar-days"></i> Calendário</h2>
         <div class="mode-switch">
-            <a class="<?= $mode === 'annual' ? 'active' : '' ?>" href="<?= e(route_url('calendar/index?' . $modeAnnualQuery)) ?>">Anual</a>
-            <a class="<?= $mode === 'monthly' ? 'active' : '' ?>" href="<?= e(route_url('calendar/index?' . $modeMonthlyQuery)) ?>">Mensal</a>
-            <a class="<?= $mode === 'period' ? 'active' : '' ?>" href="<?= e(route_url('calendar/index?' . $modePeriodQuery)) ?>">Por período</a>
+            <a class="<?= $mode === 'annual' ? 'active' : '' ?>" href="<?= e(route_url('calendar/index?' . $modeAnnualQuery)) ?>"><i class="fa-solid fa-table-cells-large"></i> Anual</a>
+            <a class="<?= $mode === 'monthly' ? 'active' : '' ?>" href="<?= e(route_url('calendar/index?' . $modeMonthlyQuery)) ?>"><i class="fa-solid fa-calendar-week"></i> Mensal</a>
+            <a class="<?= $mode === 'period' ? 'active' : '' ?>" href="<?= e(route_url('calendar/index?' . $modePeriodQuery)) ?>"><i class="fa-solid fa-timeline"></i> Por período</a>
         </div>
     </div>
 
@@ -64,6 +65,7 @@ $colors = $calendar_colors ?? [];
         <span class="legend-item"><span class="dot base-event"></span> Evento base</span>
         <span class="legend-item"><span class="dot extra-event"></span> Evento extra</span>
         <span class="legend-item"><span class="dot note"></span> Observação</span>
+        <span class="legend-item legend-moon"><span class="moon-chip moon-chip-sm" title="Fases da lua">🌙</span> Fases da lua por dia</span>
     </div>
 
     <form method="get" action="<?= e(route_url('calendar/index')) ?>" class="filters-grid">
@@ -113,7 +115,15 @@ $colors = $calendar_colors ?? [];
                                     <?php foreach ($week as $day): ?>
                                         <td class="<?= $day['in_month'] ? 'day in' : 'day out' ?>">
                                             <?php if ($day['in_month']): ?>
-                                                <span class="day-number"><?= (int) $day['day'] ?></span>
+                                                <?php $moonPhase = is_array($day['moon_phase'] ?? null) ? $day['moon_phase'] : null; ?>
+                                                <div class="day-header">
+                                                    <span class="day-number"><?= (int) $day['day'] ?></span>
+                                                    <?php if ($moonPhase): ?>
+                                                        <span class="moon-chip moon-chip-sm" title="<?= e('Fase da lua: ' . (string) ($moonPhase['label'] ?? '')) ?>">
+                                                            <?= e((string) ($moonPhase['icon'] ?? '🌙')) ?>
+                                                        </span>
+                                                    <?php endif; ?>
+                                                </div>
                                                 <div class="day-markers">
                                                     <?php $events = $day['events'] ?? []; ?>
                                                     <?php foreach (($events['holidays'] ?? []) as $holiday): ?>
@@ -166,7 +176,15 @@ $colors = $calendar_colors ?? [];
                         <?php foreach ($week as $day): ?>
                             <td class="<?= $day['in_month'] ? 'in' : 'out' ?>">
                                 <?php if ($day['in_month']): ?>
-                                    <span class="day-number"><?= (int) $day['day'] ?></span>
+                                    <?php $moonPhase = is_array($day['moon_phase'] ?? null) ? $day['moon_phase'] : null; ?>
+                                    <div class="day-header">
+                                        <span class="day-number"><?= (int) $day['day'] ?></span>
+                                        <?php if ($moonPhase): ?>
+                                            <span class="moon-chip moon-chip-sm" title="<?= e('Fase da lua: ' . (string) ($moonPhase['label'] ?? '')) ?>">
+                                                <?= e((string) ($moonPhase['icon'] ?? '🌙')) ?>
+                                            </span>
+                                        <?php endif; ?>
+                                    </div>
                                     <?php $events = $day['events'] ?? []; ?>
 
                                     <?php foreach (($events['holidays'] ?? []) as $holiday): ?>
@@ -218,6 +236,7 @@ $colors = $calendar_colors ?? [];
                 <thead>
                 <tr>
                     <th>Data</th>
+                    <th>Lua</th>
                     <th>Feriados</th>
                     <th>Comemorativas</th>
                     <th>Sugestões</th>
@@ -231,6 +250,17 @@ $colors = $calendar_colors ?? [];
                 <?php foreach ($period_events as $date => $pack): ?>
                     <tr>
                         <td><?= e($date) ?></td>
+                        <td class="moon-phase-cell">
+                            <?php $moonPhase = is_array($periodMoonPhases[$date] ?? null) ? $periodMoonPhases[$date] : null; ?>
+                            <?php if ($moonPhase): ?>
+                                <span class="moon-phase-badge" title="<?= e('Idade aproximada: ' . (string) ($moonPhase['age_days'] ?? 0) . ' dias') ?>">
+                                    <span class="moon-chip moon-chip-sm"><?= e((string) ($moonPhase['icon'] ?? '🌙')) ?></span>
+                                    <?= e((string) ($moonPhase['label'] ?? 'Fase da lua')) ?>
+                                </span>
+                            <?php else: ?>
+                                -
+                            <?php endif; ?>
+                        </td>
                         <td>
                             <?php foreach (($pack['holidays'] ?? []) as $item): ?>
                                 <?php $ht = strtolower((string) ($item['holiday_type'] ?? 'national')); ?>
@@ -256,7 +286,7 @@ $colors = $calendar_colors ?? [];
 </section>
 
 <section class="panel">
-    <h3>Personalizar cores do calendário</h3>
+    <h3><i class="fa-solid fa-palette"></i> Personalizar cores do calendário</h3>
     <form method="post" action="<?= e(route_url('calendar/saveColors')) ?>" class="filters-grid colors-grid">
         <?= csrf_field() ?>
         <?php foreach ($returnFields as $field => $value): ?>
@@ -277,7 +307,7 @@ $colors = $calendar_colors ?? [];
 </section>
 
 <section class="panel">
-    <h3>Inserir evento extra</h3>
+    <h3><i class="fa-solid fa-calendar-plus"></i> Inserir evento extra</h3>
     <form method="post" action="<?= e(route_url('calendar/saveExtraEvent')) ?>" class="filters-grid">
         <?= csrf_field() ?>
         <?php foreach ($returnFields as $field => $value): ?>
@@ -347,7 +377,7 @@ $colors = $calendar_colors ?? [];
 </section>
 
 <section class="panel">
-    <h3>Registrar observação manual por dia</h3>
+    <h3><i class="fa-solid fa-note-sticky"></i> Registrar observação manual por dia</h3>
     <form method="post" action="<?= e(route_url('calendar/saveNote')) ?>" class="filters-grid">
         <?= csrf_field() ?>
         <?php foreach ($returnFields as $field => $value): ?>
@@ -373,7 +403,7 @@ $colors = $calendar_colors ?? [];
 </section>
 
 <section class="panel">
-    <h3>Lista de feriados e biblioteca base</h3>
+    <h3><i class="fa-solid fa-book-open"></i> Lista de feriados e biblioteca base</h3>
     <div class="catalog-grid">
         <article>
             <h4>Feriados nacionais e internacionais</h4>

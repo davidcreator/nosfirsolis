@@ -12,6 +12,7 @@ use System\Library\SocialAuthService;
 use System\Library\SocialFormatStandardsService;
 use System\Library\SocialPlatformRegistry;
 use System\Library\SocialPublishingService;
+use System\Library\SubscriptionService;
 
 class SocialController extends BaseController
 {
@@ -108,6 +109,34 @@ class SocialController extends BaseController
                 ['platform' => ($target['name'] ?? $platform)]
             ));
             $this->redirectToRoute('social/index');
+        }
+
+        $userId = (int) ($this->auth->user()['id'] ?? 0);
+        $subscription = new SubscriptionService($this->registry);
+        $feature = $subscription->evaluateFeature($userId, 'allow_social_connections');
+        if (empty($feature['allowed'])) {
+            flash('error', (string) ($feature['message'] ?? 'Recurso indisponivel no seu plano atual.'));
+            $this->redirectToRoute('billing/index');
+        }
+
+        $connections = $this->loader->model('social')->connectionsByUser($userId);
+        $alreadyConnected = false;
+        foreach ($connections as $connection) {
+            if (
+                strtolower((string) ($connection['platform_slug'] ?? '')) === $platform
+                && in_array((string) ($connection['status'] ?? ''), ['connected', 'manual'], true)
+            ) {
+                $alreadyConnected = true;
+                break;
+            }
+        }
+
+        if (!$alreadyConnected) {
+            $quota = $subscription->evaluateQuota($userId, 'max_social_accounts', 1);
+            if (empty($quota['allowed'])) {
+                flash('error', (string) ($quota['message'] ?? 'Limite de conexoes sociais atingido para o plano atual.'));
+                $this->redirectToRoute('billing/index');
+            }
         }
 
         $stateToken = bin2hex(random_bytes(24));
@@ -260,6 +289,32 @@ class SocialController extends BaseController
         }
 
         $userId = (int) ($this->auth->user()['id'] ?? 0);
+        $subscription = new SubscriptionService($this->registry);
+        $feature = $subscription->evaluateFeature($userId, 'allow_social_connections');
+        if (empty($feature['allowed'])) {
+            flash('error', (string) ($feature['message'] ?? 'Recurso indisponivel no seu plano atual.'));
+            $this->redirectToRoute('billing/index');
+        }
+
+        $connections = $this->loader->model('social')->connectionsByUser($userId);
+        $alreadyConnected = false;
+        foreach ($connections as $connection) {
+            if (
+                strtolower((string) ($connection['platform_slug'] ?? '')) === $platform
+                && in_array((string) ($connection['status'] ?? ''), ['connected', 'manual'], true)
+            ) {
+                $alreadyConnected = true;
+                break;
+            }
+        }
+        if (!$alreadyConnected) {
+            $quota = $subscription->evaluateQuota($userId, 'max_social_accounts', 1);
+            if (empty($quota['allowed'])) {
+                flash('error', (string) ($quota['message'] ?? 'Limite de conexoes sociais atingido para o plano atual.'));
+                $this->redirectToRoute('billing/index');
+            }
+        }
+
         $tokenExpiresAt = null;
         if ($expiresAt !== '') {
             $tokenExpiresAt = date('Y-m-d H:i:s', strtotime($expiresAt));
@@ -326,6 +381,14 @@ class SocialController extends BaseController
         $this->boot('client.social');
         $this->ensurePostWithCsrf();
 
+        $userId = (int) ($this->auth->user()['id'] ?? 0);
+        $subscription = new SubscriptionService($this->registry);
+        $feature = $subscription->evaluateFeature($userId, 'allow_ai_draft_generator');
+        if (empty($feature['allowed'])) {
+            flash('error', (string) ($feature['message'] ?? 'Recurso indisponivel no seu plano atual.'));
+            $this->redirectToRoute('billing/index');
+        }
+
         $input = [
             'theme' => (string) $this->request->post('theme', ''),
             'objective' => (string) $this->request->post('objective', ''),
@@ -340,7 +403,6 @@ class SocialController extends BaseController
         $service = new ContentStrategistService();
         $draft = $service->buildPack($input);
 
-        $userId = (int) ($this->auth->user()['id'] ?? 0);
         $this->loader->model('social')->saveDraft($userId, $draft);
 
         flash('success', $this->t('social.flash_draft_generated', 'Novo conteúdo estratégico gerado com sucesso.'));
@@ -351,6 +413,14 @@ class SocialController extends BaseController
     {
         $this->boot('client.social');
         $this->ensurePostWithCsrf();
+
+        $userId = (int) ($this->auth->user()['id'] ?? 0);
+        $subscription = new SubscriptionService($this->registry);
+        $feature = $subscription->evaluateFeature($userId, 'allow_format_presets');
+        if (empty($feature['allowed'])) {
+            flash('error', (string) ($feature['message'] ?? 'Recurso indisponivel no seu plano atual.'));
+            $this->redirectToRoute('billing/index');
+        }
 
         $standards = new SocialFormatStandardsService();
         $platformSlug = strtolower(trim((string) $this->request->post('platform_slug', '')));
@@ -395,7 +465,6 @@ class SocialController extends BaseController
             ];
         }
 
-        $userId = (int) ($this->auth->user()['id'] ?? 0);
         $this->loader->model('social')->createFormatPreset($userId, [
             'platform_slug' => $platformSlug,
             'format_type' => $formatType,
@@ -436,11 +505,32 @@ class SocialController extends BaseController
         $this->ensurePostWithCsrf();
 
         $userId = (int) ($this->auth->user()['id'] ?? 0);
+        $subscription = new SubscriptionService($this->registry);
+        $feature = $subscription->evaluateFeature($userId, 'allow_publish_hub');
+        if (empty($feature['allowed'])) {
+            flash('error', (string) ($feature['message'] ?? 'Recurso indisponivel no seu plano atual.'));
+            $this->redirectToRoute('billing/index');
+        }
+
         $planItemId = (int) $this->request->post('plan_item_id', 0);
         $platforms = (array) $this->request->post('platforms', []);
         $messageText = trim((string) $this->request->post('message_text', ''));
         $mediaUrl = trim((string) $this->request->post('media_url', ''));
         $scheduledAt = trim((string) $this->request->post('scheduled_at', ''));
+
+        $quotaPlatforms = [];
+        foreach ($platforms as $platform) {
+            $slug = strtolower(trim((string) $platform));
+            if ($slug !== '') {
+                $quotaPlatforms[$slug] = true;
+            }
+        }
+        $quotaIncrement = count($quotaPlatforms) > 0 ? count($quotaPlatforms) : 1;
+        $quota = $subscription->evaluateQuota($userId, 'max_social_publications_per_month', $quotaIncrement);
+        if (empty($quota['allowed'])) {
+            flash('error', (string) ($quota['message'] ?? 'Limite de publicacoes sociais atingido para o plano atual.'));
+            $this->redirectToRoute('billing/index');
+        }
 
         $service = new SocialPublishingService($this->registry);
         $service->ensureTables();
@@ -569,6 +659,13 @@ class SocialController extends BaseController
         $this->ensurePostWithCsrf();
 
         $userId = (int) ($this->auth->user()['id'] ?? 0);
+        $subscription = new SubscriptionService($this->registry);
+        $feature = $subscription->evaluateFeature($userId, 'allow_queue_processing');
+        if (empty($feature['allowed'])) {
+            flash('error', (string) ($feature['message'] ?? 'Recurso indisponivel no seu plano atual.'));
+            $this->redirectToRoute('billing/index');
+        }
+
         $limit = max(1, min(50, (int) $this->request->post('limit', 10)));
 
         $service = new SocialPublishingService($this->registry);

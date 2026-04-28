@@ -237,6 +237,17 @@ body {
     box-shadow: 0 12px 35px rgba(20, 34, 56, 0.06);
 }
 
+.panel h2 i,
+.panel h3 i,
+.panel h4 i {
+    margin-right: 0.35rem;
+    color: #1d4f85;
+}
+
+.dashboard-hero .hero-content h2 i {
+    color: inherit;
+}
+
 .panel-head-inline {
     display: flex;
     justify-content: space-between;
@@ -276,6 +287,10 @@ body {
     background: #0f5a9a;
     color: #fff;
     border-color: #0f5a9a;
+}
+
+.mode-switch a i {
+    margin-right: 0.3rem;
 }
 
 .calendar-subtitle {
@@ -788,6 +803,31 @@ td.out {
     font-size: 0.8rem;
 }
 
+.day-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.moon-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #d8e3ef;
+    background: #f7fbff;
+    border-radius: 999px;
+    color: #385170;
+    line-height: 1;
+}
+
+.moon-chip-sm {
+    min-width: 26px;
+    height: 20px;
+    padding: 0 0.35rem;
+    font-size: 0.78rem;
+}
+
 .day-markers {
     display: flex;
     flex-wrap: wrap;
@@ -857,6 +897,10 @@ td.out {
     display: inline-block;
 }
 
+.legend-item.legend-moon .moon-chip {
+    margin-right: 0.1rem;
+}
+
 .dot.holiday-national { background: var(--holiday-national); }
 .dot.holiday-international { background: var(--holiday-international); }
 .dot.holiday-regional { background: var(--holiday-regional); }
@@ -894,6 +938,19 @@ td.out {
     gap: 1rem;
 }
 
+.moon-phase-cell {
+    min-width: 180px;
+}
+
+.moon-phase-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: #2f4865;
+    white-space: nowrap;
+    font-size: 0.85rem;
+}
+
 .template-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -916,6 +973,372 @@ td.out {
 .template-card p {
     margin: 0.2rem 0;
     color: #34495f;
+}
+
+.usage-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.75rem;
+}
+
+.usage-card {
+    border: 1px solid #d7e3f0;
+    border-radius: 12px;
+    padding: 0.75rem;
+    background: linear-gradient(180deg, #ffffff 0%, #f6faff 100%);
+}
+
+.usage-card span {
+    display: block;
+    color: #49637d;
+    font-size: 0.84rem;
+}
+
+.usage-card strong {
+    display: block;
+    margin: 0.2rem 0 0.45rem;
+    font-size: 1.05rem;
+}
+
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 0.85rem;
+}
+
+.pricing-card {
+    border: 1px solid #d5e2f0;
+    border-radius: 14px;
+    padding: 0.8rem;
+    background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+}
+
+.pricing-card.is-current {
+    border-color: #9bc0f5;
+    box-shadow: 0 0 0 2px #e8f2ff inset;
+}
+
+.pricing-card h4 {
+    margin-top: 0;
+    margin-bottom: 0.35rem;
+}
+
+.pricing-card p {
+    margin: 0;
+    color: #4f6780;
+    min-height: 58px;
+}
+
+.pricing-values {
+    margin: 0.7rem 0;
+}
+
+.pricing-values strong {
+    display: block;
+    color: #0d4887;
+}
+
+.pricing-values small {
+    color: #5d7390;
+}
+
+.pricing-form {
+    display: grid;
+    gap: 0.55rem;
+}
+
+.billing-client-panel h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.billing-client-panel h3 i,
+.billing-client-panel.dashboard-hero .hero-content h2 i {
+    margin-right: 0;
+    width: 1.1rem;
+    text-align: center;
+    flex: 0 0 1.1rem;
+}
+
+.billing-client-panel .panel-head-inline h3 {
+    margin: 0;
+}
+
+.billing-client-panel .panel-head-inline .meta-text {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #d4e3f6;
+    border-radius: 999px;
+    padding: 0.22rem 0.68rem;
+    background: #f3f8ff;
+}
+
+.billing-client-panel .usage-card {
+    display: grid;
+    gap: 0.32rem;
+}
+
+.billing-client-panel .usage-card p {
+    margin: 0;
+    color: #526b84;
+    line-height: 1.42;
+    font-size: 0.84rem;
+}
+
+.billing-client-panel .billing-announce-card {
+    border-style: dashed;
+}
+
+.billing-client-panel .billing-announce-type {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    border-radius: 999px;
+    border: 1px solid #d4e4f8;
+    background: #eef5ff;
+    color: #1b4d87;
+    padding: 0.16rem 0.55rem;
+    text-transform: capitalize;
+}
+
+.billing-client-panel .pricing-card {
+    --tier-line: #9bc0f5;
+    --tier-glow: rgba(49, 106, 183, 0.12);
+    --tier-bg-top: #ffffff;
+    --tier-bg-bottom: #f9fbff;
+    display: grid;
+    grid-template-rows: auto auto 1fr auto;
+    gap: 0.4rem;
+    position: relative;
+    overflow: hidden;
+    border-color: var(--tier-line);
+    background: linear-gradient(180deg, var(--tier-bg-top) 0%, var(--tier-bg-bottom) 100%);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.billing-client-panel .pricing-card::after {
+    content: "";
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--tier-line) 0%, transparent 92%);
+    pointer-events: none;
+}
+
+.billing-client-panel .pricing-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 30px var(--tier-glow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .billing-client-panel .pricing-card {
+        transition: none;
+    }
+
+    .billing-client-panel .pricing-card:hover {
+        transform: none;
+        box-shadow: none;
+    }
+}
+
+.billing-client-panel .pricing-values {
+    display: grid;
+    gap: 0.24rem;
+    margin: 0.55rem 0 0.4rem;
+}
+
+.billing-client-panel .pricing-form {
+    margin-top: auto;
+}
+
+.billing-client-panel .pricing-form label {
+    display: grid;
+    gap: 0.25rem;
+    font-size: 0.82rem;
+    color: #2e4d6d;
+}
+
+.billing-client-panel .pricing-tier-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+}
+
+.billing-client-panel .pricing-tier-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: 999px;
+    border: 1px solid var(--tier-line);
+    color: #1e4f85;
+    background: #ffffffd4;
+    padding: 0.18rem 0.58rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.billing-client-panel .pricing-tier-badge i {
+    margin-right: 0;
+}
+
+.billing-client-panel .pricing-current-chip {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    border: 1px solid #b6dec8;
+    color: #1c6a40;
+    background: #ecf9f1;
+    padding: 0.14rem 0.56rem;
+    font-size: 0.77rem;
+    font-weight: 700;
+}
+
+.billing-client-panel .pricing-card.tier-free {
+    --tier-line: #37a37b;
+    --tier-glow: rgba(17, 132, 92, 0.14);
+    --tier-bg-top: #f7fffb;
+    --tier-bg-bottom: #f0fbf7;
+}
+
+.billing-client-panel .pricing-card.tier-bronze {
+    --tier-line: #bc7b52;
+    --tier-glow: rgba(128, 78, 43, 0.16);
+    --tier-bg-top: #fff8f4;
+    --tier-bg-bottom: #fff1e8;
+}
+
+.billing-client-panel .pricing-card.tier-silver {
+    --tier-line: #7b90aa;
+    --tier-glow: rgba(82, 102, 128, 0.15);
+    --tier-bg-top: #f9fbfe;
+    --tier-bg-bottom: #eff4fb;
+}
+
+.billing-client-panel .pricing-card.tier-gold {
+    --tier-line: #c89a21;
+    --tier-glow: rgba(152, 112, 10, 0.18);
+    --tier-bg-top: #fffdf5;
+    --tier-bg-bottom: #fff8df;
+}
+
+.billing-client-panel .invoice-status {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 0.16rem 0.56rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    border: 1px solid #d3e2f5;
+    background: #edf5ff;
+    color: #184e95;
+}
+
+.billing-client-panel .invoice-status.status-open {
+    border-color: #f0d4a5;
+    background: #fff8ea;
+    color: #99621d;
+}
+
+.billing-client-panel .invoice-status.status-failed {
+    border-color: #f1c4c4;
+    background: #fff1f1;
+    color: #9f2c2c;
+}
+
+.billing-client-panel .invoice-status.status-paid {
+    border-color: #bfe5cd;
+    background: #edf9f1;
+    color: #1f6f43;
+}
+
+.billing-client-panel .invoice-status.status-canceled,
+.billing-client-panel .invoice-status.status-cancelled {
+    border-color: #d9dde4;
+    background: #f5f7fa;
+    color: #4f6075;
+}
+
+.billing-client-panel .invoice-pay-form {
+    display: grid;
+    grid-template-columns: minmax(150px, 1fr) auto;
+    gap: 0.45rem;
+    align-items: end;
+    margin: 0;
+}
+
+.billing-client-panel .invoice-pay-form .btn-link {
+    white-space: nowrap;
+}
+
+.billing-client-panel .btn-link i {
+    margin-right: 0;
+}
+
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    padding: 0.12rem 0.52rem;
+    font-size: 0.74rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.status-pill.status-active,
+.status-pill.status-approved,
+.status-pill.status-paid {
+    background: #ebf8f0;
+    border-color: #bce2ce;
+    color: #1f6d43;
+}
+
+.status-pill.status-inactive,
+.status-pill.status-rejected,
+.status-pill.status-failed {
+    background: #fff3f3;
+    border-color: #edc9c9;
+    color: #8e4d4d;
+}
+
+.status-pill.status-pending {
+    background: #fff6e6;
+    border-color: #f2d296;
+    color: #8a5d08;
+}
+
+.status-pill.status-cancelled,
+.status-pill.status-canceled {
+    background: #f3f5f7;
+    border-color: #d4dce5;
+    color: #5a6775;
+}
+
+.status-pill.status-processing {
+    background: #e9f3ff;
+    border-color: #bfd8f6;
+    color: #1c5a99;
+}
+
+@media (max-width: 760px) {
+    .billing-client-panel .panel-head-inline {
+        align-items: flex-start;
+    }
+
+    .billing-client-panel .invoice-pay-form {
+        grid-template-columns: 1fr;
+    }
+
+    .billing-client-panel .invoice-pay-form .btn-link {
+        justify-content: center;
+    }
 }
 
 .extra-events-table td a {
@@ -1197,6 +1620,22 @@ td.out {
     color: #0d6efd;
 }
 
+.auth-help-link {
+    margin: 0.9rem 0 0;
+    color: #3e5670;
+    font-size: 0.9rem;
+}
+
+.auth-help-link a {
+    color: #0b5ed7;
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.auth-help-link a:hover {
+    text-decoration: underline;
+}
+
 @media (max-width: 1100px) {
     .full-calendar td {
         min-width: 180px;
@@ -1334,5 +1773,165 @@ td.out {
     .standards-actions .btn-link {
         width: 100%;
         justify-content: center;
+    }
+}
+
+/* Global responsive stabilization (client) */
+img,
+svg,
+video {
+    max-width: 100%;
+    height: auto;
+}
+
+.client-main,
+.app-content,
+.panel,
+.panel-head-inline,
+.dashboard-hero,
+.filters-grid,
+.cards-grid,
+.usage-grid,
+.pricing-grid,
+.table-wrap {
+    min-width: 0;
+}
+
+.panel-head-inline,
+.hero-actions,
+.header-actions {
+    flex-wrap: wrap;
+}
+
+.table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table-wrap .table {
+    width: 100%;
+}
+
+.table-wrap .table th,
+.table-wrap .table td {
+    word-break: normal;
+    overflow-wrap: anywhere;
+}
+
+.header-actions,
+.header-actions div {
+    min-width: 0;
+}
+
+@media (max-width: 980px) {
+    .app-header {
+        align-items: start;
+    }
+
+    .header-actions {
+        justify-content: flex-end;
+    }
+
+    .table-wrap .table {
+        min-width: 620px;
+    }
+}
+
+@media (max-width: 760px) {
+    .panel-head-inline h2,
+    .panel-head-inline h3,
+    .panel-head-inline h4 {
+        width: 100%;
+    }
+
+    .billing-client-panel .invoice-pay-form {
+        grid-template-columns: 1fr;
+    }
+
+    .billing-client-panel .invoice-pay-form .btn-link {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 640px) {
+    body {
+        overflow-x: hidden;
+    }
+
+    .app-content {
+        padding: 0.7rem;
+    }
+
+    .panel {
+        padding: 0.75rem;
+    }
+
+    .filters-grid,
+    .cards-grid,
+    .dashboard-hero,
+    .usage-grid,
+    .pricing-grid,
+    .draft-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .table-wrap .table {
+        min-width: 560px;
+    }
+}
+
+/* Left sidebar collapse behavior (client) */
+@media (min-width: 981px) {
+    .client-shell {
+        transition: grid-template-columns 0.2s ease;
+    }
+
+    .client-sidebar {
+        transition: width 0.2s ease, padding 0.2s ease;
+    }
+
+    body.client-sidebar-collapsed .client-shell {
+        grid-template-columns: 72px 1fr;
+    }
+
+    body.client-sidebar-collapsed .client-sidebar {
+        overflow-x: hidden;
+        padding-left: 0.45rem;
+        padding-right: 0.45rem;
+    }
+
+    body.client-sidebar-collapsed .client-brand {
+        justify-content: center;
+        padding: 0.55rem 0.4rem;
+    }
+
+    body.client-sidebar-collapsed .client-brand span {
+        display: none;
+    }
+
+    body.client-sidebar-collapsed .app-nav a {
+        text-align: center;
+        padding: 0.68rem 0;
+        font-size: 0;
+    }
+
+    body.client-sidebar-collapsed .app-nav a span {
+        justify-content: center;
+        gap: 0;
+    }
+
+    body.client-sidebar-collapsed .app-nav a i {
+        width: auto;
+        font-size: 1rem;
+    }
+
+    body.client-sidebar-collapsed .app-header .icon-btn {
+        display: inline-block;
+    }
+}
+
+@media (min-width: 981px) and (max-width: 1366px) {
+    .app-header .icon-btn {
+        display: inline-block;
     }
 }
