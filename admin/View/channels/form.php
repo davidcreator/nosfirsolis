@@ -1,5 +1,5 @@
 <section class="panel">
-    <h1><?= e($title) ?></h1>
+    <h1><i class="fa-solid fa-share-nodes"></i> <?= e($title) ?></h1>
 
     <form method="post" action="<?= e(route_url($action)) ?>" class="form-grid">
         <?= csrf_field() ?>

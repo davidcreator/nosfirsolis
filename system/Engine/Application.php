@@ -62,9 +62,9 @@ class Application
             }
         }
 
-        // Compatibilidade com configuração legada em system/Storage/config.php.
-        $storageConfigFile = DIR_SYSTEM . DIRECTORY_SEPARATOR . 'Storage' . DIRECTORY_SEPARATOR . 'config.php';
-        if (is_file($storageConfigFile)) {
+        // Compatibility with legacy runtime config in system/Storage/config.php.
+        $storageConfigFile = $this->storageFile('config.php');
+        if (is_string($storageConfigFile) && is_file($storageConfigFile)) {
             $runtime = require $storageConfigFile;
             if (is_array($runtime)) {
                 $config->mergeConfig($runtime);
@@ -75,7 +75,7 @@ class Application
         $this->guardAllowedHost($config);
 
         $sessionName = (string) $config->get('app.session_name', 'nsplanner');
-        $sessionPath = DIR_SYSTEM . DIRECTORY_SEPARATOR . 'Storage' . DIRECTORY_SEPARATOR . 'sessions';
+        $sessionPath = $this->storageDirectory() . DIRECTORY_SEPARATOR . 'sessions';
         $session = new Session($sessionName, $sessionPath);
 
         $request = new Request();
@@ -163,10 +163,14 @@ class Application
         $allowedHosts = (array) $config->get('security.allowed_hosts', []);
         $baseUrl = (string) $config->get('app.base_url', '');
         $installed = (bool) $config->get('app.installed', false);
+        $environment = $this->normalizeEnvironment((string) $config->get('app.environment', 'production'));
+        $isDevelopment = $environment === 'development';
+        $requestHost = HostGuard::requestHost($_SERVER);
 
-        if (!$installed) {
-            $requestHost = HostGuard::requestHost($_SERVER);
-            if ($requestHost !== '') {
+        // Dev and installer flow: auto-accept current request host to reduce setup friction.
+        if (($isDevelopment || !$installed) && $requestHost !== '') {
+            $normalizedAllowedHosts = HostGuard::normalizedAllowedHosts($allowedHosts, $baseUrl);
+            if (!in_array($requestHost, $normalizedAllowedHosts, true)) {
                 $allowedHosts[] = $requestHost;
                 $config->set('security.allowed_hosts', $allowedHosts);
             }
@@ -176,12 +180,38 @@ class Application
             return;
         }
 
+        // Production safety-net for legacy installs that kept only local default hosts.
+        $normalizedAllowedHosts = HostGuard::normalizedAllowedHosts($allowedHosts, $baseUrl);
+        $localDefaultHosts = ['localhost', '127.0.0.1', '::1'];
+        $onlyLocalDefaults = $normalizedAllowedHosts !== []
+            && array_diff($normalizedAllowedHosts, $localDefaultHosts) === [];
+        $requestHostIsBlockedByDefault = $requestHost !== ''
+            && !in_array($requestHost, $normalizedAllowedHosts, true);
+
+        if (!$isDevelopment && $installed && $onlyLocalDefaults && $requestHostIsBlockedByDefault) {
+            error_log(
+                '[Solis] HostGuard compatibility mode: allowing host because allowed_hosts still has only local defaults.'
+                . ' host=' . $requestHost
+                . ' allowed_hosts=' . json_encode($allowedHosts, JSON_UNESCAPED_UNICODE)
+            );
+            return;
+        }
+
+        error_log(
+            '[Solis] Host blocked by HostGuard. '
+            . 'env=' . $environment
+            . ' host=' . ($requestHost !== '' ? $requestHost : '(empty)')
+            . ' allowed_hosts=' . json_encode($allowedHosts, JSON_UNESCAPED_UNICODE)
+            . ' base_url=' . $baseUrl
+        );
+
         if (!headers_sent()) {
             http_response_code(400);
             header('Content-Type: text/plain; charset=UTF-8');
         }
 
-        echo 'Bad Request: host não permitido.';
+        echo 'Bad Request: host nao permitido. '
+            . 'Configure security.allowed_hosts (ou ALLOWED_HOSTS no ambiente) com o dominio atual.';
         exit;
     }
 
@@ -207,6 +237,55 @@ class Application
         return $sessionCode ?? $default;
     }
 
+    private function storageDirectory(): string
+    {
+        $candidates = [];
+
+        if (defined('DIR_STORAGE') && is_string(DIR_STORAGE) && trim((string) DIR_STORAGE) !== '') {
+            $candidates[] = (string) DIR_STORAGE;
+        }
+
+        $candidates[] = DIR_SYSTEM . DIRECTORY_SEPARATOR . 'Storage';
+        $candidates[] = DIR_SYSTEM . DIRECTORY_SEPARATOR . 'storage';
+
+        foreach ($candidates as $path) {
+            if (is_dir($path)) {
+                return $path;
+            }
+        }
+
+        return (string) $candidates[0];
+    }
+
+    private function storageFile(string $fileName): ?string
+    {
+        $fileName = trim($fileName);
+        if ($fileName === '') {
+            return null;
+        }
+
+        $storageDir = $this->storageDirectory();
+        $candidate = $storageDir . DIRECTORY_SEPARATOR . $fileName;
+        if (is_file($candidate)) {
+            return $candidate;
+        }
+
+        // Explicit fallback for hosts with different directory casing.
+        $fallbackDirectories = [
+            DIR_SYSTEM . DIRECTORY_SEPARATOR . 'Storage',
+            DIR_SYSTEM . DIRECTORY_SEPARATOR . 'storage',
+        ];
+
+        foreach ($fallbackDirectories as $directory) {
+            $path = $directory . DIRECTORY_SEPARATOR . $fileName;
+            if (is_file($path)) {
+                return $path;
+            }
+        }
+
+        return null;
+    }
+
     private function normalizeLanguageCode(string $languageCode): ?string
     {
         $languageCode = strtolower(trim($languageCode));
@@ -214,4 +293,16 @@ class Application
 
         return in_array($languageCode, ['en-us', 'pt-br'], true) ? $languageCode : null;
     }
+
+    private function normalizeEnvironment(string $value): string
+    {
+        $value = strtolower(trim($value));
+
+        if (in_array($value, ['dev', 'development', 'local', 'localhost'], true)) {
+            return 'development';
+        }
+
+        return 'production';
+    }
 }
+

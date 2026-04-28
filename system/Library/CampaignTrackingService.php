@@ -63,6 +63,16 @@ class CampaignTrackingService
         }
 
         $this->ensureTables();
+        $subscription = new SubscriptionService($this->registry);
+        $feature = $subscription->evaluateFeature($userId, 'allow_tracking_links');
+        if (empty($feature['allowed'])) {
+            return null;
+        }
+
+        $quota = $subscription->evaluateQuota($userId, 'max_tracking_links_per_month', 1);
+        if (empty($quota['allowed'])) {
+            return null;
+        }
 
         $destination = trim((string) ($data['destination_url'] ?? ''));
         if (!$this->isValidUrl($destination)) {

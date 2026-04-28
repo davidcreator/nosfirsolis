@@ -31,7 +31,7 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
 <?php if ($publishHubEnabled): ?>
 <section class="panel">
     <div class="panel-head-inline">
-        <h2>Central Social e Segurança</h2>
+        <h2><i class="fa-solid fa-shield-halved"></i> Central Social e Segurança</h2>
         <span class="calendar-subtitle">Conecte cada rede individualmente e proteja seus acessos.</span>
     </div>
 
@@ -75,7 +75,7 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
 
 <section class="panel">
     <div class="panel-head-inline">
-        <h3>Hub de publicação oficial</h3>
+        <h3><i class="fa-solid fa-paper-plane"></i> Hub de publicação oficial</h3>
         <span class="calendar-subtitle">Fila multi-canal com disparo manual e processamento em lote.</span>
     </div>
 
@@ -179,7 +179,7 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
 
 <section class="panel">
     <div class="panel-head-inline">
-        <h3>Padroes de post e carrossel por rede</h3>
+        <h3><i class="fa-solid fa-ruler-combined"></i> Padrões de post e carrossel por rede</h3>
         <span class="calendar-subtitle">Matriz com medidas recomendadas para padronizar criação de conteúdo multi-canal.</span>
     </div>
 
@@ -206,7 +206,7 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
     <?php if ($selectedPreset): ?>
         <div class="standards-focus-grid">
             <article class="standards-card">
-                <h4>Preset recomendado: <?= e((string) ($selectedPreset['platform_name'] ?? $selectedPlatform)) ?> / <?= e($formatOptions[$selectedFormat] ?? ucfirst($selectedFormat)) ?></h4>
+                <h4><i class="fa-solid fa-star"></i> Preset recomendado: <?= e((string) ($selectedPreset['platform_name'] ?? $selectedPlatform)) ?> / <?= e($formatOptions[$selectedFormat] ?? ucfirst($selectedFormat)) ?></h4>
                 <div class="standards-metrics">
                     <div>
                         <span>Canvas</span>
@@ -230,7 +230,7 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
             </article>
 
             <article class="standards-card">
-                <h4>Fontes consultadas</h4>
+                <h4><i class="fa-solid fa-link"></i> Fontes consultadas</h4>
                 <?php if (empty($selectedSources)): ?>
                     <p class="social-meta">Este preset usa padrao interno sem fonte publica obrigatoria.</p>
                 <?php else: ?>
@@ -248,7 +248,7 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
             </article>
         </div>
 
-        <h4>Salvar preset personalizado</h4>
+        <h4><i class="fa-solid fa-floppy-disk"></i> Salvar preset personalizado</h4>
         <form method="post" action="<?= e(route_url('social/saveFormatPreset')) ?>" class="filters-grid">
             <?= csrf_field() ?>
             <input type="hidden" name="platform_slug" value="<?= e((string) ($selectedPreset['platform_slug'] ?? $selectedPlatform)) ?>">
@@ -280,7 +280,7 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
         </form>
     <?php endif; ?>
 
-    <h4>Matriz consolidada de medidas</h4>
+    <h4><i class="fa-solid fa-table-cells-large"></i> Matriz consolidada de medidas</h4>
     <div class="table-wrap">
         <table class="table standards-table">
             <thead>
@@ -325,7 +325,7 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
 </section>
 
 <section class="panel">
-    <h3>Presets personalizados salvos</h3>
+    <h3><i class="fa-solid fa-bookmark"></i> Presets personalizados salvos</h3>
     <?php if (empty($saved_format_presets)): ?>
         <p>Você ainda não salvou presets personalizados.</p>
     <?php else: ?>
@@ -384,7 +384,7 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
 </section>
 
 <section class="panel">
-    <h3>Conexão manual por token (todas as plataformas)</h3>
+    <h3><i class="fa-solid fa-key"></i> Conexão manual por token (todas as plataformas)</h3>
     <form method="post" action="<?= e(route_url('social/saveManualConnection')) ?>" class="filters-grid">
         <?= csrf_field() ?>
         <label>Plataforma
@@ -411,7 +411,7 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
 </section>
 
 <section class="panel">
-    <h3>Criador de Conteúdo Estratégico Multi-Rede</h3>
+    <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Criador de Conteúdo Estratégico Multi-Rede</h3>
     <form method="post" action="<?= e(route_url('social/generateDraft')) ?>" class="filters-grid">
         <?= csrf_field() ?>
         <label>Tema central
@@ -450,7 +450,7 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
 </section>
 
 <section class="panel">
-    <h3>Conteudos estrategicos gerados</h3>
+    <h3><i class="fa-solid fa-file-lines"></i> Conteúdos estratégicos gerados</h3>
     <?php if (empty($drafts)): ?>
         <p>Nenhum draft ainda. Gere seu primeiro conteúdo multi-rede acima.</p>
     <?php else: ?>
@@ -476,7 +476,7 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
 </section>
 
 <section class="panel">
-    <h3>Monitoramento de segurança de acesso</h3>
+    <h3><i class="fa-solid fa-shield"></i> Monitoramento de segurança de acesso</h3>
     <?php if (empty($security_events)): ?>
         <p>Sem eventos de segurança para este usuário no momento.</p>
     <?php else: ?>

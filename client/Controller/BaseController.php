@@ -4,12 +4,16 @@ namespace Client\Controller;
 
 use System\Engine\Controller;
 use System\Library\FeatureFlagService;
+use System\Library\SubscriptionService;
 
 abstract class BaseController extends Controller
 {
+    private ?array $subscriptionContextCache = null;
+
     protected function boot(string $permission = '', ?string $featureKey = null): void
     {
         $this->requireAuth($permission);
+        $this->bootstrapSubscription();
         if ($featureKey !== null && trim($featureKey) !== '') {
             $this->requireFeature($featureKey);
         }
@@ -44,7 +48,45 @@ abstract class BaseController extends Controller
     {
         $service = new FeatureFlagService($this->registry);
         $data['feature_flags'] = $service->resolvedMap($this->auth ? $this->auth->user() : null, 'client');
+        if (!empty($data['current_user']) || $this->auth?->check()) {
+            $data['subscription_context'] = $this->subscriptionContext();
+        }
 
         parent::render($template, $data, $layout);
+    }
+
+    protected function subscriptionService(): SubscriptionService
+    {
+        return new SubscriptionService($this->registry);
+    }
+
+    protected function subscriptionContext(): array
+    {
+        if ($this->subscriptionContextCache !== null) {
+            return $this->subscriptionContextCache;
+        }
+
+        $userId = (int) ($this->auth?->user()['id'] ?? 0);
+        if ($userId <= 0) {
+            $this->subscriptionContextCache = [];
+            return $this->subscriptionContextCache;
+        }
+
+        $service = $this->subscriptionService();
+        $service->ensureUserSubscription($userId);
+        $this->subscriptionContextCache = $service->contextForUser($userId);
+
+        return $this->subscriptionContextCache;
+    }
+
+    private function bootstrapSubscription(): void
+    {
+        $userId = (int) ($this->auth?->user()['id'] ?? 0);
+        if ($userId <= 0) {
+            return;
+        }
+
+        $service = $this->subscriptionService();
+        $service->ensureUserSubscription($userId);
     }
 }

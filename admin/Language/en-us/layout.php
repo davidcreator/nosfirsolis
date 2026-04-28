@@ -6,6 +6,7 @@ return [
     'layout.language_option_en_us' => 'English',
     'layout.language_option_pt_br' => 'Portuguese',
     'layout.logout' => 'Sign out',
+    'layout.nav_billing' => 'Plans and Payments',
     'layout.nav_campaigns' => 'Campaigns',
     'layout.nav_channels' => 'Channels',
     'layout.nav_commemoratives' => 'Commemoratives',

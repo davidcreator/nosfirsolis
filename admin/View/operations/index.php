@@ -16,7 +16,7 @@ $observabilityEnabled = (bool) ($opsFeatureMap['observability.telemetry'] ?? tru
 <section class="panel dashboard-hero">
     <div class="hero-content">
         <span class="hero-badge"><i class="fa-solid fa-gears"></i> Ops Center</span>
-        <h1>Operações e Integrações</h1>
+        <h1><i class="fa-solid fa-gears"></i> Operações e Integrações</h1>
         <p>Governança de feature flags, webhooks de automação, monitoramento de jobs e observabilidade.</p>
     </div>
     <div class="hero-actions">
@@ -29,7 +29,7 @@ $observabilityEnabled = (bool) ($opsFeatureMap['observability.telemetry'] ?? tru
 
 <section class="panel">
     <div class="panel-header">
-        <h2>Feature flags</h2>
+        <h2><i class="fa-solid fa-toggle-on"></i> Feature flags</h2>
         <span class="meta-text">Controle de liberação por área, permissão e hierarquia</span>
     </div>
 
@@ -116,7 +116,7 @@ $observabilityEnabled = (bool) ($opsFeatureMap['observability.telemetry'] ?? tru
 <?php if ($webhooksEnabled): ?>
 <section class="panel">
     <div class="panel-header">
-        <h2>Automação por webhooks</h2>
+        <h2><i class="fa-solid fa-plug"></i> Automação por webhooks</h2>
         <span class="meta-text">Disparo de eventos para n8n, integrações internas e terceiros</span>
     </div>
 
@@ -214,7 +214,7 @@ $observabilityEnabled = (bool) ($opsFeatureMap['observability.telemetry'] ?? tru
         </table>
     </div>
 
-    <h3>Histórico de dispatch</h3>
+    <h3><i class="fa-solid fa-clock-rotate-left"></i> Histórico de dispatch</h3>
     <div class="table-wrap">
         <table class="table">
             <thead>
@@ -253,7 +253,7 @@ $observabilityEnabled = (bool) ($opsFeatureMap['observability.telemetry'] ?? tru
 <?php if ($jobsEnabled): ?>
 <section class="panel">
     <div class="panel-header">
-        <h2>Monitoramento de jobs</h2>
+        <h2><i class="fa-solid fa-heart-pulse"></i> Monitoramento de jobs</h2>
         <span class="meta-text">Check-ins, runtime e alertas de stale/failure</span>
     </div>
 
@@ -320,7 +320,7 @@ $observabilityEnabled = (bool) ($opsFeatureMap['observability.telemetry'] ?? tru
         </table>
     </div>
 
-    <h3>Alertas ativos</h3>
+    <h3><i class="fa-solid fa-triangle-exclamation"></i> Alertas ativos</h3>
     <div class="table-wrap">
         <table class="table">
             <thead>
@@ -355,7 +355,7 @@ $observabilityEnabled = (bool) ($opsFeatureMap['observability.telemetry'] ?? tru
 <?php if ($observabilityEnabled): ?>
 <section class="panel">
     <div class="panel-header">
-        <h2>Observabilidade</h2>
+        <h2><i class="fa-solid fa-binoculars"></i> Observabilidade</h2>
         <span class="meta-text">Eventos estruturados de integração, segurança e operação</span>
     </div>
     <div class="table-wrap">
@@ -392,7 +392,7 @@ $observabilityEnabled = (bool) ($opsFeatureMap['observability.telemetry'] ?? tru
 <?php endif; ?>
 
 <section class="panel">
-    <h2>Últimos check-ins de jobs</h2>
+    <h2><i class="fa-solid fa-list-check"></i> Últimos check-ins de jobs</h2>
     <div class="table-wrap">
         <table class="table">
             <thead>

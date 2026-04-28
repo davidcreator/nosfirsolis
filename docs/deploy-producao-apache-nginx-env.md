@@ -6,6 +6,7 @@ Padronizar deploy do NosfirSolis em producao sem depender de `.env` no servidor.
 
 ## Variaveis necessarias
 
+- `APP_ENV` (`production`)
 - `TOKEN_CIPHER_KEY`
 - `TOKEN_CIPHER_KEY_PREVIOUS` (somente durante rotacao)
 - `TRUSTED_PROXIES`
@@ -14,6 +15,7 @@ Padronizar deploy do NosfirSolis em producao sem depender de `.env` no servidor.
 
 Exemplo para multiplos dominios:
 
+- `APP_ENV=production`
 - `ALLOWED_HOSTS=app.exemplo.com,www.exemplo.com,painel.exemplo.com`
 
 ## Gerar chave forte
@@ -60,6 +62,7 @@ Arquivo exemplo: `/etc/php/8.2/fpm/pool.d/www.conf`
 
 ```ini
 clear_env = no
+env[APP_ENV] = production
 env[TOKEN_CIPHER_KEY] = replace_with_strong_key
 env[TOKEN_CIPHER_KEY_PREVIOUS] =
 env[TRUSTED_PROXIES] = 127.0.0.1,::1

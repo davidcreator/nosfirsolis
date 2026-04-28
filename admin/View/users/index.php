@@ -6,7 +6,7 @@ $currentHierarchyLevel = (int) ($current_hierarchy_level ?? 50);
 
 <section class="panel">
     <div class="panel-header">
-        <h1><?= e($t('users.heading_index', 'Usuários e Hierarquia')) ?></h1>
+        <h1><i class="fa-solid fa-users-gear"></i> <?= e($t('users.heading_index', 'Usuários e Hierarquia')) ?></h1>
         <span class="meta-text"><?= e($t('users.current_level', 'Seu nível atual: {level} (quanto menor, maior autoridade)', ['level' => (int) $currentHierarchyLevel])) ?></span>
     </div>
     <p class="meta-text"><?= e($t('users.description_scope', 'O administrador só pode criar usuários e ajustar níveis em grupos com nível igual ou inferior ao seu escopo hierárquico.')) ?></p>
@@ -14,7 +14,7 @@ $currentHierarchyLevel = (int) ($current_hierarchy_level ?? 50);
 
 <section class="panel">
     <div class="panel-header">
-        <h2><?= e($t('users.heading_create', 'Criar usuário')) ?></h2>
+        <h2><i class="fa-solid fa-user-plus"></i> <?= e($t('users.heading_create', 'Criar usuário')) ?></h2>
     </div>
 
     <?php if (empty($groups)): ?>
@@ -53,7 +53,7 @@ $currentHierarchyLevel = (int) ($current_hierarchy_level ?? 50);
 
 <section class="panel">
     <div class="panel-header">
-        <h2><?= e($t('users.heading_hierarchy', 'Controle de níveis hierárquicos')) ?></h2>
+        <h2><i class="fa-solid fa-sitemap"></i> <?= e($t('users.heading_hierarchy', 'Controle de níveis hierárquicos')) ?></h2>
         <span class="meta-text"><?= e($t('users.hierarchy_hint', 'Menor número = maior permissão')) ?></span>
     </div>
 
@@ -118,7 +118,7 @@ $currentHierarchyLevel = (int) ($current_hierarchy_level ?? 50);
 
 <section class="panel">
     <div class="panel-header">
-        <h2><?= e($t('users.heading_registered', 'Usuários cadastrados')) ?></h2>
+        <h2><i class="fa-solid fa-address-card"></i> <?= e($t('users.heading_registered', 'Usuários cadastrados')) ?></h2>
     </div>
 
     <div class="table-wrap">

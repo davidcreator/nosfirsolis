@@ -9,10 +9,12 @@ use PDOStatement;
 class Database
 {
     private ?PDO $pdo = null;
+    private ?string $lastConnectionError = null;
 
     public function __construct(array $config)
     {
         if (empty($config['database']) || empty($config['username'])) {
+            $this->lastConnectionError = 'Credenciais de banco ausentes (database/username).';
             return;
         }
 
@@ -37,12 +39,19 @@ class Database
             );
         } catch (PDOException $exception) {
             $this->pdo = null;
+            $this->lastConnectionError = $exception->getMessage();
+            error_log('[Solis] Falha na conexão com banco: ' . $this->lastConnectionError);
         }
     }
 
     public function connected(): bool
     {
         return $this->pdo instanceof PDO;
+    }
+
+    public function connectionError(): ?string
+    {
+        return $this->lastConnectionError;
     }
 
     public function pdo(): PDO

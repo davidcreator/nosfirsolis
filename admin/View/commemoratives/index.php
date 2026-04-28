@@ -1,6 +1,6 @@
 <section class="panel">
     <div class="panel-header">
-        <h1><?= e($t('commemoratives.heading_index', 'Datas comemorativas')) ?></h1>
+        <h1><i class="fa-solid fa-star"></i> <?= e($t('commemoratives.heading_index', 'Datas comemorativas')) ?></h1>
         <a class="btn" href="<?= e(route_url('commemoratives/create')) ?>"><i class="fa-solid fa-plus"></i> <?= e($t('commemoratives.button_new', 'Nova data')) ?></a>
     </div>
 

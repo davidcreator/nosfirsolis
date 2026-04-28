@@ -11,6 +11,7 @@ Ele foi desenhado para resolver um recorte especifico: **estrategias de campanha
 ## O Que Ja Esta Implementado
 
 - Area cliente com:
+  - cadastro publico de novos usuarios com ativacao automatica do plano Basico Gratuito
   - dashboard estrategico
   - dashboard executivo com visao de tracking/publicacao/jobs/erros
   - calendario unificado (anual, mensal e por periodo)
@@ -19,11 +20,14 @@ Ele foi desenhado para resolver um recorte especifico: **estrategias de campanha
   - exportacao CSV de planos
   - central social com conexoes OAuth/manual, drafts estrategicos, presets de formato e hub de publicacao multi-canal
   - modulo de rastreamento de campanhas (UTM/MTM, short links e cliques)
+  - area de planos e faturamento com upgrade/downgrade, faturas e pagamentos simulados
+  - enforcement de limites por plano (`gratuito`, `bronze`, `prata`, `ouro`) no backend
 - Area admin com:
   - dashboard administrativo
   - CRUD de feriados, comemorativas, sugestoes, canais e campanhas
   - gestao de usuarios com controle de hierarquia por nivel
   - central de operacoes com feature flags, webhooks, monitores de jobs e observabilidade
+  - central de billing para configurar valores dos planos, promocoes/descontos, noticias de reajuste, conta recebedora, meios de pagamento e validacao manual de pagamentos
 - Instalador com validacao de ambiente, seed inicial e bloqueio de reinstalacao sem chave/permissao.
 - Camada de seguranca com:
   - rate limit de login por IP/email
@@ -52,9 +56,11 @@ Indice geral: [`docs/README.md`](docs/README.md)
 
 1. Time admin configura base estrategica (`/admin`): campanhas, canais, sugestoes, feriados e hierarquia.
 2. Time admin governa operacoes (`/admin/operations`): feature flags, webhooks, jobs e observabilidade.
-3. Time cliente opera estrategia (`/client`): cria planos, atualiza status (individual/lote), usa calendario e exporta CSV.
-4. Time cliente conecta e publica (`/client/social`): OAuth/manual, drafts, presets e fila de publicacao.
-5. Time cliente rastreia campanhas (`/client/tracking`): links UTM/MTM, short links e cliques.
+3. Time admin governa monetizacao (`/admin/billing`): planos, promocoes, comunicados e validacao de pagamentos.
+4. Time cliente opera estrategia (`/client`): cria planos, atualiza status (individual/lote), usa calendario e exporta CSV.
+5. Time cliente conecta e publica (`/client/social`): OAuth/manual, drafts, presets e fila de publicacao.
+6. Time cliente rastreia campanhas (`/client/tracking`): links UTM/MTM, short links e cliques.
+7. Time cliente gerencia assinatura (`/client/billing`): plano ativo, limites, faturas e pagamento.
 
 ## Estrutura MVCL
 
@@ -85,9 +91,11 @@ Em producao, a precedencia e: variaveis do host/processo > `.env`.
 
 Use `.env.example` como base e configure:
 
+- `APP_ENV`: `development` (local) ou `production` (online).
 - `TOKEN_CIPHER_KEY`: segredo forte para criptografia de tokens.
 - `TOKEN_CIPHER_KEY_PREVIOUS`: chave(s) anterior(es) para decrypt durante rotacao (opcional, separado por virgula).
 - `TRUSTED_PROXIES`: lista separada por virgula de IPs/CIDRs confiaveis.
+- `ALLOWED_HOSTS`: hosts permitidos separados por virgula.
 - `AUTOMATION_ALLOW_PRIVATE_WEBHOOK_ENDPOINTS`: `0` (recomendado) ou `1`.
 
 Gerar chave forte:
@@ -100,8 +108,9 @@ php tools/security/generate-token-cipher-key.php
 
 1. Acesse `http://localhost/nosfirsolis/install`
 2. Preencha banco + administrador.
-3. Conclua instalacao.
-4. Acesse:
+3. Selecione o ambiente (`development` local ou `production` online) e revise os hosts permitidos.
+4. Conclua instalacao.
+5. Acesse:
    - Cliente: `http://localhost/nosfirsolis` ou `http://localhost/nosfirsolis/client`
    - Admin: `http://localhost/nosfirsolis/admin`
 

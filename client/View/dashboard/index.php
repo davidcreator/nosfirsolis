@@ -64,7 +64,7 @@ $pipelineTotal = max(1, array_sum($statusCounter));
 <?php if ($executiveEnabled): ?>
 <section class="panel">
     <div class="panel-header">
-        <h3>Painel executivo</h3>
+        <h3><i class="fa-solid fa-gauge-high"></i> Painel executivo</h3>
         <span class="meta-text">Visão operacional consolidada do Solis</span>
     </div>
 
@@ -126,7 +126,7 @@ $pipelineTotal = max(1, array_sum($statusCounter));
 
 <section class="panel">
     <div class="panel-header">
-        <h3>Pipeline de execução</h3>
+        <h3><i class="fa-solid fa-diagram-project"></i> Pipeline de execução</h3>
         <span class="meta-text">Distribuição dos próximos itens por status</span>
     </div>
 
@@ -147,7 +147,7 @@ $pipelineTotal = max(1, array_sum($statusCounter));
 
 <section class="panel">
     <div class="panel-header">
-        <h3>Próximas publicações</h3>
+        <h3><i class="fa-solid fa-clock"></i> Próximas publicações</h3>
         <span class="meta-text"><?= count($upcomingItems) ?> item(ns) futuros</span>
     </div>
     <div class="table-wrap">

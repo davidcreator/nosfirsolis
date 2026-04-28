@@ -5,10 +5,31 @@ declare(strict_types=1);
 define('DIR_ROOT', __DIR__);
 
 $rootConfig = require DIR_ROOT . '/config.php';
-$installed = is_array($rootConfig) && !empty($rootConfig['app']['installed']);
-$appName = is_array($rootConfig) && isset($rootConfig['app']['name'])
-    ? (string) $rootConfig['app']['name']
-    : 'Solis';
+$storageConfig = [];
+$storageConfigCandidates = [
+    DIR_ROOT . '/system/Storage/config.php',
+    DIR_ROOT . '/system/storage/config.php',
+];
+
+foreach ($storageConfigCandidates as $storageConfigFile) {
+    if (!is_file($storageConfigFile)) {
+        continue;
+    }
+
+    $loadedStorageConfig = require $storageConfigFile;
+    if (is_array($loadedStorageConfig)) {
+        $storageConfig = $loadedStorageConfig;
+        break;
+    }
+}
+
+$installed = (is_array($rootConfig) && !empty($rootConfig['app']['installed']))
+    || (!empty($storageConfig['app']['installed']));
+$appName = isset($storageConfig['app']['name']) && trim((string) $storageConfig['app']['name']) !== ''
+    ? (string) $storageConfig['app']['name']
+    : ((is_array($rootConfig) && isset($rootConfig['app']['name']))
+        ? (string) $rootConfig['app']['name']
+        : 'Solis');
 
 $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
 $host = (string) ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? 'localhost');
@@ -24,13 +45,24 @@ if (!$installed) {
 
 require_once DIR_ROOT . '/system/Engine/Startup.php';
 
-$sessionName = is_array($rootConfig) && isset($rootConfig['app']['session_name'])
-    ? (string) $rootConfig['app']['session_name']
-    : 'nsplanner_session';
-$sessionPath = DIR_SYSTEM . DIRECTORY_SEPARATOR . 'Storage' . DIRECTORY_SEPARATOR . 'sessions';
+$sessionName = isset($storageConfig['app']['session_name']) && trim((string) $storageConfig['app']['session_name']) !== ''
+    ? (string) $storageConfig['app']['session_name']
+    : ((is_array($rootConfig) && isset($rootConfig['app']['session_name']))
+        ? (string) $rootConfig['app']['session_name']
+        : 'nsplanner_session');
+$storageDir = defined('DIR_STORAGE') && is_string(DIR_STORAGE) && trim((string) DIR_STORAGE) !== ''
+    ? (string) DIR_STORAGE
+    : '';
+if ($storageDir === '' || !is_dir($storageDir)) {
+    $storageUpper = DIR_SYSTEM . DIRECTORY_SEPARATOR . 'Storage';
+    $storageLower = DIR_SYSTEM . DIRECTORY_SEPARATOR . 'storage';
+    $storageDir = is_dir($storageUpper) ? $storageUpper : (is_dir($storageLower) ? $storageLower : $storageUpper);
+}
+$sessionPath = $storageDir . DIRECTORY_SEPARATOR . 'sessions';
 new \System\Engine\Session($sessionName, $sessionPath);
 
 $loginAction = $basePath . '/client/auth/authenticate';
+$registerUrl = $basePath . '/client/auth/register';
 $clientAreaUrl = $basePath . '/client';
 $messageSuccess = flash('success');
 $messageError = flash('error');
@@ -341,7 +373,8 @@ header('Content-Type: text/html; charset=UTF-8');
                 <button type="submit" class="cta">Entrar no Solis</button>
             </form>
 
-            <a class="alt-link" href="<?= e($clientAreaUrl) ?>">Abrir área do cliente</a>
+            <a class="alt-link" href="<?= e($clientAreaUrl) ?>">Abrir area do cliente</a>
+            <a class="alt-link" href="<?= e($registerUrl) ?>">Criar conta gratuita</a>
             <p class="note">
                 O acesso administrativo não fica exposto nesta página pública.
                 A administração deve ser acessada apenas pela URL dedicada.

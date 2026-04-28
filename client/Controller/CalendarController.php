@@ -4,6 +4,7 @@ namespace Client\Controller;
 
 use DateTimeImmutable;
 use System\Library\CalendarService;
+use System\Library\SubscriptionService;
 
 class CalendarController extends BaseController
 {
@@ -40,6 +41,7 @@ class CalendarController extends BaseController
         $annualMonths = [];
         $monthlyCalendar = null;
         $periodEvents = [];
+        $periodMoonPhases = [];
         $visibleStart = '';
         $visibleEnd = '';
 
@@ -79,6 +81,10 @@ class CalendarController extends BaseController
             $extraEvents = $plannerModel->extraEventsByPeriod($userId, $visibleStart, $visibleEnd);
             $this->mergeManualLayers($periodEvents, $notes, $extraEvents, $visibleStart, $visibleEnd);
             ksort($periodEvents);
+
+            foreach (array_keys($periodEvents) as $date) {
+                $periodMoonPhases[$date] = $calendarService->moonPhase((string) $date);
+            }
         }
 
         $flatExtraEvents = [];
@@ -96,6 +102,7 @@ class CalendarController extends BaseController
             'annual_months' => $annualMonths,
             'monthly_calendar' => $monthlyCalendar,
             'period_events' => $periodEvents,
+            'period_moon_phases' => $periodMoonPhases,
             'filters' => $filters,
             'filter_data' => $filterData,
             'extra_events' => $flatExtraEvents,
@@ -196,7 +203,15 @@ class CalendarController extends BaseController
             $this->response->redirect(route_url('calendar/index?' . $this->buildReturnQueryFromPost()));
         }
 
-        $this->loader->model('planner')->createExtraEvent((int) ($this->auth->user()['id'] ?? 0), [
+        $userId = (int) ($this->auth->user()['id'] ?? 0);
+        $subscription = new SubscriptionService($this->registry);
+        $quota = $subscription->evaluateQuota($userId, 'max_calendar_extra_events_per_month', 1);
+        if (empty($quota['allowed'])) {
+            flash('error', (string) ($quota['message'] ?? 'Limite de eventos extras atingido para o plano atual.'));
+            $this->response->redirect(route_url('billing/index'));
+        }
+
+        $this->loader->model('planner')->createExtraEvent($userId, [
             'event_date' => $eventDate,
             'title' => $title,
             'event_type' => $eventType,

@@ -6,6 +6,7 @@ return [
     'layout.language_option_en_us' => 'English',
     'layout.language_option_pt_br' => 'Português',
     'layout.logout' => 'Sair',
+    'layout.nav_billing' => 'Planos e Pagamentos',
     'layout.nav_campaigns' => 'Campanhas',
     'layout.nav_channels' => 'Canais',
     'layout.nav_commemoratives' => 'Comemorativas',

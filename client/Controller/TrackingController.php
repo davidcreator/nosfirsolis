@@ -6,6 +6,7 @@ use System\Library\AutomationService;
 use System\Library\CampaignTrackingService;
 use System\Library\JobMonitorService;
 use System\Library\ObservabilityService;
+use System\Library\SubscriptionService;
 
 class TrackingController extends BaseController
 {
@@ -14,6 +15,13 @@ class TrackingController extends BaseController
         $this->boot('client.tracking', 'tracking.campaign_links');
 
         $userId = (int) ($this->auth->user()['id'] ?? 0);
+        $subscription = new SubscriptionService($this->registry);
+        $feature = $subscription->evaluateFeature($userId, 'allow_tracking_links');
+        if (empty($feature['allowed'])) {
+            flash('error', (string) ($feature['message'] ?? 'Recurso indisponivel no seu plano atual.'));
+            $this->redirectToRoute('billing/index');
+        }
+
         $tracking = new CampaignTrackingService($this->registry);
         $tracking->ensureTables();
 
@@ -32,6 +40,19 @@ class TrackingController extends BaseController
         $this->ensurePostWithCsrf();
 
         $userId = (int) ($this->auth->user()['id'] ?? 0);
+        $subscription = new SubscriptionService($this->registry);
+        $feature = $subscription->evaluateFeature($userId, 'allow_tracking_links');
+        if (empty($feature['allowed'])) {
+            flash('error', (string) ($feature['message'] ?? 'Recurso indisponivel no seu plano atual.'));
+            $this->redirectToRoute('billing/index');
+        }
+
+        $quota = $subscription->evaluateQuota($userId, 'max_tracking_links_per_month', 1);
+        if (empty($quota['allowed'])) {
+            flash('error', (string) ($quota['message'] ?? 'Limite de links rastreaveis atingido para o plano atual.'));
+            $this->redirectToRoute('billing/index');
+        }
+
         $tracking = new CampaignTrackingService($this->registry);
         $tracking->ensureTables();
 

@@ -8,17 +8,20 @@ if (!defined('DIR_ROOT')) {
     define('DIR_ROOT', dirname(__DIR__));
 }
 
-return [
-    'admin' => [
-        'name' => 'Painel Administrativo',
-        'base_url' => '',
-        'reinstall_permission' => 'admin.install.reinstall',
-    ],
-    'routes' => [
-        'public_routes' => [
-            'auth/login',
-            'auth/authenticate',
-        ],
-        'login_redirect' => 'auth/login',
-    ],
-];
+return array (
+  'admin' => 
+  array (
+    'name' => 'Painel Administrativo',
+    'base_url' => 'http://localhost/nosfirsolis/admin/',
+    'reinstall_permission' => 'admin.install.reinstall',
+  ),
+  'routes' => 
+  array (
+    'public_routes' => 
+    array (
+      0 => 'auth/login',
+      1 => 'auth/authenticate',
+    ),
+    'login_redirect' => 'auth/login',
+  ),
+);

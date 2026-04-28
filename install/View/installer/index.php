@@ -1,6 +1,6 @@
 <section class="card">
     <h1><?= e($title ?? $t('install.title', 'Instalador')) ?></h1>
-    <p class="subtitle"><?= e($t('install.subtitle', 'Configuração inicial da plataforma estratégica de planejamento de conteúdo.')) ?></p>
+    <p class="subtitle"><?= e($t('install.subtitle', 'Configuracao inicial da plataforma estrategica de planejamento de conteudo.')) ?></p>
 
     <?php if ($message_success): ?>
         <div class="alert success"><?= e($message_success) ?></div>
@@ -10,7 +10,7 @@
         <div class="alert error"><?= e($message_error) ?></div>
     <?php endif; ?>
 
-    <h2><?= e($t('install.step_environment', '1. Verificação de ambiente')) ?></h2>
+    <h2><?= e($t('install.step_environment', '1. Verificacao de ambiente')) ?></h2>
     <table class="table-checks">
         <thead>
             <tr>
@@ -56,7 +56,7 @@
         </label>
 
         <label>
-            <?= e($t('install.field_db_user', 'Usuário do banco')) ?>
+            <?= e($t('install.field_db_user', 'Usuario do banco')) ?>
             <input type="text" name="db_user" value="<?= e($values['db_user'] ?? '') ?>" required>
         </label>
 
@@ -81,7 +81,7 @@
         </label>
 
         <label>
-            <?= e($t('install.field_timezone', 'Fuso horário')) ?>
+            <?= e($t('install.field_timezone', 'Fuso horario')) ?>
             <input type="text" name="timezone" value="<?= e($values['timezone'] ?? 'America/Sao_Paulo') ?>">
         </label>
 
@@ -90,10 +90,24 @@
             <?php $selectedLanguage = strtolower((string) ($values['language_code'] ?? 'en-us')); ?>
             <select name="language_code">
                 <option value="en-us" <?= $selectedLanguage === 'en-us' ? 'selected' : '' ?>><?= e($t('install.language_en_us', 'English (United States) - en-us')) ?></option>
-                <option value="pt-br" <?= $selectedLanguage === 'pt-br' ? 'selected' : '' ?>><?= e($t('install.language_pt_br', 'Português (Brasil) - pt-br')) ?></option>
+                <option value="pt-br" <?= $selectedLanguage === 'pt-br' ? 'selected' : '' ?>><?= e($t('install.language_pt_br', 'Portugues (Brasil) - pt-br')) ?></option>
             </select>
         </label>
 
+        <label>
+            <?= e($t('install.field_app_env', 'Ambiente')) ?>
+            <?php $selectedEnvironment = strtolower((string) ($values['app_env'] ?? 'development')); ?>
+            <select name="app_env">
+                <option value="development" <?= $selectedEnvironment === 'development' ? 'selected' : '' ?>><?= e($t('install.environment_development', 'Desenvolvimento (local)')) ?></option>
+                <option value="production" <?= $selectedEnvironment === 'production' ? 'selected' : '' ?>><?= e($t('install.environment_production', 'Producao (online)')) ?></option>
+            </select>
+        </label>
+
+        <label>
+            <?= e($t('install.field_allowed_hosts', 'Hosts permitidos')) ?>
+            <input type="text" name="allowed_hosts" value="<?= e($values['allowed_hosts'] ?? '') ?>" placeholder="localhost,127.0.0.1,meu-dominio.com">
+            <small><?= e($t('install.field_allowed_hosts_hint', 'Separe por virgula. Ex.: app.exemplo.com,www.exemplo.com')) ?></small>
+        </label>
         <button type="submit" <?= !$all_ok ? 'disabled' : '' ?>><?= e($t('install.button_install_now', 'Instalar agora')) ?></button>
     </form>
 
@@ -101,3 +115,4 @@
         <p class="hint"><?= e($t('install.hint_fix_failed_items', 'Corrija os itens com falha antes de instalar.')) ?></p>
     <?php endif; ?>
 </section>
+

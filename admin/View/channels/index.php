@@ -1,6 +1,6 @@
 <section class="panel">
     <div class="panel-header">
-        <h1><?= e($t('channels.heading_index', 'Canais e plataformas')) ?></h1>
+        <h1><i class="fa-solid fa-share-nodes"></i> <?= e($t('channels.heading_index', 'Canais e plataformas')) ?></h1>
         <a class="btn" href="<?= e(route_url('channels/create')) ?>"><i class="fa-solid fa-plus"></i> <?= e($t('channels.button_new', 'Novo canal')) ?></a>
     </div>
 
