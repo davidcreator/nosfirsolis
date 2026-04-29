@@ -25,6 +25,7 @@ class SocialController extends BaseController
 
         $registry = new SocialPlatformRegistry($this->config);
         $platforms = $registry->all();
+        $accessKeyDocs = $this->accessKeyDocsByPlatform();
 
         $socialModel = $this->loader->model('social');
         $connections = $socialModel->connectionsByUser($userId);
@@ -32,6 +33,8 @@ class SocialController extends BaseController
 
         $connectionsBySlug = [];
         foreach ($connections as $connection) {
+            $metadata = json_decode((string) ($connection['metadata_json'] ?? '{}'), true);
+            $connection['metadata'] = is_array($metadata) ? $metadata : [];
             $connectionsBySlug[(string) $connection['platform_slug']] = $connection;
         }
 
@@ -81,6 +84,7 @@ class SocialController extends BaseController
             'saved_format_presets' => $savedPresets,
             'publication_queue' => $publicationQueue,
             'publish_plan_items' => $publishPlanItems,
+            'access_key_docs' => $accessKeyDocs,
         ]);
     }
 
@@ -275,6 +279,10 @@ class SocialController extends BaseController
         $accessToken = trim((string) $this->request->post('access_token', ''));
         $refreshToken = trim((string) $this->request->post('refresh_token', ''));
         $expiresAt = trim((string) $this->request->post('token_expires_at', ''));
+        $manualAction = strtolower(trim((string) $this->request->post('manual_action', 'save')));
+        if (!in_array($manualAction, ['save', 'verify'], true)) {
+            $manualAction = 'save';
+        }
 
         if ($platform === '' || $accessToken === '') {
             flash('error', $this->t('social.flash_manual_missing_fields', 'Informe plataforma e access token para salvar a conexão manual.'));
@@ -296,28 +304,45 @@ class SocialController extends BaseController
             $this->redirectToRoute('billing/index');
         }
 
-        $connections = $this->loader->model('social')->connectionsByUser($userId);
-        $alreadyConnected = false;
-        foreach ($connections as $connection) {
-            if (
-                strtolower((string) ($connection['platform_slug'] ?? '')) === $platform
-                && in_array((string) ($connection['status'] ?? ''), ['connected', 'manual'], true)
-            ) {
-                $alreadyConnected = true;
-                break;
+        if ($manualAction !== 'verify') {
+            $connections = $this->loader->model('social')->connectionsByUser($userId);
+            $alreadyConnected = false;
+            foreach ($connections as $connection) {
+                if (
+                    strtolower((string) ($connection['platform_slug'] ?? '')) === $platform
+                    && in_array((string) ($connection['status'] ?? ''), ['connected', 'manual'], true)
+                ) {
+                    $alreadyConnected = true;
+                    break;
+                }
             }
-        }
-        if (!$alreadyConnected) {
-            $quota = $subscription->evaluateQuota($userId, 'max_social_accounts', 1);
-            if (empty($quota['allowed'])) {
-                flash('error', (string) ($quota['message'] ?? 'Limite de conexoes sociais atingido para o plano atual.'));
-                $this->redirectToRoute('billing/index');
+            if (!$alreadyConnected) {
+                $quota = $subscription->evaluateQuota($userId, 'max_social_accounts', 1);
+                if (empty($quota['allowed'])) {
+                    flash('error', (string) ($quota['message'] ?? 'Limite de conexoes sociais atingido para o plano atual.'));
+                    $this->redirectToRoute('billing/index');
+                }
             }
         }
 
         $tokenExpiresAt = null;
         if ($expiresAt !== '') {
             $tokenExpiresAt = date('Y-m-d H:i:s', strtotime($expiresAt));
+        }
+
+        $validation = $this->validateManualToken($target, $accessToken, $tokenExpiresAt);
+        if ($manualAction === 'verify') {
+            $flashType = $validation['status'] === 'valid' ? 'success' : 'error';
+            flash($flashType, $this->t(
+                'social.flash_manual_verified',
+                'Resultado da verificacao para {platform}: {status}. {details}',
+                [
+                    'platform' => (string) ($target['name'] ?? $platform),
+                    'status' => (string) ($validation['label'] ?? ''),
+                    'details' => (string) ($validation['message'] ?? ''),
+                ]
+            ));
+            $this->redirectToRoute('social/index');
         }
 
         $this->loader->model('social')->upsertConnection($userId, $platform, [
@@ -328,7 +353,14 @@ class SocialController extends BaseController
             'scopes_text' => '',
             'token_expires_at' => $tokenExpiresAt,
             'status' => 'manual',
-            'metadata' => ['kind' => 'manual'],
+            'metadata' => [
+                'kind' => 'manual',
+                'validation_status' => (string) ($validation['status'] ?? ''),
+                'validation_label' => (string) ($validation['label'] ?? ''),
+                'validation_message' => (string) ($validation['message'] ?? ''),
+                'validation_checked_at' => (string) ($validation['checked_at'] ?? ''),
+                'validation_method' => (string) ($validation['method'] ?? ''),
+            ],
         ]);
 
         $security = $this->registry->get('security');
@@ -339,11 +371,16 @@ class SocialController extends BaseController
             ]);
         }
 
-        flash('success', $this->t(
+        $savedMessage = $this->t(
             'social.flash_manual_saved',
-            'Conexão manual salva para {platform}.',
+            'Conexao manual salva para {platform}.',
             ['platform' => ($target['name'] ?? $platform)]
-        ));
+        );
+        if (trim((string) ($validation['message'] ?? '')) !== '') {
+            $savedMessage .= ' ' . (string) $validation['message'];
+        }
+
+        flash($validation['status'] === 'invalid' ? 'error' : 'success', $savedMessage);
         $this->redirectToRoute('social/index');
     }
 
@@ -697,6 +734,148 @@ class SocialController extends BaseController
         $this->redirectToRoute('social/index');
     }
 
+    private function accessKeyDocsByPlatform(): array
+    {
+        return [
+            'instagram' => [
+                'label' => 'Meta for Developers (Instagram)',
+                'url' => 'https://developers.facebook.com/docs/instagram-platform/instagram-graph-api/get-started',
+            ],
+            'facebook' => [
+                'label' => 'Meta for Developers (Facebook)',
+                'url' => 'https://developers.facebook.com/docs/graph-api/get-started',
+            ],
+            'linkedin' => [
+                'label' => 'LinkedIn Developers',
+                'url' => 'https://learn.microsoft.com/en-us/linkedin/shared/authentication/authentication',
+            ],
+            'tiktok' => [
+                'label' => 'TikTok Developers',
+                'url' => 'https://developers.tiktok.com/doc/login-kit-web',
+            ],
+            'x-twitter' => [
+                'label' => 'X Developer Platform',
+                'url' => 'https://developer.x.com/en/docs/authentication/oauth-2-0',
+            ],
+            'pinterest' => [
+                'label' => 'Pinterest Developers',
+                'url' => 'https://developers.pinterest.com/docs/getting-started/introduction',
+            ],
+            'threads' => [
+                'label' => 'Meta for Developers (Threads)',
+                'url' => 'https://developers.facebook.com/docs/threads',
+            ],
+            'youtube' => [
+                'label' => 'Google OAuth / YouTube API',
+                'url' => 'https://developers.google.com/youtube/v3/guides/auth/server-side-web-apps',
+            ],
+            'vimeo' => [
+                'label' => 'Vimeo Developer Apps',
+                'url' => 'https://developer.vimeo.com/apps',
+            ],
+            'blog' => [
+                'label' => 'WordPress Application Passwords',
+                'url' => 'https://wordpress.org/documentation/article/application-passwords/',
+            ],
+            'podcast' => [
+                'label' => 'RSS Specification',
+                'url' => 'https://www.rssboard.org/rss-specification',
+            ],
+            'email-marketing' => [
+                'label' => 'Google App Passwords',
+                'url' => 'https://support.google.com/accounts/answer/185833',
+            ],
+        ];
+    }
+
+    private function validateManualToken(array $platform, string $accessToken, ?string $tokenExpiresAt): array
+    {
+        $checkedAt = date('Y-m-d H:i:s');
+        $token = trim($accessToken);
+        if ($token === '') {
+            return [
+                'status' => 'invalid',
+                'label' => $this->t('social.validation_invalid', 'Invalida ou rejeitada'),
+                'message' => $this->t('social.validation_empty', 'A chave/token esta vazia.'),
+                'checked_at' => $checkedAt,
+                'method' => 'local',
+            ];
+        }
+
+        if (strlen($token) < 10) {
+            return [
+                'status' => 'invalid',
+                'label' => $this->t('social.validation_invalid', 'Invalida ou rejeitada'),
+                'message' => $this->t('social.validation_too_short', 'Token muito curto para ser valido.'),
+                'checked_at' => $checkedAt,
+                'method' => 'local',
+            ];
+        }
+
+        if ($tokenExpiresAt !== null && trim($tokenExpiresAt) !== '') {
+            $expiresTs = strtotime($tokenExpiresAt);
+            if ($expiresTs !== false && $expiresTs <= time()) {
+                return [
+                    'status' => 'invalid',
+                    'label' => $this->t('social.validation_invalid', 'Invalida ou rejeitada'),
+                    'message' => $this->t('social.validation_expired', 'Token expirado. Gere uma nova chave e tente novamente.'),
+                    'checked_at' => $checkedAt,
+                    'method' => 'local',
+                ];
+            }
+        }
+
+        $kind = strtolower(trim((string) ($platform['kind'] ?? 'manual')));
+        $profileUrl = trim((string) ($platform['profile_url'] ?? ''));
+        if ($kind === 'oauth2' && $profileUrl !== '') {
+            $oauth = new SocialAuthService();
+            $profile = $oauth->fetchProfile($platform, $token);
+            if (!empty($profile['ok'])) {
+                return [
+                    'status' => 'valid',
+                    'label' => $this->t('social.validation_valid', 'Aprovada e valida'),
+                    'message' => $this->t('social.validation_valid_message', 'Token validado com sucesso na API da plataforma.'),
+                    'checked_at' => $checkedAt,
+                    'method' => 'api_profile',
+                ];
+            }
+
+            $details = strtolower(trim((string) ($profile['details'] ?? $profile['error'] ?? '')));
+            $looksInvalid = str_contains($details, '401')
+                || str_contains($details, '403')
+                || str_contains($details, 'invalid')
+                || str_contains($details, 'expired')
+                || str_contains($details, 'revoked')
+                || str_contains($details, 'unauthorized');
+
+            if ($looksInvalid) {
+                return [
+                    'status' => 'invalid',
+                    'label' => $this->t('social.validation_invalid', 'Invalida ou rejeitada'),
+                    'message' => $this->t('social.validation_rejected', 'A plataforma rejeitou esta chave/token.'),
+                    'checked_at' => $checkedAt,
+                    'method' => 'api_profile',
+                ];
+            }
+
+            return [
+                'status' => 'unknown',
+                'label' => $this->t('social.validation_unknown', 'Sem confirmacao automatica'),
+                'message' => $this->t('social.validation_unreachable', 'Nao foi possivel confirmar a chave automaticamente agora.'),
+                'checked_at' => $checkedAt,
+                'method' => 'api_profile',
+            ];
+        }
+
+        return [
+            'status' => 'unknown',
+            'label' => $this->t('social.validation_unknown', 'Sem confirmacao automatica'),
+            'message' => $this->t('social.validation_manual_only', 'Esta plataforma exige validacao manual da chave no painel oficial.'),
+            'checked_at' => $checkedAt,
+            'method' => 'local',
+        ];
+    }
+
     private function absoluteRoute(string $route): string
     {
         $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
@@ -709,3 +888,4 @@ class SocialController extends BaseController
         return $scheme . '://' . $host . route_url($route);
     }
 }
+

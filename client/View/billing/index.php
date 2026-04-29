@@ -48,6 +48,10 @@ $resolveTier = static function (string $slug): array {
         <h2><i class="fa-solid fa-wallet"></i> Planos e faturamento</h2>
         <p>Gerencie sua assinatura, acompanhe limites de uso e realize upgrade para Bronze, Prata ou Ouro.</p>
     </div>
+    <div class="hero-actions">
+        <a class="btn" href="#billing-upgrade"><i class="fa-solid fa-sliders"></i> Alterar plano</a>
+        <a class="btn" href="#billing-invoices"><i class="fa-solid fa-file-invoice-dollar"></i> Faturas</a>
+    </div>
 </section>
 
 <?php if (!empty($announcements)): ?>
@@ -114,8 +118,11 @@ $resolveTier = static function (string $slug): array {
     </div>
 </section>
 
-<section class="panel billing-client-panel">
-    <h3><i class="fa-solid fa-sliders"></i> Alterar plano</h3>
+<section class="panel billing-client-panel" id="billing-upgrade">
+    <div class="panel-head-inline">
+        <h3><i class="fa-solid fa-sliders"></i> Alterar plano</h3>
+        <span class="meta-text"><?= count($plans) ?> opção(ões)</span>
+    </div>
     <div class="pricing-grid">
         <?php foreach ($plans as $plan): ?>
             <?php
@@ -181,8 +188,11 @@ $resolveTier = static function (string $slug): array {
     </div>
 </section>
 
-<section class="panel billing-client-panel">
-    <h3><i class="fa-solid fa-file-invoice-dollar"></i> Histórico de cobranças</h3>
+<section class="panel billing-client-panel" id="billing-invoices">
+    <div class="panel-head-inline">
+        <h3><i class="fa-solid fa-file-invoice-dollar"></i> Histórico de cobranças</h3>
+        <span class="meta-text"><?= count($invoices) ?> fatura(s)</span>
+    </div>
     <div class="table-wrap">
         <table class="table">
             <thead>

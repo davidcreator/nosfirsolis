@@ -28,12 +28,12 @@ $pipelineTotal = max(1, array_sum($statusCounter));
     <div class="hero-content">
         <span class="hero-badge"><i class="fa-solid fa-compass-drafting"></i> <?= e($app_name ?? 'Solis') ?></span>
         <h2><?= e($app_name ?? 'Solis') ?></h2>
-        <p>Organize campanhas com clareza, acompanhe o ritmo das publicações e execute sua estratégia com consistência anual.</p>
+        <p>Organize campanhas com clareza, acompanhe o ritmo das publicacoes e execute sua estrategia com consistencia anual.</p>
     </div>
     <div class="hero-actions">
-        <a class="btn" href="<?= e(route_url('calendar/index')) ?>"><i class="fa-solid fa-calendar-days"></i> Abrir calendário</a>
-        <a class="btn" href="<?= e(route_url('plans/index')) ?>"><i class="fa-solid fa-list-check"></i> Gerar plano</a>
-        <a class="btn" href="<?= e(route_url('social/index')) ?>"><i class="fa-solid fa-share-nodes"></i> Central social</a>
+        <a class="btn" href="#dashboard-pipeline"><i class="fa-solid fa-diagram-project"></i> Pipeline</a>
+        <a class="btn" href="#dashboard-upcoming"><i class="fa-solid fa-clock"></i> Proximas publicacoes</a>
+        <a class="btn" href="<?= e(route_url('calendar/index')) ?>"><i class="fa-solid fa-calendar-days"></i> Abrir calendario</a>
         <?php if (!array_key_exists('tracking.campaign_links', $featureFlags) || !empty($featureFlags['tracking.campaign_links'])): ?>
             <a class="btn" href="<?= e(route_url('tracking/index')) ?>"><i class="fa-solid fa-link"></i> Tracking</a>
         <?php endif; ?>
@@ -56,16 +56,16 @@ $pipelineTotal = max(1, array_sum($statusCounter));
         </article>
         <article class="kpi-card accent-amber">
             <span class="kpi-icon"><i class="fa-solid fa-lightbulb"></i></span>
-            <div><strong><?= $suggestionsTotal ?></strong><span>Sugestões estratégicas</span></div>
+            <div><strong><?= $suggestionsTotal ?></strong><span>Sugestoes estrategicas</span></div>
         </article>
     </div>
 </section>
 
 <?php if ($executiveEnabled): ?>
-<section class="panel">
-    <div class="panel-header">
+<section class="panel" id="dashboard-executive">
+    <div class="panel-head-inline">
         <h3><i class="fa-solid fa-gauge-high"></i> Painel executivo</h3>
-        <span class="meta-text">Visão operacional consolidada do Solis</span>
+        <span class="meta-text">Visao operacional consolidada do Solis</span>
     </div>
 
     <div class="stats-grid kpi-grid">
@@ -79,7 +79,7 @@ $pipelineTotal = max(1, array_sum($statusCounter));
         </article>
         <article class="kpi-card accent-purple">
             <span class="kpi-icon"><i class="fa-solid fa-paper-plane"></i></span>
-            <div><strong><?= (int) ($executive['publications_published'] ?? 0) ?></strong><span>Publicações concluídas</span></div>
+            <div><strong><?= (int) ($executive['publications_published'] ?? 0) ?></strong><span>Publicacoes concluidas</span></div>
         </article>
         <article class="kpi-card accent-red">
             <span class="kpi-icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
@@ -89,11 +89,11 @@ $pipelineTotal = max(1, array_sum($statusCounter));
 
     <div class="plan-insights-grid">
         <article class="plan-insight-card">
-            <span>Fila de publicação</span>
+            <span>Fila de publicacao</span>
             <strong><?= (int) ($executive['publications_queued'] ?? 0) ?></strong>
         </article>
         <article class="plan-insight-card">
-            <span>Falhas de publicação</span>
+            <span>Falhas de publicacao</span>
             <strong><?= (int) ($executive['publications_failed'] ?? 0) ?></strong>
         </article>
         <article class="plan-insight-card">
@@ -124,10 +124,10 @@ $pipelineTotal = max(1, array_sum($statusCounter));
 </section>
 <?php endif; ?>
 
-<section class="panel">
-    <div class="panel-header">
-        <h3><i class="fa-solid fa-diagram-project"></i> Pipeline de execução</h3>
-        <span class="meta-text">Distribuição dos próximos itens por status</span>
+<section class="panel" id="dashboard-pipeline">
+    <div class="panel-head-inline">
+        <h3><i class="fa-solid fa-diagram-project"></i> Pipeline de execucao</h3>
+        <span class="meta-text">Distribuicao dos proximos itens por status</span>
     </div>
 
     <div class="metric-stack">
@@ -145,9 +145,9 @@ $pipelineTotal = max(1, array_sum($statusCounter));
     </div>
 </section>
 
-<section class="panel">
-    <div class="panel-header">
-        <h3><i class="fa-solid fa-clock"></i> Próximas publicações</h3>
+<section class="panel" id="dashboard-upcoming">
+    <div class="panel-head-inline">
+        <h3><i class="fa-solid fa-clock"></i> Proximas publicacoes</h3>
         <span class="meta-text"><?= count($upcomingItems) ?> item(ns) futuros</span>
     </div>
     <div class="table-wrap">
@@ -155,7 +155,7 @@ $pipelineTotal = max(1, array_sum($statusCounter));
             <thead>
                 <tr>
                     <th>Data</th>
-                    <th>Título</th>
+                    <th>Titulo</th>
                     <th>Status</th>
                     <th>Plano</th>
                 </tr>
@@ -163,14 +163,15 @@ $pipelineTotal = max(1, array_sum($statusCounter));
             <tbody>
                 <?php if (empty($upcomingItems)): ?>
                     <tr>
-                        <td colspan="4">Nenhuma publicação futura encontrada. Gere um plano editorial para iniciar.</td>
+                        <td colspan="4">Nenhuma publicacao futura encontrada. Gere um plano editorial para iniciar.</td>
                     </tr>
                 <?php else: ?>
                     <?php foreach ($upcomingItems as $item): ?>
                         <tr>
                             <td><?= e($item['planned_date']) ?></td>
                             <td><?= e($item['title']) ?></td>
-                            <td><span class="table-chip"><?= e($item['status']) ?></span></td>
+                            <?php $itemStatus = strtolower((string) ($item['status'] ?? 'planned')); ?>
+                            <td><span class="status-pill status-<?= e($itemStatus) ?>"><?= e($itemStatus) ?></span></td>
                             <td><?= e($item['plan_name']) ?></td>
                         </tr>
                     <?php endforeach; ?>

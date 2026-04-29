@@ -20,7 +20,7 @@ $currentHierarchyLevel = (int) ($current_hierarchy_level ?? 50);
     <?php if (empty($groups)): ?>
         <p><?= e($t('users.empty_groups_for_create', 'Nenhum grupo disponível para atribuição de usuários no seu nível hierárquico.')) ?></p>
     <?php else: ?>
-        <form method="post" action="<?= e(route_url('users/store')) ?>" class="form-grid">
+        <form method="post" action="<?= e(route_url('users/store')) ?>" class="form-grid form-grid-user-create">
             <?= csrf_field() ?>
             <label><?= e($t('users.field_name', 'Nome')) ?>
                 <input type="text" name="name" required>

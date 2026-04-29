@@ -24,6 +24,10 @@ $observabilityEnabled = (bool) ($opsFeatureMap['observability.telemetry'] ?? tru
             <?= csrf_field() ?>
             <button class="btn" type="submit"><i class="fa-solid fa-wrench"></i> Rodar manutenção</button>
         </form>
+        <form method="post" action="<?= e(route_url('operations/clearCache')) ?>" onsubmit="return confirm('<?= e($t('operations.confirm_clear_cache', 'Limpar o cache do sistema agora?')) ?>')">
+            <?= csrf_field() ?>
+            <button class="btn btn-muted" type="submit"><i class="fa-solid fa-broom"></i> <?= e($t('operations.button_clear_cache', 'Limpar cache do sistema')) ?></button>
+        </form>
     </div>
 </section>
 

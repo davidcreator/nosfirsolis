@@ -22,6 +22,10 @@ $showAds = (bool) ($subscriptionContext['ads_enabled'] ?? false);
 $userName = (string) ($current_user['name'] ?? '');
 $userInitial = strtoupper(substr($userName !== '' ? $userName : 'U', 0, 1));
 
+$trackingEnabled =
+    (!array_key_exists('tracking.campaign_links', $featureFlags) || !empty($featureFlags['tracking.campaign_links']))
+    && (!array_key_exists('allow_tracking_links', $subscriptionFeatures) || !empty($subscriptionFeatures['allow_tracking_links']));
+
 $navItems = [
     ['label' => $t('layout.nav_dashboard', 'Dashboard'), 'route' => 'dashboard/index', 'prefix' => 'dashboard/', 'icon' => 'fa-solid fa-chart-pie'],
     ['label' => $t('layout.nav_calendar', 'Calendário'), 'route' => 'calendar/index', 'prefix' => 'calendar/', 'icon' => 'fa-solid fa-calendar-days'],
@@ -30,18 +34,26 @@ $navItems = [
     ['label' => $t('layout.nav_billing', 'Planos e faturamento'), 'route' => 'billing/index', 'prefix' => 'billing/', 'icon' => 'fa-solid fa-credit-card'],
 ];
 
-if (
-    (!array_key_exists('tracking.campaign_links', $featureFlags) || !empty($featureFlags['tracking.campaign_links']))
-    && (!array_key_exists('allow_tracking_links', $subscriptionFeatures) || !empty($subscriptionFeatures['allow_tracking_links']))
-) {
+if ($trackingEnabled) {
     $navItems[] = ['label' => $t('layout.nav_tracking', 'Rastreamento'), 'route' => 'tracking/index', 'prefix' => 'tracking/', 'icon' => 'fa-solid fa-link'];
 }
+
+$topbarTools = [
+    ['label' => $t('layout.nav_dashboard', 'Dashboard'), 'route' => 'dashboard/index', 'icon' => 'fa-solid fa-gauge-high'],
+    ['label' => $t('layout.nav_billing', 'Planos e faturamento'), 'route' => 'billing/index', 'icon' => 'fa-solid fa-credit-card'],
+];
+
+if ($trackingEnabled) {
+    $topbarTools[] = ['label' => $t('layout.nav_tracking', 'Rastreamento'), 'route' => 'tracking/index', 'icon' => 'fa-solid fa-link'];
+}
+
+$showTopNotice = $currentRoute === 'dashboard/index' || str_starts_with($currentRoute, 'dashboard/');
 ?>
 <body class="<?= !empty($current_user) ? 'client-auth' : 'client-guest' ?>">
 <div class="client-shell<?= empty($current_user) ? ' guest' : '' ?>">
     <?php if (!empty($current_user)): ?>
-        <aside class="client-sidebar" id="clientSidebar">
-            <a class="client-brand" href="<?= e(route_url('dashboard/index')) ?>">
+        <aside class="client-sidebar sidebar" id="clientSidebar">
+            <a class="client-brand sidebar-brand" href="<?= e(route_url('dashboard/index')) ?>">
                 <img src="<?= e(asset_url('img/reamurcms.png')) ?>" alt="Planner">
                 <span>
                     <strong><?= e($app_name ?? 'Solis') ?></strong>
@@ -49,7 +61,13 @@ if (
                 </span>
             </a>
 
-            <nav class="app-nav">
+            <div class="sidebar-search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="search" id="clientSidebarSearch" placeholder="<?= e($t('layout.search_menu_placeholder', 'Buscar no menu')) ?>" aria-label="<?= e($t('layout.search_menu_placeholder', 'Buscar no menu')) ?>">
+            </div>
+            <p class="sidebar-section-label"><?= e($t('layout.main_navigation', 'Navegação')) ?></p>
+
+            <nav class="app-nav sidebar-nav">
                 <?php foreach ($navItems as $item): ?>
                     <?php
                     $isActive = $currentRoute === strtolower((string) $item['route']) || str_starts_with($currentRoute, strtolower((string) $item['prefix']));
@@ -59,53 +77,79 @@ if (
                     </a>
                 <?php endforeach; ?>
             </nav>
+
+            <div class="sidebar-footer">
+                <p><?= e($t('layout.connected_as', 'Conectado como')) ?></p>
+                <strong><?= e($userName) ?></strong>
+            </div>
         </aside>
     <?php endif; ?>
 
-    <div class="client-main<?= empty($current_user) ? ' auth-only' : '' ?>">
+    <div class="client-main main-content-wrapper<?= empty($current_user) ? ' auth-only' : '' ?>">
         <?php if (!empty($current_user)): ?>
-            <header class="app-header">
+            <header class="app-header topbar">
                 <button type="button" class="icon-btn" id="clientSidebarToggle" aria-label="<?= e($t('layout.open_menu', 'Abrir menu')) ?>" aria-controls="clientSidebar" aria-expanded="true">
                     <span></span><span></span><span></span>
                 </button>
-                <div class="app-title">
-                    <h1><?= e($title ?? $t('layout.header_title', 'Strategic Content Planner')) ?></h1>
-                    <p><?= e($t('layout.header_subtitle', 'Planejamento anual, mensal e por período com camadas estratégicas.')) ?></p>
+                <div class="app-title topbar-title">
+                    <strong><?= e($title ?? $t('layout.header_title', 'Strategic Content Planner')) ?></strong>
+                    <small><?= e($t('layout.header_subtitle', 'Planejamento anual, mensal e por período com camadas estratégicas.')) ?></small>
                 </div>
-                <div class="header-actions">
-                    <span class="user-avatar"><?= e($userInitial) ?></span>
-                    <div>
-                        <strong><?= e($userName) ?></strong>
-                        <?php if (!empty($subscriptionPlan)): ?>
-                            <small><?= e((string) ($subscriptionPlan['name'] ?? 'Plano ativo')) ?></small>
-                        <?php endif; ?>
-                        <form method="post" action="<?= e(route_url('language/save')) ?>" style="margin:2px 0 4px 0">
-                            <?= csrf_field() ?>
-                            <input type="hidden" name="redirect_route" value="<?= e($currentRoute) ?>">
-                            <label for="clientLanguageCode" style="font-size:12px;opacity:.9">
-                                <?= e($t('layout.language_label', 'Language')) ?>
-                            </label>
-                            <select id="clientLanguageCode" name="language_code" onchange="this.form.submit()" style="margin-left:4px">
-                                <option value="pt-br" <?= strtolower((string) ($language_code ?? 'en-us')) === 'pt-br' ? 'selected' : '' ?>>
-                                    <?= e($t('layout.language_option_pt_br', 'Português')) ?>
-                                </option>
-                                <option value="en-us" <?= strtolower((string) ($language_code ?? 'en-us')) === 'en-us' ? 'selected' : '' ?>>
-                                    <?= e($t('layout.language_option_en_us', 'English')) ?>
-                                </option>
-                            </select>
-                        </form>
-                        <form method="post" action="<?= e(route_url('auth/logout')) ?>" style="display:inline">
-                            <?= csrf_field() ?>
-                            <button type="submit" style="background:none;border:0;padding:0;color:inherit;font:inherit;cursor:pointer">
-                                <i class="fa-solid fa-right-from-bracket"></i> <?= e($t('layout.logout', 'Sair')) ?>
-                            </button>
-                        </form>
+                <div class="topbar-actions">
+                    <nav class="topbar-tools" aria-label="Atalhos">
+                        <?php foreach ($topbarTools as $tool): ?>
+                            <?php
+                            $toolRoute = strtolower((string) ($tool['route'] ?? ''));
+                            $toolPrefix = strtok($toolRoute . '/', '/') . '/';
+                            $toolActive = $currentRoute === $toolRoute || str_starts_with($currentRoute, $toolPrefix);
+                            ?>
+                            <a class="<?= $toolActive ? 'is-active' : '' ?>" href="<?= e(route_url((string) ($tool['route'] ?? 'dashboard/index'))) ?>" title="<?= e((string) ($tool['label'] ?? 'Atalho')) ?>">
+                                <i class="<?= e((string) ($tool['icon'] ?? 'fa-solid fa-circle')) ?>"></i>
+                                <span><?= e((string) ($tool['label'] ?? 'Atalho')) ?></span>
+                            </a>
+                        <?php endforeach; ?>
+                    </nav>
+
+                    <div class="topbar-user">
+                        <span class="user-avatar"><?= e($userInitial) ?></span>
+                        <div class="topbar-user-meta">
+                            <strong><?= e($userName) ?></strong>
+                            <?php if (!empty($subscriptionPlan)): ?>
+                                <small><?= e((string) ($subscriptionPlan['name'] ?? $t('layout.active_plan', 'Plano ativo'))) ?></small>
+                            <?php endif; ?>
+                            <form method="post" action="<?= e(route_url('language/save')) ?>" class="topbar-language-form">
+                                <?= csrf_field() ?>
+                                <input type="hidden" name="redirect_route" value="<?= e($currentRoute) ?>">
+                                <label for="clientLanguageCode"><?= e($t('layout.language_label', 'Language')) ?></label>
+                                <select id="clientLanguageCode" name="language_code" onchange="this.form.submit()">
+                                    <option value="pt-br" <?= strtolower((string) ($language_code ?? 'en-us')) === 'pt-br' ? 'selected' : '' ?>>
+                                        <?= e($t('layout.language_option_pt_br', 'Português')) ?>
+                                    </option>
+                                    <option value="en-us" <?= strtolower((string) ($language_code ?? 'en-us')) === 'en-us' ? 'selected' : '' ?>>
+                                        <?= e($t('layout.language_option_en_us', 'English')) ?>
+                                    </option>
+                                </select>
+                            </form>
+                            <form method="post" action="<?= e(route_url('auth/logout')) ?>" class="topbar-logout-form">
+                                <?= csrf_field() ?>
+                                <button type="submit" class="topbar-logout-btn">
+                                    <i class="fa-solid fa-right-from-bracket"></i> <?= e($t('layout.logout', 'Sair')) ?>
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </header>
         <?php endif; ?>
 
-        <main class="app-content">
+        <main class="app-content main-content">
+            <?php if (!empty($current_user) && $showTopNotice): ?>
+                <section class="topbar-notice">
+                    <span><i class="fa-solid fa-bolt"></i> <?= e($t('layout.dashboard_notice_text', 'Novidade: acompanhe seu calendário e acelere resultados com melhorias no faturamento.')) ?></span>
+                    <a href="<?= e(route_url('billing/index')) ?>"><?= e($t('layout.dashboard_notice_cta', 'Abrir faturamento')) ?></a>
+                </section>
+            <?php endif; ?>
+
             <?php if (!empty($current_user) && $showAds): ?>
                 <div class="alert">
                     <strong>Publicidade</strong>: você está no plano gratuito com anúncios.
@@ -128,11 +172,13 @@ if (
 document.addEventListener('DOMContentLoaded', function () {
     var toggle = document.getElementById('clientSidebarToggle');
     var sidebar = document.getElementById('clientSidebar');
+    var sidebarSearch = document.getElementById('clientSidebarSearch');
+    var navLinks = document.querySelectorAll('.app-nav a');
     var collapseClass = 'client-sidebar-collapsed';
     var overlayClass = 'client-sidebar-open';
-    var mobileBreakpoint = 980;
-    var autoCollapseBreakpoint = 1366;
-    var storageKey = 'solis.client.sidebar.collapsed';
+    var mobileBreakpoint = 640;
+    var autoCollapseBreakpoint = 640;
+    var storageKey = 'solis.client.sidebar.collapsed.v3';
     var statusClassMap = {
         'ativo': 'status-active',
         'ativa': 'status-active',
@@ -234,6 +280,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
             cell.textContent = '';
             cell.appendChild(pill);
+        });
+    }
+
+    if (sidebarSearch && navLinks.length > 0) {
+        sidebarSearch.addEventListener('input', function () {
+            var query = sidebarSearch.value.trim().toLowerCase();
+            navLinks.forEach(function (link) {
+                var text = (link.textContent || '').toLowerCase();
+                link.style.display = query === '' || text.indexOf(query) !== -1 ? '' : 'none';
+            });
         });
     }
 

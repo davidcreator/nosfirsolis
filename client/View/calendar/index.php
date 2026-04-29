@@ -41,7 +41,20 @@ $colors = $calendar_colors ?? [];
     }
 </style>
 
-<section class="panel">
+<section class="panel dashboard-hero">
+    <div class="hero-content">
+        <span class="hero-badge"><i class="fa-solid fa-calendar-days"></i> Calendar Hub</span>
+        <h2><i class="fa-solid fa-calendar-week"></i> Calendário estratégico</h2>
+        <p>Visualize o ano inteiro, detalhe o mês e ajuste o período com feriados, campanhas, sugestões e eventos extras.</p>
+    </div>
+    <div class="hero-actions">
+        <a class="btn" href="#calendar-main"><i class="fa-solid fa-table-cells-large"></i> Visão principal</a>
+        <a class="btn" href="#calendar-colors"><i class="fa-solid fa-palette"></i> Cores</a>
+        <a class="btn" href="#calendar-extra-events"><i class="fa-solid fa-calendar-plus"></i> Evento extra</a>
+    </div>
+</section>
+
+<section class="panel" id="calendar-main">
     <div class="panel-head-inline">
         <h2><i class="fa-solid fa-calendar-days"></i> Calendário</h2>
         <div class="mode-switch">
@@ -243,7 +256,7 @@ $colors = $calendar_colors ?? [];
                     <th>Eventos base</th>
                     <th>Campanhas</th>
                     <th>Eventos extras</th>
-                    <th>Observacoes</th>
+                    <th>Observações</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -285,7 +298,7 @@ $colors = $calendar_colors ?? [];
     <?php endif; ?>
 </section>
 
-<section class="panel">
+<section class="panel" id="calendar-colors">
     <h3><i class="fa-solid fa-palette"></i> Personalizar cores do calendário</h3>
     <form method="post" action="<?= e(route_url('calendar/saveColors')) ?>" class="filters-grid colors-grid">
         <?= csrf_field() ?>
@@ -306,7 +319,7 @@ $colors = $calendar_colors ?? [];
     </form>
 </section>
 
-<section class="panel">
+<section class="panel" id="calendar-extra-events">
     <h3><i class="fa-solid fa-calendar-plus"></i> Inserir evento extra</h3>
     <form method="post" action="<?= e(route_url('calendar/saveExtraEvent')) ?>" class="filters-grid">
         <?= csrf_field() ?>

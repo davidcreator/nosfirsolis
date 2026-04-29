@@ -1,11 +1,16 @@
 <?php
 
 return [
+    'layout.active_plan' => 'Active plan',
+    'layout.connected_as' => 'Connected as',
+    'layout.dashboard_notice_cta' => 'Open billing',
+    'layout.dashboard_notice_text' => 'New: track your calendar and speed up results with billing improvements.',
     'layout.header_subtitle' => 'Annual, monthly, and period planning with strategic layers.',
     'layout.header_title' => 'Strategic Content Planner',
     'layout.language_label' => 'Language',
     'layout.language_option_en_us' => 'English',
     'layout.language_option_pt_br' => 'Portuguese',
+    'layout.main_navigation' => 'Navigation',
     'layout.logout' => 'Sign out',
     'layout.nav_billing' => 'Plans & billing',
     'layout.nav_calendar' => 'Calendar',
@@ -14,6 +19,7 @@ return [
     'layout.nav_social' => 'Social Hub',
     'layout.nav_tracking' => 'Tracking',
     'layout.open_menu' => 'Open menu',
+    'layout.search_menu_placeholder' => 'Search menu',
     'layout.title_default' => 'Planner',
     'layout.workspace_subtitle' => 'Client workspace',
 ];

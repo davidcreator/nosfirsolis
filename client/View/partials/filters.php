@@ -34,8 +34,9 @@
 <input type="hidden" name="show_commemoratives" value="0">
 <label class="check"><input type="checkbox" name="show_commemoratives" value="1" <?= (int) ($filters['show_commemoratives'] ?? 1) === 1 ? 'checked' : '' ?>> Datas comemorativas</label>
 <input type="hidden" name="show_suggestions" value="0">
-<label class="check"><input type="checkbox" name="show_suggestions" value="1" <?= (int) ($filters['show_suggestions'] ?? 1) === 1 ? 'checked' : '' ?>> Sugestões estratégicas</label>
+<label class="check"><input type="checkbox" name="show_suggestions" value="1" <?= (int) ($filters['show_suggestions'] ?? 1) === 1 ? 'checked' : '' ?>> Sugestoes estrategicas</label>
 <input type="hidden" name="show_base_events" value="0">
 <label class="check"><input type="checkbox" name="show_base_events" value="1" <?= (int) ($filters['show_base_events'] ?? 1) === 1 ? 'checked' : '' ?>> Eventos base (Excel)</label>
 
 <button type="submit"><i class="fa-solid fa-filter"></i> Aplicar filtros</button>
+

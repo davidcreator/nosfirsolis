@@ -33,21 +33,20 @@ $publicationRate = (float) ($insights['publication_rate'] ?? 0);
 $statusBarTotal = max(1, array_sum($statusBreakdown));
 ?>
 
-<section class="panel">
-    <div class="panel-head-inline">
-        <div>
-            <h2><?= e($planName) ?></h2>
-            <p class="calendar-subtitle">
-                Período: <?= e($planPeriod) ?> | Status: <strong><?= e($planStatus) ?></strong>
-                <?php if ($campaignName !== ''): ?> | Campanha: <strong><?= e($campaignName) ?></strong><?php endif; ?>
-            </p>
-        </div>
+<section class="panel dashboard-hero">
+    <div class="hero-content">
+        <span class="hero-badge"><i class="fa-solid fa-list-check"></i> Plans Hub</span>
+        <h2><i class="fa-solid fa-layer-group"></i> <?= e($planName) ?></h2>
+        <p class="calendar-subtitle">
+            Periodo: <?= e($planPeriod) ?> | Status: <strong><?= e($planStatus) ?></strong>
+            <?php if ($campaignName !== ''): ?> | Campanha: <strong><?= e($campaignName) ?></strong><?php endif; ?>
+        </p>
+    </div>
 
-        <div class="inline-links">
-            <a href="<?= e(route_url('plans/index')) ?>">Voltar</a>
-            <a href="<?= e($csvUrl) ?>"><i class="fa-solid fa-file-csv"></i> Exportar CSV</a>
-            <a href="#" onclick="window.print(); return false;"><i class="fa-solid fa-print"></i> Imprimir</a>
-        </div>
+    <div class="hero-actions">
+        <a class="btn btn-muted" href="<?= e(route_url('plans/index')) ?>"><i class="fa-solid fa-arrow-left"></i> Voltar</a>
+        <a class="btn" href="<?= e($csvUrl) ?>"><i class="fa-solid fa-file-csv"></i> Exportar CSV</a>
+        <a class="btn" href="#" onclick="window.print(); return false;"><i class="fa-solid fa-print"></i> Imprimir</a>
     </div>
 
     <div class="plan-insights-grid">
@@ -60,7 +59,7 @@ $statusBarTotal = max(1, array_sum($statusBreakdown));
             <strong><?= (float) $completionRate ?>%</strong>
         </article>
         <article class="plan-insight-card">
-            <span>Taxa de publicação</span>
+            <span>Taxa de publicacao</span>
             <strong><?= (float) $publicationRate ?>%</strong>
         </article>
         <article class="plan-insight-card<?= $overdueItems > 0 ? ' warn' : '' ?>">
@@ -106,7 +105,7 @@ $statusBarTotal = max(1, array_sum($statusBreakdown));
         </label>
 
         <label>Busca
-            <input type="text" name="q" value="<?= e($searchQuery) ?>" placeholder="Buscar por título, descrição ou observação">
+            <input type="text" name="q" value="<?= e($searchQuery) ?>" placeholder="Buscar por titulo, descricao ou observacao">
         </label>
 
         <button type="submit"><i class="fa-solid fa-filter"></i> Aplicar filtros</button>
@@ -133,7 +132,7 @@ $statusBarTotal = max(1, array_sum($statusBreakdown));
         <div class="plan-bulk-actions">
             <button type="submit" class="btn-compact"><i class="fa-solid fa-layer-group"></i> Atualizar selecionados</button>
             <button type="button" class="btn-link" id="selectAllItemsBtn"><i class="fa-solid fa-check-double"></i> Marcar todos</button>
-            <button type="button" class="btn-link" id="clearSelectedItemsBtn"><i class="fa-solid fa-eraser"></i> Limpar seleção</button>
+            <button type="button" class="btn-link" id="clearSelectedItemsBtn"><i class="fa-solid fa-eraser"></i> Limpar selecao</button>
         </div>
 
         <span class="meta-text">Selecionados: <strong id="selectedItemsCount">0</strong></span>
@@ -145,7 +144,7 @@ $statusBarTotal = max(1, array_sum($statusBreakdown));
             <tr>
                 <th class="bulk-check-col"><input type="checkbox" id="selectAllItemsToggle" aria-label="Selecionar todos os itens"></th>
                 <th>Data planejada</th>
-                <th>Conteúdo</th>
+                <th>Conteudo</th>
                 <th>Formato</th>
                 <th>Execucao</th>
             </tr>
@@ -198,8 +197,8 @@ $statusBarTotal = max(1, array_sum($statusBreakdown));
                                         </select>
                                     </label>
 
-                                    <label>Observação
-                                        <textarea name="manual_note" rows="2" placeholder="Registrar aprendizado, bloqueio ou ação tomada"><?= e($item['manual_note'] ?? '') ?></textarea>
+                                    <label>Observacao
+                                        <textarea name="manual_note" rows="2" placeholder="Registrar aprendizado, bloqueio ou acao tomada"><?= e($item['manual_note'] ?? '') ?></textarea>
                                     </label>
 
                                     <button type="submit" class="btn-compact"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
@@ -294,10 +293,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (ids.length === 0) {
             event.preventDefault();
-            alert('Selecione ao menos um item para aplicar a atualização em lote.');
+            alert('Selecione ao menos um item para aplicar a atualizacao em lote.');
         }
     });
 
     refreshSelectionUi();
 });
 </script>
+
