@@ -16,13 +16,17 @@ $topChannels = (array) ($summary['top_channels'] ?? []);
         <h2><i class="fa-solid fa-chart-line"></i> Rastreamento de campanhas</h2>
         <p>Crie URLs UTM/MTM, gere short links e acompanhe cliques por campanha, item e canal.</p>
     </div>
+    <div class="hero-actions">
+        <a class="btn" href="#tracking-create"><i class="fa-solid fa-plus"></i> Novo link</a>
+        <a class="btn" href="#tracking-list"><i class="fa-solid fa-list"></i> Links criados</a>
+    </div>
 </section>
 
 <section class="panel">
     <div class="stats-grid kpi-grid">
         <article class="kpi-card accent-blue">
             <span class="kpi-icon"><i class="fa-solid fa-link"></i></span>
-            <div><strong><?= (int) $totalLinks ?></strong><span>Links rastreaveis</span></div>
+            <div><strong><?= (int) $totalLinks ?></strong><span>Links rastreáveis</span></div>
         </article>
         <article class="kpi-card accent-green">
             <span class="kpi-icon"><i class="fa-solid fa-arrow-pointer"></i></span>
@@ -31,8 +35,11 @@ $topChannels = (array) ($summary['top_channels'] ?? []);
     </div>
 </section>
 
-<section class="panel">
-    <h3><i class="fa-solid fa-link"></i> Novo link rastreável</h3>
+<section class="panel" id="tracking-create">
+    <div class="panel-head-inline">
+        <h3><i class="fa-solid fa-link"></i> Novo link rastreável</h3>
+        <span class="meta-text">Campos UTM e MTM opcionais</span>
+    </div>
     <form method="post" action="<?= e(route_url('tracking/store')) ?>" class="filters-grid">
         <?= csrf_field() ?>
         <label class="wide">URL de destino
@@ -81,9 +88,9 @@ $topChannels = (array) ($summary['top_channels'] ?? []);
             <input type="text" name="mtm_keyword" placeholder="segmento_b2b">
         </label>
         <label class="wide">Notas
-            <input type="text" name="notes" placeholder="Observacoes internas da campanha">
+            <input type="text" name="notes" placeholder="Observações internas da campanha">
         </label>
-        <button type="submit"><i class="fa-solid fa-plus"></i> Criar link rastreavel</button>
+        <button type="submit"><i class="fa-solid fa-plus"></i> Criar link rastreável</button>
     </form>
 </section>
 
@@ -105,7 +112,7 @@ $topChannels = (array) ($summary['top_channels'] ?? []);
     </div>
 </section>
 
-<section class="panel">
+<section class="panel" id="tracking-list">
     <div class="panel-head-inline">
         <h3><i class="fa-solid fa-list"></i> Links criados</h3>
         <span class="meta-text"><?= count($links) ?> registro(s)</span>
@@ -127,7 +134,7 @@ $topChannels = (array) ($summary['top_channels'] ?? []);
             <tbody>
             <?php if (empty($links)): ?>
                 <tr>
-                    <td colspan="7">Nenhum link rastreavel criado ainda.</td>
+                    <td colspan="7">Nenhum link rastreável criado ainda.</td>
                 </tr>
             <?php else: ?>
                 <?php foreach ($links as $link): ?>
@@ -148,7 +155,8 @@ $topChannels = (array) ($summary['top_channels'] ?? []);
                             </a>
                         </td>
                         <td><?= (int) ($link['clicks'] ?? 0) ?></td>
-                        <td><?= e((string) ($link['status'] ?? 'active')) ?></td>
+                        <?php $linkStatus = strtolower((string) ($link['status'] ?? 'active')); ?>
+                        <td><span class="status-pill status-<?= e($linkStatus) ?>"><?= e($linkStatus) ?></span></td>
                         <td>
                             <?php if ((string) ($link['status'] ?? 'active') !== 'archived'): ?>
                                 <form method="post" action="<?= e(route_url('tracking/archive/' . (int) ($link['id'] ?? 0))) ?>" onsubmit="return confirm('Arquivar este link?')">

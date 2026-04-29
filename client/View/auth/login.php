@@ -21,6 +21,10 @@
             <input type="password" name="password" autocomplete="current-password" required>
         </label>
 
+        <p class="auth-inline-link">
+            <a href="<?= e(route_url('auth/forgotpassword')) ?>"><?= e($t('auth.link_recover_account', 'Recuperar conta ou senha')) ?></a>
+        </p>
+
         <button type="submit"><i class="fa-solid fa-right-to-bracket"></i> <?= e($t('auth.button_login', 'Entrar no sistema')) ?></button>
     </form>
 

@@ -26,8 +26,54 @@ $publicationQueue = (array) ($publication_queue ?? []);
 $publishPlanItems = (array) ($publish_plan_items ?? []);
 $featureFlags = (array) ($feature_flags ?? []);
 $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
+$accessKeyDocs = is_array($access_key_docs ?? null) ? $access_key_docs : [];
 ?>
 
+<section class="panel dashboard-hero">
+    <div class="hero-content">
+        <span class="hero-badge"><i class="fa-solid fa-share-nodes"></i> Social Hub</span>
+        <h2><i class="fa-solid fa-paper-plane"></i> Operação social</h2>
+        <p>Conecte canais, publique em fila, padronize formatos e gere conteúdo com assistência integrada.</p>
+    </div>
+    <div class="hero-actions">
+        <?php if ($publishHubEnabled): ?>
+            <a class="btn" href="#social-publish-hub"><i class="fa-solid fa-paper-plane"></i> Publicação</a>
+        <?php endif; ?>
+        <a class="btn" href="#social-guide"><i class="fa-solid fa-key"></i> Chaves</a>
+        <a class="btn" href="#social-standards"><i class="fa-solid fa-ruler-combined"></i> Padrões</a>
+        <a class="btn" href="#social-drafts"><i class="fa-solid fa-wand-magic-sparkles"></i> Rascunhos</a>
+    </div>
+</section>
+
+<section class="panel social-guide-panel" id="social-guide">
+    <div class="panel-head-inline">
+        <h3><i class="fa-solid fa-route"></i> Conexao simplificada em 3 passos</h3>
+        <span class="calendar-subtitle">Fluxo rapido para usuarios iniciantes.</span>
+    </div>
+    <div class="social-guide-grid">
+        <article class="social-guide-card">
+            <h4>Passo a passo</h4>
+            <ol class="social-step-list">
+                <li>Escolha a plataforma e abra o link oficial para gerar a chave/token.</li>
+                <li>Cole a chave em "Conexao manual por token" e clique em "Verificar chave agora".</li>
+                <li>Se estiver valida, finalize com "Salvar conexao manual".</li>
+            </ol>
+        </article>
+        <article class="social-guide-card">
+            <h4>Onde conseguir as chaves</h4>
+            <div class="social-doc-links">
+                <?php foreach ($platforms as $slug => $platform): ?>
+                    <?php $doc = is_array($accessKeyDocs[$slug] ?? null) ? $accessKeyDocs[$slug] : null; ?>
+                    <?php if (!empty($doc['url'])): ?>
+                        <a class="btn-link" href="<?= e((string) $doc['url']) ?>" target="_blank" rel="noopener noreferrer">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i> <?= e((string) ($platform['name'] ?? $slug)) ?>
+                        </a>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+            </div>
+        </article>
+    </div>
+</section>
 <?php if ($publishHubEnabled): ?>
 <section class="panel">
     <div class="panel-head-inline">
@@ -39,11 +85,29 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
         <?php foreach ($platforms as $slug => $platform): ?>
             <?php $conn = $connections[$slug] ?? null; ?>
             <?php $connected = $conn && in_array((string) ($conn['status'] ?? ''), ['connected', 'manual'], true); ?>
+            <?php $connMeta = (is_array($conn) && is_array($conn['metadata'] ?? null)) ? $conn['metadata'] : []; ?>
+            <?php $validationStatus = strtolower(trim((string) ($connMeta['validation_status'] ?? ''))); ?>
+            <?php $validationLabel = trim((string) ($connMeta['validation_label'] ?? '')); ?>
+            <?php $validationMessage = trim((string) ($connMeta['validation_message'] ?? '')); ?>
+            <?php $validationCheckedAt = trim((string) ($connMeta['validation_checked_at'] ?? '')); ?>
+            <?php $validationClass = in_array($validationStatus, ['valid', 'invalid', 'unknown'], true) ? 'token-status-' . $validationStatus : 'token-status-default'; ?>
+            <?php $doc = is_array($accessKeyDocs[$slug] ?? null) ? $accessKeyDocs[$slug] : null; ?>
             <article class="social-card">
                 <h3><?= e($platform['name']) ?></h3>
                 <p class="social-meta">Tipo: <?= e(strtoupper((string) $platform['kind'])) ?></p>
                 <p class="social-meta">Status: <strong><?= $connected ? 'Conectado' : 'Não conectado' ?></strong></p>
-
+                <?php if ($validationLabel !== ''): ?>
+                    <p class="social-meta">
+                        Chave/token:
+                        <span class="token-status-pill <?= e($validationClass) ?>"><?= e($validationLabel) ?></span>
+                    </p>
+                    <?php if ($validationMessage !== ''): ?>
+                        <p class="social-meta"><?= e($validationMessage) ?></p>
+                    <?php endif; ?>
+                    <?php if ($validationCheckedAt !== ''): ?>
+                        <p class="social-meta">Verificado em: <?= e($validationCheckedAt) ?></p>
+                    <?php endif; ?>
+                <?php endif; ?>
                 <?php if ($connected): ?>
                     <p class="social-meta">Conta: <?= e((string) ($conn['account_name'] ?? 'Conta vinculada')) ?></p>
                     <p class="social-meta">Atualizado em: <?= e((string) ($conn['updated_at'] ?? '-')) ?></p>
@@ -59,6 +123,11 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
                             <span class="hint">Configure `client_id` e `client_secret` em `config.php`.</span>
                         <?php endif; ?>
                     <?php endif; ?>
+                    <?php if (!empty($doc['url'])): ?>
+                        <a class="btn-link" href="<?= e((string) $doc['url']) ?>" target="_blank" rel="noopener noreferrer">
+                            <i class="fa-solid fa-key"></i> Obter chave
+                        </a>
+                    <?php endif; ?>
 
                     <?php if ($connected): ?>
                         <form method="post" action="<?= e(route_url('social/disconnect/' . $slug)) ?>" onsubmit="return confirm('Desconectar esta plataforma?')">
@@ -73,7 +142,7 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
 </section>
 <?php endif; ?>
 
-<section class="panel">
+<section class="panel" id="social-publish-hub">
     <div class="panel-head-inline">
         <h3><i class="fa-solid fa-paper-plane"></i> Hub de publicação oficial</h3>
         <span class="calendar-subtitle">Fila multi-canal com disparo manual e processamento em lote.</span>
@@ -177,7 +246,7 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
     </div>
 </section>
 
-<section class="panel">
+<section class="panel" id="social-standards">
     <div class="panel-head-inline">
         <h3><i class="fa-solid fa-ruler-combined"></i> Padrões de post e carrossel por rede</h3>
         <span class="calendar-subtitle">Matriz com medidas recomendadas para padronizar criação de conteúdo multi-canal.</span>
@@ -223,7 +292,7 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
                 </div>
                 <p class="social-meta"><strong>Regra oficial:</strong> <?= e((string) ($selectedPreset['official_rule'] ?? '-')) ?></p>
                 <p class="social-meta"><strong>Limites:</strong> <?= e((string) ($selectedPreset['official_limits'] ?? '-')) ?></p>
-                <p class="social-meta"><strong>Observacoes:</strong> <?= e((string) ($selectedPreset['notes'] ?? '-')) ?></p>
+                <p class="social-meta"><strong>Observações:</strong> <?= e((string) ($selectedPreset['notes'] ?? '-')) ?></p>
                 <?php if (!empty($selectedPreset['is_inference'])): ?>
                     <p class="hint">Parte deste preset usa inferência técnica quando a plataforma não publica regra consolidada.</p>
                 <?php endif; ?>
@@ -274,7 +343,7 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
                 <input type="color" name="color_hex" value="#1F7A53">
             </label>
             <label class="wide">Notas internas
-                <textarea name="notes" rows="3" placeholder="Observacoes de producao, estilo visual e regras internas."><?= e((string) ($selectedPreset['official_limits'] ?? '')) ?></textarea>
+                <textarea name="notes" rows="3" placeholder="Observações de produção, estilo visual e regras internas."><?= e((string) ($selectedPreset['official_limits'] ?? '')) ?></textarea>
             </label>
             <button type="submit"><i class="fa-solid fa-floppy-disk"></i> Salvar preset personalizado</button>
         </form>
@@ -324,7 +393,7 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
     </div>
 </section>
 
-<section class="panel">
+<section class="panel" id="social-drafts">
     <h3><i class="fa-solid fa-bookmark"></i> Presets personalizados salvos</h3>
     <?php if (empty($saved_format_presets)): ?>
         <p>Você ainda não salvou presets personalizados.</p>
@@ -385,6 +454,7 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
 
 <section class="panel">
     <h3><i class="fa-solid fa-key"></i> Conexão manual por token (todas as plataformas)</h3>
+    <p class="social-meta">Use o verificador antes de salvar para confirmar se a chave foi aprovada e ainda esta valida.</p>
     <form method="post" action="<?= e(route_url('social/saveManualConnection')) ?>" class="filters-grid">
         <?= csrf_field() ?>
         <label>Plataforma
@@ -406,7 +476,10 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
         <label class="wide">Refresh token (opcional)
             <input type="text" name="refresh_token">
         </label>
-        <button type="submit"><i class="fa-solid fa-floppy-disk"></i> Salvar conexão manual</button>
+        <div class="wide manual-actions">
+            <button type="submit" name="manual_action" value="verify" class="btn-link"><i class="fa-solid fa-shield-check"></i> Verificar chave agora</button>
+            <button type="submit" name="manual_action" value="save"><i class="fa-solid fa-floppy-disk"></i> Salvar conexao manual</button>
+        </div>
     </form>
 </section>
 
@@ -420,7 +493,7 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
         <label>Objetivo
             <input type="text" name="objective" placeholder="Ex.: Conversao e captacao de leads" required>
         </label>
-        <label>Pilar estrategico
+        <label>Pilar estratégico
             <input type="text" name="pillar" placeholder="Ex.: Seja o especialista" required>
         </label>
         <label>Tom da comunicacao
@@ -457,7 +530,7 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
         <div class="draft-grid">
             <?php foreach ($drafts as $draft): ?>
                 <article class="draft-card">
-                    <h4><?= e((string) ($draft['title'] ?? 'Plano estrategico')) ?></h4>
+                    <h4><?= e((string) ($draft['title'] ?? 'Plano estratégico')) ?></h4>
                     <p class="social-meta">Criado em <?= e((string) ($draft['created_at'] ?? '')) ?> | Frequencia: <?= e((string) ($draft['frequency'] ?? '-')) ?></p>
                     <p><strong>Base:</strong><br><?= nl2br(e((string) ($draft['base_text'] ?? ''))) ?></p>
                     <?php if (!empty($draft['hooks'])): ?>
@@ -504,3 +577,4 @@ $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
         </div>
     <?php endif; ?>
 </section>
+

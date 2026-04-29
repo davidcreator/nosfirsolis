@@ -1,6 +1,11 @@
 <?php
 
 return [
+    'operations.button_clear_cache' => 'Limpar cache do sistema',
+    'operations.confirm_clear_cache' => 'Limpar o cache do sistema agora?',
+    'operations.flash_cache_cleared' => 'Cache limpo. Arquivos removidos: {files}. Pastas removidas: {directories}.',
+    'operations.flash_cache_clear_error' => 'Nao foi possivel limpar o cache do sistema.',
+    'operations.log_cache_cleared' => 'Limpeza de cache executada no painel admin.',
     'operations.flash_feature_deleted' => 'Feature flag removida.',
     'operations.flash_feature_save_error' => 'Não foi possível salvar a feature flag.',
     'operations.flash_feature_saved' => 'Feature flag salva com sucesso.',

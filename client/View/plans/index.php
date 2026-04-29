@@ -1,5 +1,21 @@
-<section class="panel">
-    <h2><i class="fa-solid fa-layer-group"></i> Templates anuais prontos para uso rápido</h2>
+<section class="panel dashboard-hero">
+    <div class="hero-content">
+        <span class="hero-badge"><i class="fa-solid fa-list-check"></i> Plans Hub</span>
+        <h2><i class="fa-solid fa-layer-group"></i> Planejamento editorial</h2>
+        <p>Monte planos por template anual ou por período, com fluxo rápido para execução e acompanhamento.</p>
+    </div>
+    <div class="hero-actions">
+        <a class="btn" href="#templates-planos"><i class="fa-solid fa-wand-magic-sparkles"></i> Templates</a>
+        <a class="btn" href="#geracao-planos"><i class="fa-solid fa-calendar-plus"></i> Gerar por período</a>
+        <a class="btn" href="<?= e(route_url('calendar/index')) ?>"><i class="fa-solid fa-calendar-days"></i> Abrir calendário</a>
+    </div>
+</section>
+
+<section class="panel" id="templates-planos">
+    <div class="panel-head-inline">
+        <h2><i class="fa-solid fa-layer-group"></i> Templates anuais prontos para uso rápido</h2>
+        <span class="meta-text"><?= count($templates) ?> template(s) disponível(is)</span>
+    </div>
     <p class="calendar-subtitle">
         Modelos completos de janeiro a dezembro para B2C, B2B, direto/indireto, aquecimento de vendas, clientes, artistas, músicos, livros, infoprodutos e lançamentos de infoprodutos.
     </p>
@@ -63,8 +79,11 @@
     </div>
 </section>
 
-<section class="panel">
-    <h2><i class="fa-solid fa-calendar-plus"></i> Geração de plano editorial por período</h2>
+<section class="panel" id="geracao-planos">
+    <div class="panel-head-inline">
+        <h2><i class="fa-solid fa-calendar-plus"></i> Geração de plano editorial por período</h2>
+        <span class="meta-text">Fluxo manual e rápido</span>
+    </div>
 
     <form method="post" action="<?= e(route_url('plans/store')) ?>" class="filters-grid">
         <?= csrf_field() ?>
@@ -115,7 +134,10 @@
         <button type="submit"><i class="fa-solid fa-calendar-plus"></i> Gerar plano por período</button>
     </form>
 
-    <h3><i class="fa-solid fa-list-check"></i> Planos gerados</h3>
+    <div class="panel-head-inline">
+        <h3><i class="fa-solid fa-list-check"></i> Planos gerados</h3>
+        <span class="meta-text"><?= count($plans) ?> plano(s)</span>
+    </div>
     <div class="table-wrap">
         <table class="table">
             <thead>
@@ -134,7 +156,7 @@
                         <td>#<?= (int) $plan['id'] ?></td>
                         <td><?= e($plan['name']) ?></td>
                         <td><?= e($plan['start_date']) ?> até <?= e($plan['end_date']) ?></td>
-                        <td><?= e($plan['status']) ?></td>
+                        <td><span class="status-pill status-<?= e(strtolower((string) $plan['status'])) ?>"><?= e($plan['status']) ?></span></td>
                         <td><?= (int) $plan['total_items'] ?></td>
                         <td><a href="<?= e(route_url('plans/show/' . $plan['id'])) ?>">Abrir</a></td>
                     </tr>

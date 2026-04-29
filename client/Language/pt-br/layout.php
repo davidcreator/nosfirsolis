@@ -1,11 +1,16 @@
 <?php
 
 return [
+    'layout.active_plan' => 'Plano ativo',
+    'layout.connected_as' => 'Conectado como',
+    'layout.dashboard_notice_cta' => 'Abrir faturamento',
+    'layout.dashboard_notice_text' => 'Novidade: acompanhe seu calendário e acelere resultados com melhorias no faturamento.',
     'layout.header_subtitle' => 'Planejamento anual, mensal e por período com camadas estratégicas.',
     'layout.header_title' => 'Strategic Content Planner',
     'layout.language_label' => 'Idioma',
     'layout.language_option_en_us' => 'English',
     'layout.language_option_pt_br' => 'Português',
+    'layout.main_navigation' => 'Navegação',
     'layout.logout' => 'Sair',
     'layout.nav_billing' => 'Planos e faturamento',
     'layout.nav_calendar' => 'Calendário',
@@ -14,6 +19,7 @@ return [
     'layout.nav_social' => 'Central social',
     'layout.nav_tracking' => 'Rastreamento',
     'layout.open_menu' => 'Abrir menu',
+    'layout.search_menu_placeholder' => 'Buscar no menu',
     'layout.title_default' => 'Planner',
     'layout.workspace_subtitle' => 'Workspace do cliente',
 ];

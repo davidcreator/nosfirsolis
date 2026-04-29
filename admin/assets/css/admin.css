@@ -540,6 +540,10 @@ button:hover {
     justify-self: start;
 }
 
+.form-grid-user-create button[type="submit"] {
+    grid-column: 1 / -1;
+}
+
 input,
 select,
 textarea {
@@ -1020,6 +1024,12 @@ fieldset legend {
 
     .hero-actions .btn {
         width: 100%;
+    }
+}
+
+@media (max-width: 900px) {
+    .form-grid-user-create {
+        grid-template-columns: 1fr;
     }
 }
 
