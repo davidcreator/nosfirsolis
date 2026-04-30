@@ -63,7 +63,6 @@ new \System\Engine\Session($sessionName, $sessionPath);
 
 $loginAction = $basePath . '/client/auth/authenticate';
 $registerUrl = $basePath . '/client/auth/register';
-$clientAreaUrl = $basePath . '/client';
 $messageSuccess = flash('success');
 $messageError = flash('error');
 
@@ -272,26 +271,27 @@ header('Content-Type: text/html; charset=UTF-8');
             background: linear-gradient(90deg, var(--accent-strong), var(--accent));
         }
 
-        .note {
-            margin-top: 14px;
-            padding-top: 14px;
-            border-top: 1px dashed rgba(233, 208, 178, 0.45);
-            color: #d6e0ea;
-            font-size: 13px;
-            line-height: 1.5;
-        }
-
         .alt-link {
             display: inline-flex;
+            width: 100%;
             margin-top: 12px;
-            color: #ffe1be;
+            justify-content: center;
+            align-items: center;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 225, 190, 0.45);
+            background: rgba(255, 225, 190, 0.08);
+            color: #ffe7c8;
             text-decoration: none;
             font-size: 14px;
-            border-bottom: 1px solid rgba(255, 225, 190, 0.4);
+            font-weight: 700;
+            transition: background 0.2s ease, border-color 0.2s ease, transform 0.12s ease;
         }
 
         .alt-link:hover {
-            border-bottom-color: #ffe1be;
+            border-color: #ffe1be;
+            background: rgba(255, 225, 190, 0.16);
+            transform: translateY(-1px);
         }
 
         @media (max-width: 980px) {
@@ -372,13 +372,7 @@ header('Content-Type: text/html; charset=UTF-8');
                 </div>
                 <button type="submit" class="cta">Entrar no Solis</button>
             </form>
-
-            <a class="alt-link" href="<?= e($clientAreaUrl) ?>">Abrir area do cliente</a>
             <a class="alt-link" href="<?= e($registerUrl) ?>">Criar conta gratuita</a>
-            <p class="note">
-                O acesso administrativo não fica exposto nesta página pública.
-                A administração deve ser acessada apenas pela URL dedicada.
-            </p>
         </aside>
     </main>
 </body>
