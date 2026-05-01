@@ -6,7 +6,7 @@ if ($rootPath === '.' || $rootPath === '/') {
     $rootPath = '';
 }
 $faviconPath = $rootPath . '/image/solis.png';
-$logoPath = $rootPath . '/image/solis_logo.png';
+$logoPath = $rootPath . '/image/solis_logo_wt.png';
 $pageUrl = $requestScheme . '://' . $requestHost . (string) ($_SERVER['REQUEST_URI'] ?? (base_path_url() . '/'));
 $metaTitle = (string) ($title ?? $app_name ?? $t('layout.title_default', 'Admin'));
 $metaDescription = (string) $t('layout.topbar_subtitle', 'Gestao administrativa e hierarquia de acesso do {app}', ['app' => ($app_name ?? 'Solis')]);
@@ -40,6 +40,7 @@ if ($currentRoute === '') {
 
 $userName = (string) ($current_user['name'] ?? '');
 $userInitial = strtoupper(substr($userName !== '' ? $userName : 'U', 0, 1));
+$currentLanguageCode = strtolower((string) ($language_code ?? 'en-us'));
 
 $navItems = [
     ['label' => $t('layout.nav_dashboard', 'Dashboard'), 'route' => 'dashboard/index', 'prefix' => 'dashboard/', 'icon' => 'fa-solid fa-chart-line'],
@@ -125,23 +126,42 @@ $showTopNotice = $currentRoute === 'dashboard/index' || str_starts_with($current
                         <span class="user-avatar"><?= e($userInitial) ?></span>
                         <div class="topbar-user-meta">
                             <strong><?= e($userName) ?></strong>
-                            <form method="post" action="<?= e(route_url('language/save')) ?>" class="topbar-language-form">
-                                <?= csrf_field() ?>
-                                <input type="hidden" name="redirect_route" value="<?= e($currentRoute) ?>">
-                                <label for="adminLanguageCode"><?= e($t('layout.language_label', 'Idioma')) ?></label>
-                                <select id="adminLanguageCode" name="language_code" onchange="this.form.submit()">
-                                    <option value="pt-br" <?= strtolower((string) ($language_code ?? 'en-us')) === 'pt-br' ? 'selected' : '' ?>>
-                                        <?= e($t('layout.language_option_pt_br', 'Português')) ?>
-                                    </option>
-                                    <option value="en-us" <?= strtolower((string) ($language_code ?? 'en-us')) === 'en-us' ? 'selected' : '' ?>>
-                                        <?= e($t('layout.language_option_en_us', 'English')) ?>
-                                    </option>
-                                </select>
-                            </form>
+                            <details class="language-dropdown">
+                                <summary class="language-dropdown-toggle" title="<?= e($t('layout.language_label', 'Idioma')) ?>" aria-label="<?= e($t('layout.language_label', 'Idioma')) ?>">
+                                    <i class="fa-solid fa-language"></i>
+                                </summary>
+                                <div class="language-dropdown-menu">
+                                    <div class="language-dropdown-header">
+                                        <span><i class="fa-solid fa-language"></i> Translate</span>
+                                        <span aria-hidden="true">�</span>
+                                    </div>
+                                    <div class="language-dropdown-body">
+                                        <p class="language-dropdown-label">Languages</p>
+                                        <form method="post" action="<?= e(route_url('language/save')) ?>" class="language-option-form">
+                                            <?= csrf_field() ?>
+                                            <input type="hidden" name="redirect_route" value="<?= e($currentRoute) ?>">
+                                            <button type="submit" class="language-option<?= $currentLanguageCode === 'en-us' ? ' is-active' : '' ?>" name="language_code" value="en-us">
+                                                <span class="language-option-flag">&#x1F1FA;&#x1F1F8;</span>
+                                                <span class="language-option-name">English (US)</span>
+                                                <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                                            </button>
+                                        </form>
+                                        <form method="post" action="<?= e(route_url('language/save')) ?>" class="language-option-form">
+                                            <?= csrf_field() ?>
+                                            <input type="hidden" name="redirect_route" value="<?= e($currentRoute) ?>">
+                                            <button type="submit" class="language-option<?= $currentLanguageCode === 'pt-br' ? ' is-active' : '' ?>" name="language_code" value="pt-br">
+                                                <span class="language-option-flag">&#x1F1E7;&#x1F1F7;</span>
+                                                <span class="language-option-name"><?= e($t('layout.language_option_pt_br', 'Português')) ?></span>
+                                                <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </details>
                             <form method="post" action="<?= e(route_url('auth/logout')) ?>" class="topbar-logout-form">
                                 <?= csrf_field() ?>
-                                <button type="submit" class="topbar-logout-btn">
-                                    <i class="fa-solid fa-right-from-bracket"></i> <?= e($t('layout.logout', 'Sair')) ?>
+                                <button type="submit" class="topbar-logout-btn" title="<?= e($t('layout.logout', 'Sair')) ?>" aria-label="<?= e($t('layout.logout', 'Sair')) ?>">
+                                    <i class="fa-solid fa-right-from-bracket"></i>
                                 </button>
                             </form>
                         </div>
@@ -337,3 +357,7 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 </body>
 </html>
+
+
+
+

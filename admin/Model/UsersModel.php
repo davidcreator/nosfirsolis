@@ -23,4 +23,20 @@ class UsersModel extends AbstractCrudModel
 
         return $this->db->fetchAll($sql);
     }
+
+    public function findWithGroup(int $userId): ?array
+    {
+        if ($userId <= 0) {
+            return null;
+        }
+
+        return $this->db->fetch(
+            'SELECT u.*, ug.name AS group_name, ug.hierarchy_level AS group_hierarchy_level
+             FROM users u
+             LEFT JOIN user_groups ug ON ug.id = u.user_group_id
+             WHERE u.id = :user_id
+             LIMIT 1',
+            ['user_id' => $userId]
+        );
+    }
 }
