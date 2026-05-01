@@ -4,8 +4,8 @@ return array (
   'app' => 
   array (
     'name' => 'Solis',
-    'environment' => 'production',
-    'base_url' => 'https://davidcreator.com/solis/',
+    'environment' => 'development',
+    'base_url' => 'http://localhost/nosfirsolis/',
     'installed' => true,
     'timezone' => 'America/Sao_Paulo',
     'default_language' => 'pt-br',
@@ -16,20 +16,22 @@ return array (
     'driver' => 'mysql',
     'host' => 'localhost',
     'port' => 3306,
-    'database' => 'u163008030_nosfirsolis',
-    'username' => 'u163008030_solisadmin',
-    'password' => '+DsW^?XVSWh5+99r,2026Ktb',
+    'database' => 'nosfirsolis',
+    'username' => 'root',
+    'password' => '',
     'charset' => 'utf8mb4',
     'collation' => 'utf8mb4_unicode_ci',
   ),
   'security' => 
   array (
     'allow_reinstall' => false,
-    'reinstall_key' => '36329d8733e5c0eee35ddac2a95933fc08f5ab681c0379f31e4ead3e12655a15',
+    'reinstall_key' => 'e81a0fb03318edc1a18970b0af3877adffe3d26629c920b8b17b7abb1c4529b1',
     'reinstall_permission' => 'admin.install.reinstall',
     'allowed_hosts' => 
     array (
-      0 => 'davidcreator.com',
+      0 => 'localhost',
+      1 => '127.0.0.1',
+      2 => '::1',
     ),
   ),
 );

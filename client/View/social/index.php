@@ -340,7 +340,7 @@ $accessKeyDocs = is_array($access_key_docs ?? null) ? $access_key_docs : [];
                 <input type="text" name="safe_area_text" value="<?= e((string) ($selectedPreset['recommended_safe_area'] ?? '')) ?>">
             </label>
             <label>Cor de referencia
-                <input type="color" name="color_hex" value="#1F7A53">
+                <input type="color" name="color_hex" value="#293198">
             </label>
             <label class="wide">Notas internas
                 <textarea name="notes" rows="3" placeholder="Observações de produção, estilo visual e regras internas."><?= e((string) ($selectedPreset['official_limits'] ?? '')) ?></textarea>
