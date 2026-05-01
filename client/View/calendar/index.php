@@ -29,15 +29,15 @@ $colors = $calendar_colors ?? [];
 
 <style>
     :root {
-        --holiday-national: <?= e($colors['holiday_national'] ?? '#F43F5E') ?>;
-        --holiday-international: <?= e($colors['holiday_international'] ?? '#2563EB') ?>;
-        --holiday-regional: <?= e($colors['holiday_regional'] ?? '#EAB308') ?>;
-        --commemorative-custom: <?= e($colors['commemorative'] ?? '#F59E0B') ?>;
-        --suggestion-custom: <?= e($colors['suggestion'] ?? '#0E9F6E') ?>;
-        --campaign-custom: <?= e($colors['campaign'] ?? '#1D4ED8') ?>;
-        --base-event-custom: <?= e($colors['base_event'] ?? '#9333EA') ?>;
-        --extra-event-custom: <?= e($colors['extra_event'] ?? '#9F3A03') ?>;
-        --note-custom: <?= e($colors['note'] ?? '#6D28D9') ?>;
+        --holiday-national: <?= e($colors['holiday_national'] ?? '#D48342') ?>;
+        --holiday-international: <?= e($colors['holiday_international'] ?? '#293198') ?>;
+        --holiday-regional: <?= e($colors['holiday_regional'] ?? '#1A2834') ?>;
+        --commemorative-custom: <?= e($colors['commemorative'] ?? '#BC6F33') ?>;
+        --suggestion-custom: <?= e($colors['suggestion'] ?? '#223240') ?>;
+        --campaign-custom: <?= e($colors['campaign'] ?? '#1F2678') ?>;
+        --base-event-custom: <?= e($colors['base_event'] ?? '#D6C8B1') ?>;
+        --extra-event-custom: <?= e($colors['extra_event'] ?? '#16212C') ?>;
+        --note-custom: <?= e($colors['note'] ?? '#C7B596') ?>;
     }
 </style>
 
@@ -306,15 +306,15 @@ $colors = $calendar_colors ?? [];
             <input type="hidden" name="<?= e($field) ?>" value="<?= e($value) ?>">
         <?php endforeach; ?>
 
-        <label>Feriado nacional <input type="color" name="holiday_national" value="<?= e($colors['holiday_national'] ?? '#F43F5E') ?>"></label>
-        <label>Feriado internacional <input type="color" name="holiday_international" value="<?= e($colors['holiday_international'] ?? '#2563EB') ?>"></label>
-        <label>Feriado regional <input type="color" name="holiday_regional" value="<?= e($colors['holiday_regional'] ?? '#EAB308') ?>"></label>
-        <label>Comemorativa <input type="color" name="commemorative" value="<?= e($colors['commemorative'] ?? '#F59E0B') ?>"></label>
-        <label>Sugestão <input type="color" name="suggestion" value="<?= e($colors['suggestion'] ?? '#0E9F6E') ?>"></label>
-        <label>Campanha <input type="color" name="campaign" value="<?= e($colors['campaign'] ?? '#1D4ED8') ?>"></label>
-        <label>Evento base (Excel) <input type="color" name="base_event" value="<?= e($colors['base_event'] ?? '#9333EA') ?>"></label>
-        <label>Evento extra <input type="color" name="extra_event" value="<?= e($colors['extra_event'] ?? '#9F3A03') ?>"></label>
-        <label>Observação <input type="color" name="note" value="<?= e($colors['note'] ?? '#6D28D9') ?>"></label>
+        <label>Feriado nacional <input type="color" name="holiday_national" value="<?= e($colors['holiday_national'] ?? '#D48342') ?>"></label>
+        <label>Feriado internacional <input type="color" name="holiday_international" value="<?= e($colors['holiday_international'] ?? '#293198') ?>"></label>
+        <label>Feriado regional <input type="color" name="holiday_regional" value="<?= e($colors['holiday_regional'] ?? '#1A2834') ?>"></label>
+        <label>Comemorativa <input type="color" name="commemorative" value="<?= e($colors['commemorative'] ?? '#BC6F33') ?>"></label>
+        <label>Sugestão <input type="color" name="suggestion" value="<?= e($colors['suggestion'] ?? '#223240') ?>"></label>
+        <label>Campanha <input type="color" name="campaign" value="<?= e($colors['campaign'] ?? '#1F2678') ?>"></label>
+        <label>Evento base (Excel) <input type="color" name="base_event" value="<?= e($colors['base_event'] ?? '#D6C8B1') ?>"></label>
+        <label>Evento extra <input type="color" name="extra_event" value="<?= e($colors['extra_event'] ?? '#16212C') ?>"></label>
+        <label>Observação <input type="color" name="note" value="<?= e($colors['note'] ?? '#C7B596') ?>"></label>
         <button type="submit"><i class="fa-solid fa-palette"></i> Salvar paleta</button>
     </form>
 </section>
@@ -343,7 +343,7 @@ $colors = $calendar_colors ?? [];
             </select>
         </label>
         <label>Cor personalizada
-            <input type="color" name="color_hex" value="<?= e($colors['extra_event'] ?? '#9F3A03') ?>">
+            <input type="color" name="color_hex" value="<?= e($colors['extra_event'] ?? '#16212C') ?>">
         </label>
         <label class="wide">Descrição
             <input type="text" name="description" placeholder="Detalhes do evento adicional para este dia">
@@ -370,7 +370,7 @@ $colors = $calendar_colors ?? [];
                         <td><?= e($event['event_date']) ?></td>
                         <td><?= e($event['title']) ?></td>
                         <td><?= e($event['event_type']) ?></td>
-                        <td><span class="color-pill" style="background: <?= e($event['color_hex'] ?: ($colors['extra_event'] ?? '#9F3A03')) ?>;"></span></td>
+                        <td><span class="color-pill" style="background: <?= e($event['color_hex'] ?: ($colors['extra_event'] ?? '#16212C')) ?>;"></span></td>
                         <td><?= e($event['description'] ?? '-') ?></td>
                         <td>
                             <form method="post" action="<?= e(route_url('calendar/deleteExtraEvent/' . (int) $event['id'])) ?>" style="display:inline" onsubmit="return confirm('Remover evento extra?')">
