@@ -78,9 +78,11 @@ body {
 }
 
 .client-brand img {
-    width: 38px;
-    height: 38px;
+    width: auto;
+    height: 34px;
+    max-width: 132px;
     object-fit: contain;
+    flex-shrink: 0;
 }
 
 .client-brand span {
@@ -2430,6 +2432,12 @@ video {
 
     body.client-sidebar-collapsed .client-brand span {
         display: none;
+    }
+
+    body.client-sidebar-collapsed .client-brand img {
+        width: 34px;
+        height: 34px;
+        max-width: 34px;
     }
 
     body.client-sidebar-collapsed .sidebar-search,

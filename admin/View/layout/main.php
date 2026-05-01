@@ -1,9 +1,34 @@
+<?php
+$requestScheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+$requestHost = (string) ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? 'localhost');
+$rootPath = rtrim(dirname(base_path_url()), '/');
+if ($rootPath === '.' || $rootPath === '/') {
+    $rootPath = '';
+}
+$faviconPath = $rootPath . '/image/solis.png';
+$logoPath = $rootPath . '/image/solis_logo.png';
+$pageUrl = $requestScheme . '://' . $requestHost . (string) ($_SERVER['REQUEST_URI'] ?? (base_path_url() . '/'));
+$metaTitle = (string) ($title ?? $app_name ?? $t('layout.title_default', 'Admin'));
+$metaDescription = (string) $t('layout.topbar_subtitle', 'Gestao administrativa e hierarquia de acesso do {app}', ['app' => ($app_name ?? 'Solis')]);
+$ogImageUrl = $requestScheme . '://' . $requestHost . $logoPath;
+?>
 <!doctype html>
 <html lang="<?= e($language_code ?? 'en-us') ?>">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><?= e($title ?? $app_name ?? $t('layout.title_default', 'Admin')) ?></title>
+    <title><?= e($metaTitle) ?></title>
+    <link rel="icon" type="image/png" href="<?= e($faviconPath) ?>">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="<?= e($metaTitle) ?>">
+    <meta property="og:description" content="<?= e($metaDescription) ?>">
+    <meta property="og:url" content="<?= e($pageUrl) ?>">
+    <meta property="og:image" content="<?= e($ogImageUrl) ?>">
+    <meta property="og:site_name" content="<?= e($app_name ?? 'Solis') ?>">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<?= e($metaTitle) ?>">
+    <meta name="twitter:description" content="<?= e($metaDescription) ?>">
+    <meta name="twitter:image" content="<?= e($ogImageUrl) ?>">
     <link rel="stylesheet" href="<?= e(asset_url('fontawesome/css/all.min.css')) ?>">
     <link rel="stylesheet" href="<?= e(asset_url('css/admin.css')) ?>">
 </head>
@@ -41,7 +66,7 @@ $showTopNotice = $currentRoute === 'dashboard/index' || str_starts_with($current
     <?php if (!empty($current_user)): ?>
         <aside class="sidebar" id="adminSidebar">
             <a class="sidebar-brand" href="<?= e(route_url('dashboard/index')) ?>">
-                <img src="<?= e(asset_url('img/reamurcms.png')) ?>" alt="ReamurCMS">
+                <img src="<?= e($logoPath) ?>" alt="<?= e($app_name ?? 'Solis') ?>">
                 <span>
                     <strong><?= e($app_name ?? 'Solis') ?></strong>
                     <small><?= e($t('layout.panel_subtitle', 'Painel Administrativo')) ?></small>

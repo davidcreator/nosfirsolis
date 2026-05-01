@@ -120,7 +120,7 @@
             const browserNotification = new Notification(browserTitle, {
                 body: title,
                 tag: 'reamur-chat-' + (referenceId || 'general'),
-                icon: 'view/image/reamurcms.png'
+                icon: '../image/solis.png'
             });
 
             browserNotification.onclick = function() {

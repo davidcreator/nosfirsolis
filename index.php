@@ -65,6 +65,12 @@ $loginAction = $basePath . '/client/auth/authenticate';
 $registerUrl = $basePath . '/client/auth/register';
 $messageSuccess = flash('success');
 $messageError = flash('error');
+$faviconPath = ($basePath !== '' ? $basePath : '') . '/image/solis.png';
+$logoPath = ($basePath !== '' ? $basePath : '') . '/image/solis_logo.png';
+$pageUrl = $scheme . '://' . $host . (string) ($_SERVER['REQUEST_URI'] ?? ($basePath !== '' ? $basePath : '/'));
+$metaTitle = $appName . ' | Plataforma de planejamento de conteudo';
+$metaDescription = 'Solis centraliza planejamento, execucao e acompanhamento de conteudo em um unico fluxo.';
+$ogImageUrl = $scheme . '://' . $host . $logoPath;
 
 header('Content-Type: text/html; charset=UTF-8');
 ?>
@@ -73,7 +79,18 @@ header('Content-Type: text/html; charset=UTF-8');
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><?= e($appName) ?> | Plataforma de planejamento de conteúdo</title>
+    <title><?= e($metaTitle) ?></title>
+    <link rel="icon" type="image/png" href="<?= e($faviconPath) ?>">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="<?= e($metaTitle) ?>">
+    <meta property="og:description" content="<?= e($metaDescription) ?>">
+    <meta property="og:url" content="<?= e($pageUrl) ?>">
+    <meta property="og:image" content="<?= e($ogImageUrl) ?>">
+    <meta property="og:site_name" content="<?= e($appName) ?>">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<?= e($metaTitle) ?>">
+    <meta name="twitter:description" content="<?= e($metaDescription) ?>">
+    <meta name="twitter:image" content="<?= e($ogImageUrl) ?>">
     <style>
         :root {
             --bg-cream: #f5efe4;
@@ -135,6 +152,12 @@ header('Content-Type: text/html; charset=UTF-8');
             letter-spacing: 0.08em;
             text-transform: uppercase;
             font-size: 12px;
+        }
+
+        .brand img {
+            display: block;
+            height: 22px;
+            width: auto;
         }
 
         h1 {
@@ -320,7 +343,10 @@ header('Content-Type: text/html; charset=UTF-8');
 <body>
     <main class="shell">
         <section class="panel">
-            <span class="brand"><?= e($appName) ?> Platform</span>
+            <span class="brand">
+                <img src="<?= e($logoPath) ?>" alt="<?= e($appName) ?>">
+                <span><?= e($appName) ?> Platform</span>
+            </span>
             <h1>Planejamento estratégico, execução diária e visão clara da sua operação de conteúdo.</h1>
             <p class="lead">
                 O Solis organiza campanhas, calendários e distribuição em um único fluxo.
