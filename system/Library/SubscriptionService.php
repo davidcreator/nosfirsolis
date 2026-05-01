@@ -178,6 +178,20 @@ class SubscriptionService
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4'
         );
 
+        $this->db()->execute(
+            'CREATE TABLE IF NOT EXISTS user_feature_overrides (
+                id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                user_id INT UNSIGNED NOT NULL,
+                feature_key VARCHAR(120) NOT NULL,
+                is_enabled TINYINT(1) NOT NULL DEFAULT 1,
+                created_at DATETIME NOT NULL,
+                updated_at DATETIME NOT NULL,
+                UNIQUE KEY ux_user_feature_overrides_user_feature (user_id, feature_key),
+                INDEX idx_user_feature_overrides_feature (feature_key),
+                CONSTRAINT fk_user_feature_overrides_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4'
+        );
+
         $this->ensureDefaultPlans();
         $this->ensured = true;
     }
@@ -243,15 +257,12 @@ class SubscriptionService
         $planId = (int) ($subscription['plan_id'] ?? 0);
         $limits = $this->limitsByPlan($planId);
         $usage = $this->usageByUser($userId);
-        $features = [
-            'allow_template_plans' => $this->boolLimit($limits, 'allow_template_plans', true),
-            'allow_ai_draft_generator' => $this->boolLimit($limits, 'allow_ai_draft_generator', true),
-            'allow_format_presets' => $this->boolLimit($limits, 'allow_format_presets', true),
-            'allow_publish_hub' => $this->boolLimit($limits, 'allow_publish_hub', true),
-            'allow_queue_processing' => $this->boolLimit($limits, 'allow_queue_processing', true),
-            'allow_tracking_links' => $this->boolLimit($limits, 'allow_tracking_links', true),
-            'allow_social_connections' => $this->boolLimit($limits, 'allow_social_connections', true),
-        ];
+        $featuresFromPlan = [];
+        foreach (array_keys($this->featureDefinitions()) as $featureKey) {
+            $featuresFromPlan[$featureKey] = $this->boolLimit($limits, $featureKey, true);
+        }
+        $featureOverrides = $this->featureOverridesByUser($userId);
+        $features = $this->applyFeatureOverrides($featuresFromPlan, $featureOverrides);
 
         $context = [
             'plan' => [
@@ -276,6 +287,8 @@ class SubscriptionService
             'limits' => $limits,
             'usage' => $usage,
             'features' => $features,
+            'features_base' => $featuresFromPlan,
+            'feature_overrides' => $featureOverrides,
             'ads_enabled' => (bool) ($subscription['ad_supported'] ?? false) || $this->boolLimit($limits, 'ads_enabled', false),
             'metrics' => $this->metricsForView($limits, $usage),
         ];
@@ -921,21 +934,14 @@ class SubscriptionService
             return ['allowed' => true, 'message' => ''];
         }
 
-        $labels = [
-            'allow_template_plans' => 'templates anuais completos',
-            'allow_ai_draft_generator' => 'gerador de conteúdo estratégico',
-            'allow_format_presets' => 'presets avançados de formato',
-            'allow_publish_hub' => 'hub de publicação social',
-            'allow_queue_processing' => 'processamento automático da fila',
-            'allow_tracking_links' => 'rastreamento de campanhas',
-            'allow_social_connections' => 'conexões sociais adicionais',
-        ];
+        $catalog = $this->featureDefinitions();
+        $label = (string) ($catalog[$featureKey]['label'] ?? $featureKey);
 
         return [
             'allowed' => false,
             'message' => sprintf(
-                'O recurso "%s" não está disponível no plano %s. Faça upgrade em Planos e Faturamento.',
-                $labels[$featureKey] ?? $featureKey,
+                'O recurso "%s" nao esta disponivel no plano %s. Faca upgrade em Planos e Faturamento.',
+                $label,
                 (string) ($context['plan']['name'] ?? 'atual')
             ),
         ];
@@ -1190,6 +1196,140 @@ class SubscriptionService
         return ['success' => true, 'message' => 'Pagamento confirmado e plano atualizado com sucesso.'];
     }
 
+    public function featureCatalog(): array
+    {
+        $catalog = [];
+        foreach ($this->featureDefinitions() as $key => $meta) {
+            $catalog[] = [
+                'key' => $key,
+                'label' => (string) ($meta['label'] ?? $key),
+                'description' => (string) ($meta['description'] ?? ''),
+            ];
+        }
+
+        return $catalog;
+    }
+
+    public function assignPlanToUser(int $userId, int $planId, int $adminUserId = 0): array
+    {
+        if ($userId <= 0 || $planId <= 0 || !$this->db()?->connected()) {
+            return ['success' => false, 'message' => 'Nao foi possivel atualizar o plano do usuario.'];
+        }
+
+        $this->ensureTables();
+        $this->ensureUserSubscription($userId);
+
+        $plan = $this->db()->fetch(
+            'SELECT id, name, status
+             FROM subscription_plans
+             WHERE id = :id
+             LIMIT 1',
+            ['id' => $planId]
+        );
+        if (!$plan) {
+            return ['success' => false, 'message' => 'Plano nao encontrado.'];
+        }
+
+        if ((int) ($plan['status'] ?? 0) !== 1) {
+            return ['success' => false, 'message' => 'O plano selecionado esta inativo.'];
+        }
+
+        $currentContext = $this->contextForUser($userId);
+        $currentPlanId = (int) ($currentContext['plan']['id'] ?? 0);
+        if ($currentPlanId === $planId) {
+            return ['success' => true, 'message' => 'O usuario ja esta neste plano.'];
+        }
+
+        $this->activatePlan($userId, $planId, 'active');
+        $subscription = $this->subscriptionByUser($userId);
+        $this->logEvent(
+            $userId,
+            $subscription ? (int) ($subscription['id'] ?? 0) : null,
+            'plan_changed_by_admin',
+            'Plano atualizado manualmente por administrador.',
+            [
+                'plan_id' => $planId,
+                'admin_user_id' => max(0, $adminUserId),
+            ]
+        );
+
+        $this->invalidateContext($userId);
+        return ['success' => true, 'message' => 'Plano do usuario atualizado com sucesso.'];
+    }
+
+    public function saveUserFeatureOverrides(int $userId, array $payload, int $adminUserId = 0): array
+    {
+        if ($userId <= 0 || !$this->db()?->connected()) {
+            return ['success' => false, 'message' => 'Nao foi possivel atualizar os recursos do usuario.'];
+        }
+
+        $this->ensureTables();
+        $catalog = $this->featureDefinitions();
+        if ($catalog === []) {
+            return ['success' => false, 'message' => 'Nenhum recurso configuravel foi encontrado.'];
+        }
+
+        $normalized = [];
+        foreach ($catalog as $featureKey => $meta) {
+            $normalized[$featureKey] = $this->truthy($payload[$featureKey] ?? 0) ? 1 : 0;
+        }
+
+        $existingRows = $this->db()->fetchAll(
+            'SELECT id, feature_key, is_enabled
+             FROM user_feature_overrides
+             WHERE user_id = :user_id',
+            ['user_id' => $userId]
+        );
+
+        $existingByKey = [];
+        foreach ($existingRows as $row) {
+            $existingByKey[(string) ($row['feature_key'] ?? '')] = $row;
+        }
+
+        $this->db()->beginTransaction();
+        try {
+            $now = date('Y-m-d H:i:s');
+            foreach ($normalized as $featureKey => $state) {
+                $existing = $existingByKey[$featureKey] ?? null;
+                if ($existing) {
+                    $this->db()->update('user_feature_overrides', [
+                        'is_enabled' => $state,
+                        'updated_at' => $now,
+                    ], 'id = :id', ['id' => (int) ($existing['id'] ?? 0)]);
+                    continue;
+                }
+
+                $this->db()->insert('user_feature_overrides', [
+                    'user_id' => $userId,
+                    'feature_key' => $featureKey,
+                    'is_enabled' => $state,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]);
+            }
+
+            $this->db()->commit();
+        } catch (\Throwable $exception) {
+            $this->db()->rollBack();
+            return ['success' => false, 'message' => 'Falha ao salvar os recursos personalizados do usuario.'];
+        }
+
+        $subscription = $this->subscriptionByUser($userId);
+        $this->logEvent(
+            $userId,
+            $subscription ? (int) ($subscription['id'] ?? 0) : null,
+            'feature_overrides_changed_by_admin',
+            'Recursos personalizados atualizados por administrador.',
+            [
+                'admin_user_id' => max(0, $adminUserId),
+                'features' => $normalized,
+            ]
+        );
+
+        $this->invalidateContext($userId);
+        return ['success' => true, 'message' => 'Recursos do usuario atualizados com sucesso.'];
+    }
+
     private function planLimitDefinitions(): array
     {
         return [
@@ -1207,6 +1347,88 @@ class SubscriptionService
             'allow_tracking_links' => 'bool',
             'allow_social_connections' => 'bool',
         ];
+    }
+
+    private function featureDefinitions(): array
+    {
+        return [
+            'allow_template_plans' => [
+                'label' => 'Templates anuais completos',
+                'description' => 'Libera templates prontos para planejamento anual.',
+            ],
+            'allow_ai_draft_generator' => [
+                'label' => 'Gerador de conteudo com IA',
+                'description' => 'Permite gerar rascunhos estrategicos automaticamente.',
+            ],
+            'allow_format_presets' => [
+                'label' => 'Presets avancados de formato',
+                'description' => 'Habilita presets extras para adaptacao de conteudo.',
+            ],
+            'allow_publish_hub' => [
+                'label' => 'Hub de publicacao social',
+                'description' => 'Acesso ao painel de publicacoes multicanal.',
+            ],
+            'allow_queue_processing' => [
+                'label' => 'Processamento automatico da fila',
+                'description' => 'Executa a fila de publicacoes de forma automatizada.',
+            ],
+            'allow_tracking_links' => [
+                'label' => 'Rastreamento de campanhas',
+                'description' => 'Permite criar links rastreaveis com metricas.',
+            ],
+            'allow_social_connections' => [
+                'label' => 'Conexoes sociais adicionais',
+                'description' => 'Libera conexoes extras de contas sociais.',
+            ],
+        ];
+    }
+
+    private function featureOverridesByUser(int $userId): array
+    {
+        if ($userId <= 0 || !$this->db()?->connected()) {
+            return [];
+        }
+
+        if (!$this->tableExists('user_feature_overrides')) {
+            return [];
+        }
+
+        $rows = $this->db()->fetchAll(
+            'SELECT feature_key, is_enabled
+             FROM user_feature_overrides
+             WHERE user_id = :user_id',
+            ['user_id' => $userId]
+        );
+
+        $overrides = [];
+        foreach ($rows as $row) {
+            $key = strtolower(trim((string) ($row['feature_key'] ?? '')));
+            if ($key === '') {
+                continue;
+            }
+
+            $overrides[$key] = (int) ($row['is_enabled'] ?? 0) === 1;
+        }
+
+        return $overrides;
+    }
+
+    private function applyFeatureOverrides(array $featuresFromPlan, array $featureOverrides): array
+    {
+        if ($featureOverrides === []) {
+            return $featuresFromPlan;
+        }
+
+        $merged = $featuresFromPlan;
+        foreach ($featureOverrides as $featureKey => $isEnabled) {
+            if (!array_key_exists($featureKey, $merged)) {
+                continue;
+            }
+
+            $merged[$featureKey] = (bool) $isEnabled;
+        }
+
+        return $merged;
     }
 
     private function priceForPlanWithPromotion(int $planId, int $baseAmountCents): array
