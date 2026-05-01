@@ -81,9 +81,11 @@ a:hover {
 }
 
 .sidebar-brand img {
-    width: 38px;
-    height: 38px;
+    width: auto;
+    height: 34px;
+    max-width: 132px;
     object-fit: contain;
+    flex-shrink: 0;
 }
 
 .sidebar-brand span {
@@ -2102,6 +2104,12 @@ video {
     body.sidebar-collapsed .sidebar-section-label,
     body.sidebar-collapsed .sidebar-footer {
         display: none;
+    }
+
+    body.sidebar-collapsed .sidebar-brand img {
+        width: 34px;
+        height: 34px;
+        max-width: 34px;
     }
 
     body.sidebar-collapsed .sidebar-nav {
