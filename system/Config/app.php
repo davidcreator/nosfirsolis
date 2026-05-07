@@ -28,12 +28,30 @@ return [
         'csrf_token_name' => '_token',
         'token_cipher_key' => '',
         'allowed_hosts' => ['localhost', '127.0.0.1', '::1'],
+        'host_guard_compatibility_mode' => false,
+        'runtime_schema_mutations' => false,
         'auth' => [
             'window_minutes' => 15,
             'block_minutes' => 20,
             'max_attempts_per_ip' => 12,
             'max_attempts_per_user' => 6,
             'session_ttl_minutes' => 720,
+            'fail_open_on_security_error' => false,
+        ],
+        'headers' => [
+            'enabled' => true,
+            'x_content_type_options' => 'nosniff',
+            'x_frame_options' => 'SAMEORIGIN',
+            'referrer_policy' => 'strict-origin-when-cross-origin',
+            'permissions_policy' => 'geolocation=(), camera=(), microphone=()',
+            'x_permitted_cross_domain_policies' => 'none',
+            'content_security_policy' => "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; object-src 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https:; script-src 'self' 'unsafe-inline' https:; connect-src 'self' https:; font-src 'self' data: https:; frame-src 'self' https:;",
+            'hsts' => [
+                'enabled' => false,
+                'max_age' => 31536000,
+                'include_subdomains' => true,
+                'preload' => false,
+            ],
         ],
     ],
     'features' => [
@@ -64,7 +82,7 @@ return [
         ],
         'billing' => [
             'currency' => 'BRL',
-            'mock_auto_approve' => true,
+            'mock_auto_approve' => false,
         ],
         'tracking' => [
             'bitly_access_token' => '',
