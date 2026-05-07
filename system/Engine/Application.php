@@ -71,15 +71,20 @@ class Application
             }
         }
 
+        $this->applyEnvironmentOverrides($config);
+        $this->enforceProductionSecurityBaselines($config);
         date_default_timezone_set((string) $config->get('app.timezone', 'UTC'));
         $this->guardAllowedHost($config);
 
         $sessionName = (string) $config->get('app.session_name', 'nsplanner');
         $sessionPath = $this->storageDirectory() . DIRECTORY_SEPARATOR . 'sessions';
-        $session = new Session($sessionName, $sessionPath);
+        $session = new Session($sessionName, $sessionPath, [
+            'trusted_proxies' => (array) $config->get('security.trusted_proxies', []),
+        ]);
 
         $request = new Request();
         $response = new Response();
+        $this->applySecurityHeaders($response, $config);
         $database = null;
 
         try {
@@ -187,8 +192,15 @@ class Application
             && array_diff($normalizedAllowedHosts, $localDefaultHosts) === [];
         $requestHostIsBlockedByDefault = $requestHost !== ''
             && !in_array($requestHost, $normalizedAllowedHosts, true);
+        $compatibilityModeEnabled = (bool) $config->get('security.host_guard_compatibility_mode', false);
 
-        if (!$isDevelopment && $installed && $onlyLocalDefaults && $requestHostIsBlockedByDefault) {
+        if (
+            !$isDevelopment
+            && $installed
+            && $compatibilityModeEnabled
+            && $onlyLocalDefaults
+            && $requestHostIsBlockedByDefault
+        ) {
             error_log(
                 '[Solis] HostGuard compatibility mode: allowing host because allowed_hosts still has only local defaults.'
                 . ' host=' . $requestHost
@@ -213,6 +225,75 @@ class Application
         echo 'Bad Request: host nao permitido. '
             . 'Configure security.allowed_hosts (ou ALLOWED_HOSTS no ambiente) com o dominio atual.';
         exit;
+    }
+
+    private function applySecurityHeaders(Response $response, Config $config): void
+    {
+        $enabled = (bool) $config->get('security.headers.enabled', true);
+        if (!$enabled) {
+            return;
+        }
+
+        $headers = [
+            'X-Content-Type-Options' => (string) $config->get('security.headers.x_content_type_options', 'nosniff'),
+            'X-Frame-Options' => (string) $config->get('security.headers.x_frame_options', 'SAMEORIGIN'),
+            'Referrer-Policy' => (string) $config->get('security.headers.referrer_policy', 'strict-origin-when-cross-origin'),
+            'Permissions-Policy' => (string) $config->get('security.headers.permissions_policy', 'geolocation=(), camera=(), microphone=()'),
+            'X-Permitted-Cross-Domain-Policies' => (string) $config->get('security.headers.x_permitted_cross_domain_policies', 'none'),
+        ];
+
+        foreach ($headers as $name => $value) {
+            $value = trim($value);
+            if ($value === '') {
+                continue;
+            }
+
+            $response->addHeader($name . ': ' . $value);
+        }
+
+        $contentSecurityPolicy = trim((string) $config->get('security.headers.content_security_policy', ''));
+        if ($contentSecurityPolicy !== '') {
+            $response->addHeader('Content-Security-Policy: ' . $contentSecurityPolicy);
+        }
+
+        $hstsEnabled = (bool) $config->get('security.headers.hsts.enabled', false);
+        if (!$hstsEnabled || !$this->requestIsHttps()) {
+            return;
+        }
+
+        $maxAge = max(0, (int) $config->get('security.headers.hsts.max_age', 31536000));
+        if ($maxAge <= 0) {
+            return;
+        }
+
+        $parts = ['max-age=' . $maxAge];
+        if ((bool) $config->get('security.headers.hsts.include_subdomains', true)) {
+            $parts[] = 'includeSubDomains';
+        }
+        if ((bool) $config->get('security.headers.hsts.preload', false)) {
+            $parts[] = 'preload';
+        }
+
+        $response->addHeader('Strict-Transport-Security: ' . implode('; ', $parts));
+    }
+
+    private function requestIsHttps(): bool
+    {
+        $trustedProxies = [];
+        $config = $this->registry->get('config');
+        if ($config instanceof Config) {
+            $trustedProxies = (array) $config->get('security.trusted_proxies', []);
+        }
+
+        if (function_exists('nosfir_request_is_https')) {
+            return \nosfir_request_is_https($trustedProxies);
+        }
+
+        if (!empty($_SERVER['HTTPS']) && strtolower((string) $_SERVER['HTTPS']) !== 'off') {
+            return true;
+        }
+
+        return (int) ($_SERVER['SERVER_PORT'] ?? 0) === 443;
     }
 
     private function runtimeHost(): string
@@ -303,6 +384,95 @@ class Application
         }
 
         return 'production';
+    }
+
+    private function enforceProductionSecurityBaselines(Config $config): void
+    {
+        $environment = $this->normalizeEnvironment((string) $config->get('app.environment', 'production'));
+        if ($environment !== 'production') {
+            return;
+        }
+
+        if ((bool) $config->get('security.host_guard_compatibility_mode', false)) {
+            $config->set('security.host_guard_compatibility_mode', false);
+            error_log('[Solis] host_guard_compatibility_mode forcado para false em producao.');
+        }
+
+        if ((bool) $config->get('security.automation.allow_private_webhook_endpoints', false)) {
+            $config->set('security.automation.allow_private_webhook_endpoints', false);
+            error_log('[Solis] allow_private_webhook_endpoints forcado para false em producao.');
+        }
+
+        if ((bool) $config->get('security.auth.fail_open_on_security_error', false)) {
+            $config->set('security.auth.fail_open_on_security_error', false);
+            error_log('[Solis] auth.fail_open_on_security_error forcado para false em producao.');
+        }
+
+        if ((bool) $config->get('security.runtime_schema_mutations', false)) {
+            $config->set('security.runtime_schema_mutations', false);
+            error_log('[Solis] runtime_schema_mutations forcado para false em producao.');
+        }
+    }
+
+    private function applyEnvironmentOverrides(Config $config): void
+    {
+        $environment = $this->envFirst(['APP_ENV', 'NOSFIRSOLIS_APP_ENV']);
+        if ($environment !== null) {
+            $config->set('app.environment', $this->normalizeEnvironment($environment));
+        }
+
+        $databaseOverrides = [
+            'host' => ['DB_HOST', 'NOSFIRSOLIS_DB_HOST'],
+            'port' => ['DB_PORT', 'NOSFIRSOLIS_DB_PORT'],
+            'database' => ['DB_DATABASE', 'NOSFIRSOLIS_DB_DATABASE'],
+            'username' => ['DB_USERNAME', 'NOSFIRSOLIS_DB_USERNAME'],
+            'password' => ['DB_PASSWORD', 'NOSFIRSOLIS_DB_PASSWORD'],
+            'charset' => ['DB_CHARSET', 'NOSFIRSOLIS_DB_CHARSET'],
+            'collation' => ['DB_COLLATION', 'NOSFIRSOLIS_DB_COLLATION'],
+        ];
+
+        foreach ($databaseOverrides as $field => $keys) {
+            $value = $this->envFirst($keys);
+            if ($value === null) {
+                continue;
+            }
+
+            if ($field === 'port') {
+                if (!ctype_digit($value)) {
+                    continue;
+                }
+
+                $config->set('database.port', (int) $value);
+                continue;
+            }
+
+            $config->set('database.' . $field, $value);
+        }
+    }
+
+    private function envFirst(array $keys): ?string
+    {
+        foreach ($keys as $key) {
+            $key = trim((string) $key);
+            if ($key === '') {
+                continue;
+            }
+
+            if (isset($_ENV[$key]) && is_string($_ENV[$key]) && trim($_ENV[$key]) !== '') {
+                return trim($_ENV[$key]);
+            }
+
+            if (isset($_SERVER[$key]) && is_string($_SERVER[$key]) && trim($_SERVER[$key]) !== '') {
+                return trim($_SERVER[$key]);
+            }
+
+            $value = getenv($key);
+            if (is_string($value) && trim($value) !== '') {
+                return trim($value);
+            }
+        }
+
+        return null;
     }
 }
 

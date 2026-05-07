@@ -248,7 +248,8 @@ class InstallerModel extends Model
                 'port' => (int) $data['db_port'],
                 'database' => $data['db_name'],
                 'username' => $data['db_user'],
-                'password' => $data['db_pass'] ?? '',
+                // Keep runtime file free of cleartext password; credential stays in .env.
+                'password' => '',
                 'charset' => 'utf8mb4',
                 'collation' => 'utf8mb4_unicode_ci',
             ],
@@ -262,10 +263,16 @@ class InstallerModel extends Model
 
         $this->writeAdminConfig($baseUrl);
         $this->writeStorageConfig($runtimeConfig);
-        $this->writeEnvConfig($environment, $allowedHosts);
+        $this->writeEnvConfig($environment, $allowedHosts, [
+            'host' => (string) ($data['db_host'] ?? ''),
+            'port' => (string) ($data['db_port'] ?? ''),
+            'database' => (string) ($data['db_name'] ?? ''),
+            'username' => (string) ($data['db_user'] ?? ''),
+            'password' => (string) ($data['db_pass'] ?? ''),
+        ]);
     }
 
-    private function writeEnvConfig(string $environment, array $allowedHosts): void
+    private function writeEnvConfig(string $environment, array $allowedHosts, array $database): void
     {
         $target = DIR_ROOT . DIRECTORY_SEPARATOR . '.env';
         $env = $this->parseEnvFile($target);
@@ -284,6 +291,13 @@ class InstallerModel extends Model
         if ($allowPrivateWebhookEndpoints === '') {
             $allowPrivateWebhookEndpoints = '0';
         }
+        $allowPrivateWebhookEndpoints = in_array(strtolower($allowPrivateWebhookEndpoints), ['1', 'true', 'yes', 'on'], true) ? '1' : '0';
+
+        $hostGuardCompatibilityMode = trim((string) ($env['HOST_GUARD_COMPATIBILITY_MODE'] ?? ''));
+        if ($hostGuardCompatibilityMode === '') {
+            $hostGuardCompatibilityMode = '0';
+        }
+        $hostGuardCompatibilityMode = in_array(strtolower($hostGuardCompatibilityMode), ['1', 'true', 'yes', 'on'], true) ? '1' : '0';
 
         $env['APP_ENV'] = $environment;
         $env['TOKEN_CIPHER_KEY'] = $tokenCipherKey;
@@ -292,14 +306,26 @@ class InstallerModel extends Model
         }
         $env['TRUSTED_PROXIES'] = $trustedProxies;
         $env['ALLOWED_HOSTS'] = implode(',', $allowedHosts);
+        $env['HOST_GUARD_COMPATIBILITY_MODE'] = $hostGuardCompatibilityMode;
         $env['AUTOMATION_ALLOW_PRIVATE_WEBHOOK_ENDPOINTS'] = $allowPrivateWebhookEndpoints;
+        $env['DB_HOST'] = trim((string) ($database['host'] ?? ''));
+        $env['DB_PORT'] = trim((string) ($database['port'] ?? ''));
+        $env['DB_DATABASE'] = trim((string) ($database['database'] ?? ''));
+        $env['DB_USERNAME'] = trim((string) ($database['username'] ?? ''));
+        $env['DB_PASSWORD'] = (string) ($database['password'] ?? '');
 
         $preferredOrder = [
             'APP_ENV',
+            'DB_HOST',
+            'DB_PORT',
+            'DB_DATABASE',
+            'DB_USERNAME',
+            'DB_PASSWORD',
             'TOKEN_CIPHER_KEY',
             'TOKEN_CIPHER_KEY_PREVIOUS',
             'TRUSTED_PROXIES',
             'ALLOWED_HOSTS',
+            'HOST_GUARD_COMPATIBILITY_MODE',
             'AUTOMATION_ALLOW_PRIVATE_WEBHOOK_ENDPOINTS',
         ];
 
