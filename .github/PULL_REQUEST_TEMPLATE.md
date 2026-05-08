@@ -39,7 +39,7 @@ php tests/security/run-security-suite.php
 
 - [ ] Sem alteracao de schema
 - [ ] Com alteracao de schema (descrever)
-- [ ] Migração reversivel documentada
+- [ ] Migracao reversivel documentada
 - [ ] Sem DDL no caminho de requisicao
 
 ## Risco E Rollback

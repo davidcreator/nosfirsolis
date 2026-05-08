@@ -8,6 +8,10 @@ Todas as mudancas relevantes de codigo e seguranca registradas neste diretorio d
 
 - Novo pacote formal de PR para fechamento de producao:
   - `docs/pacote-formal-pr-fechamento-producao-solis-2026-05-08.md`
+- Novo modelo de PR preenchido para abertura imediata no GitHub:
+  - `docs/pr-formal-fechamento-producao-solis-2026-05-08.md`
+- Template institucional de Pull Request normalizado (correcao textual em migracao):
+  - `.github/PULL_REQUEST_TEMPLATE.md`
 - Novo script de benchmark reutilizavel para endpoints de autenticacao:
   - `tools/performance/run-auth-http-benchmark.php`
 - Relatorio tecnico consolidado com benchmark pos-refatoracao:

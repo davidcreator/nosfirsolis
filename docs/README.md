@@ -36,6 +36,7 @@ Atualizado em: **2026-05-08**.
 29. [Homologacao Operacional Final de Producao](homologacao-operacional-final-producao-solis-2026-05-08.md)
 30. [Release Notes de Producao](release-notes-producao-solis-2026-05-08.md)
 31. [Pacote Formal de PR - Fechamento de Producao](pacote-formal-pr-fechamento-producao-solis-2026-05-08.md)
+32. [PR Formal - Fechamento Tecnico de Producao](pr-formal-fechamento-producao-solis-2026-05-08.md)
 
 ## Guias Complementares (Fora Deste Diretorio)
 
