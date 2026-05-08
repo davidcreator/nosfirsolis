@@ -12,6 +12,8 @@ Todas as mudancas relevantes de codigo e seguranca registradas neste diretorio d
   - `docs/pr-formal-fechamento-producao-solis-2026-05-08.md`
 - Template institucional de Pull Request normalizado (correcao textual em migracao):
   - `.github/PULL_REQUEST_TEMPLATE.md`
+- Novo runbook formal para merge controlado e validacoes pos-merge:
+  - `docs/runbook-merge-controlado-producao-solis-2026-05-08.md`
 - Novo script de benchmark reutilizavel para endpoints de autenticacao:
   - `tools/performance/run-auth-http-benchmark.php`
 - Relatorio tecnico consolidado com benchmark pos-refatoracao:
