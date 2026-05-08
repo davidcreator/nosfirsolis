@@ -43,6 +43,7 @@ Atualizado em: **2026-05-08**.
 36. [Relatorio de Execucao Assistida Go-Live Local](relatorio-execucao-assistida-go-live-local-solis-2026-05-08.md)
 37. [Ata de Encerramento de Go-Live (Producao)](ata-encerramento-go-live-producao-solis-2026-05-08.md)
 38. [Ata de Encerramento de Go-Live (Exemplo GO)](ata-encerramento-go-live-producao-solis-2026-05-08-exemplo-go.md)
+39. [Ata de Encerramento de Go-Live (Exemplo ROLLBACK)](ata-encerramento-go-live-producao-solis-2026-05-08-exemplo-rollback.md)
 
 ## Guias Complementares (Fora Deste Diretorio)
 
