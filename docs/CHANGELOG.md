@@ -29,6 +29,8 @@ Todas as mudancas relevantes de codigo e seguranca registradas neste diretorio d
   - smoke HTTP do espelho `prod/`
   - matriz de variaveis criticas (`.env.example` e `prod/.env.example`)
   - arquivo: `docs/homologacao-operacional-final-producao-solis-2026-05-08.md`
+- Release notes formais de producao publicadas:
+  - `docs/release-notes-producao-solis-2026-05-08.md`
 
 ### Arquitetura E Qualidade
 
