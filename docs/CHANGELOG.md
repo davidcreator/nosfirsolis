@@ -2,6 +2,119 @@
 
 Todas as mudancas relevantes de codigo e seguranca registradas neste diretorio de documentacao.
 
+## 2026-05-08
+
+### Arquitetura E Qualidade
+
+- Suite critica ampliada com smoke dinamico de banco:
+  - `tests/critical/run-critical-flow-suite.php`
+  - nova cobertura de runtime para conectividade, tabelas, colunas, enums e indices dos fluxos:
+    - reset de senha
+    - billing/validacao manual
+    - publicacao social
+    - calendario (notas e eventos extras)
+- Novo gate de maturidade MVCL por orcamento:
+  - `tools/architecture/run-mvcl-maturity-budget-audit.php`
+  - validacoes de:
+    - tamanho de controllers
+    - tamanho de models/libraries por classe/trait
+    - densidade de service accessors em controllers
+    - volume de metodos publicos em controllers
+  - excecao controlada de budget para `install/Model/InstallerModel.php` (perfil de instalacao).
+- Pipeline de qualidade integrado com novo gate:
+  - `tools/quality/run-quality-gates.php`
+  - adicao de `mvcl_maturity` (`bit=32`).
+
+### Testes E Validacao
+
+- `php tests/critical/run-critical-flow-suite.php`: `PASS` (5 `PASS`, 0 `WARN`, 0 `FAIL`).
+- `php tools/architecture/run-mvcl-maturity-budget-audit.php`: `PASS` (4 `PASS`, 0 `WARN`, 0 `FAIL`).
+- `php tools/quality/run-quality-gates.php --exit-mode=bitmap`: `PASS` com `Checks=6`, `Passes=6`, `Failures=0`, `FailureMask=0`, `ExitCode=0`.
+
+## 2026-05-07
+
+### Seguranca
+
+- Hardening de versionamento:
+  - `.gitignore` atualizado para bloquear `system/Storage/config*.php`, sessoes, cache, logs e exports.
+  - placeholders `.gitignore` adicionados em `system/Storage/sessions`, `cache`, `logs` e `exports`.
+  - arquivos sensiveis removidos do indice Git com `git rm --cached` (mantidos localmente).
+- Correcao de risco de `TypeError` em publicacao social:
+  - `SocialPublishingService::decryptToken()` ajustado para `?string` com tratamento seguro.
+- Hardening de billing:
+  - `integrations.billing.mock_auto_approve=false`.
+  - seed inicial ajustado para `billing.validation_mode=manual` e `billing.mock_auto_approve=0`.
+  - `SubscriptionService` bloqueia autoaprovacao mock em `production|prod|live`.
+- HostGuard endurecido:
+  - modo de compatibilidade legado condicionado a `security.host_guard_compatibility_mode` (default seguro: `false`/`0`).
+  - suporte via ambiente com `HOST_GUARD_COMPATIBILITY_MODE`.
+- Suite de seguranca ampliada:
+  - validacao de `allowed_hosts` em producao.
+  - alerta para `host_guard_compatibility_mode=true` em producao.
+  - validacao de arquivos sensiveis versionados no Git.
+
+### Ferramentas E Operacao
+
+- Novo script operacional:
+  - `tools/security/rewrite-sensitive-history.ps1`
+  - cria clone espelho isolado, executa `git filter-repo`, valida limpeza e faz push opcional.
+- Novo runbook:
+  - `docs/limpeza-historico-segredos-git.md`
+- Novo pacote de operacao pos-rewrite:
+  - `docs/comunicado-reescrita-historico-2026-05-07.md`
+  - `docs/checklist-rotacao-segredos-2026-05-07.md`
+  - `docs/sincronizacao-local-pos-rewrite-2026-05-07.md`
+- Novo comunicado operacional pronto para envio:
+  - `docs/comunicado-operacional-slack-whatsapp-2026-05-07.md`
+  - inclui janela sugerida e comandos separados por perfil (`dev`, `qa`, `infra`).
+- Novo arquivo de disparo rapido:
+  - `docs/mensagens-prontas-disparo-2026-05-07.md`
+  - inclui versoes prontas para WhatsApp, Slack e e-mail.
+- Novo pacote para comunicacao de alta velocidade:
+  - `docs/mensagens-ultra-curta-e-executiva-2026-05-07.md`
+  - inclui versoes ultra curta (1 linha) e executiva (diretoria/parceiros).
+- Novo pacote formal consolidado:
+  - `docs/mensagem-final-formal-2026-05-07.md`
+  - inclui modelos formais para WhatsApp, Slack, nota oficial e e-mail executivo.
+- Novo registro institucional:
+  - `docs/ata-incidente-seguranca-2026-05-07.md`
+  - inclui descricao formal do evento, evidencias, riscos residuais e campos de aprovacao.
+- Nova versao para assinatura:
+  - `docs/ata-incidente-seguranca-assinatura-2026-05-07.md`
+  - inclui cabecalho institucional, termo de ciencia e blocos formais de assinatura.
+- Nova versao curta para governanca executiva:
+  - `docs/ata-curta-diretoria-2026-05-07.md`
+  - formato de 1 pagina com sumario, deliberacao e assinaturas da diretoria.
+- Reescrita de historico publicada no remoto:
+  - `origin/main` alterada de `93cee3a` para `57d9e6d` via `push --force --mirror`.
+
+### Testes E Validacao
+
+- `php tests/security/run-security-suite.php` executado em `2026-05-07`.
+- Resultado: `PASS` (12 `PASS`, 0 `FAIL`, 0 `WARN`).
+
+## 2026-05-05
+
+### Documentacao
+
+- `README.md` da raiz atualizado com:
+  - escopo funcional atual (auth, billing cliente/admin, operacoes)
+  - links de documentacao complementar fora de `docs/`
+  - snapshot datado da suite de seguranca
+- `docs/README.md` reorganizado e sincronizado com o estado atual do repositorio.
+- `docs/produto-nosfir-solis.md` revisado para refletir billing e governanca operacional ja implementados.
+- `docs/modulo-cliente.md` ampliado com fluxos de auth/recuperacao de senha e modulo de faturamento.
+- `docs/modulo-admin.md` ampliado com governanca de billing, filtros salvos e gestao de plano/recursos por usuario.
+- `docs/banco-de-dados.md` atualizado com dominio de assinaturas/billing (`subscription_*`, `billing_*`, `user_feature_overrides`) e relacionamentos/enums correspondentes.
+- `docs/arquitetura-mvcl.md` e `docs/instalacao-configuracao-operacao.md` sincronizados com pipeline/configs atuais (incluindo billing).
+- `docs/seguranca-e-sanitizacao-producao.md` atualizado com resultado real da execucao local mais recente.
+
+### Testes e Validacao
+
+- `php tests/security/run-security-suite.php` executado em `2026-05-05`.
+- Resultado: `FAIL` (8 `PASS`, 1 `FAIL`, 0 `WARN`).
+- Falha atual registrada: heuristica de echo bruto em views do calendario (`annual`, `index`, `monthly`).
+
 ## 2026-04-28
 
 ### Configuracao e Deploy

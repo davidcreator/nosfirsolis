@@ -1,0 +1,87 @@
+name: quality-gates
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  quality-gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: solis_ci
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=15
+
+    env:
+      APP_ENV: development
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: solis_ci
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      TOKEN_CIPHER_KEY: ci-token-cipher-key-with-minimum-32-chars-2026
+      TRUSTED_PROXIES: 127.0.0.1,::1
+      ALLOWED_HOSTS: localhost,127.0.0.1,::1
+      SECURITY_RUNTIME_SCHEMA_MUTATIONS: 0
+      HOST_GUARD_COMPATIBILITY_MODE: 0
+      AUTOMATION_ALLOW_PRIVATE_WEBHOOK_ENDPOINTS: 0
+      AUTH_FAIL_OPEN_ON_SECURITY_ERROR: 0
+      SECURITY_HEADERS_ENABLED: 1
+      HSTS_ENABLED: 0
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: mbstring, openssl, pdo_mysql
+          coverage: none
+
+      - name: Install MySQL Client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+
+      - name: Wait For MySQL
+        run: |
+          for i in {1..30}; do
+            if mysqladmin ping -h 127.0.0.1 -uroot -proot --silent; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "MySQL service did not become ready in time."
+          exit 1
+
+      - name: Import Schema
+        run: |
+          mysql -h 127.0.0.1 -uroot -proot -e "CREATE DATABASE IF NOT EXISTS solis_ci CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+          mysql -h 127.0.0.1 -uroot -proot solis_ci < install/sql/schema.sql
+          mysql -h 127.0.0.1 -uroot -proot solis_ci < install/sql/seed.sql
+
+      - name: List Quality Gates Catalog
+        run: |
+          php tools/quality/run-quality-gates.php --list
+          php tools/quality/run-quality-gates.php --list | grep -q "critical_flows"
+          php tools/quality/run-quality-gates.php --list | grep -q "mvcl_maturity"
+
+      - name: Run Quality Gates (6 gates)
+        run: php tools/quality/run-quality-gates.php --exit-mode=bitmap
