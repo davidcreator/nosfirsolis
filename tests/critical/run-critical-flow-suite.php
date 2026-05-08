@@ -34,8 +34,33 @@ final class CriticalFlowSuite
 
     private function testAuthPasswordResetContract(): void
     {
-        $file = $this->root . '/client/Controller/Concerns/AuthPasswordResetFlowTrait.php';
-        $content = $this->readFile($file);
+        $candidateFiles = [
+            $this->root . '/client/Controller/Concerns/AuthPasswordResetFlowTrait.php',
+            $this->root . '/client/Controller/Concerns/AuthPasswordResetRequestTrait.php',
+            $this->root . '/client/Controller/Concerns/AuthPasswordResetTokenTrait.php',
+            $this->root . '/client/Controller/Concerns/AuthEmailRecoveryFlowTrait.php',
+        ];
+
+        $filesUsed = [];
+        $contentParts = [];
+        foreach ($candidateFiles as $file) {
+            if (!is_file($file)) {
+                continue;
+            }
+
+            $filesUsed[] = $this->relative($file);
+            $contentParts[] = $this->readFile($file);
+        }
+
+        $content = implode("\n\n", $contentParts);
+        if ($content === '') {
+            $this->fail(
+                'Fluxo de reset de senha fora do contrato critico esperado.',
+                'Nao foi possivel localizar arquivos do contrato de reset em client/Controller/Concerns.'
+            );
+            return;
+        }
+
         $issues = [];
 
         $csrfGuards = preg_match_all('/!\$this->request->isPost\(\)\s*\|\|\s*!verify_csrf\(/', $content);
@@ -78,7 +103,7 @@ final class CriticalFlowSuite
 
         $this->fail(
             'Fluxo de reset de senha fora do contrato critico esperado.',
-            $this->relative($file) . ' | ' . implode(' | ', $issues)
+            implode(', ', $filesUsed) . ' | ' . implode(' | ', $issues)
         );
     }
 

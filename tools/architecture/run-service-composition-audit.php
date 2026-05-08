@@ -1889,6 +1889,26 @@ final class ServiceCompositionAudit
                 ],
             ],
             [
+                'owner_file' => 'client/Controller/Concerns/AuthPasswordResetFlowTrait.php',
+                'owner_name' => 'AuthPasswordResetFlowTrait',
+                'owner_kind' => 'trait',
+                'owner_namespace' => 'Client\\Controller\\Concerns',
+                'traits' => [
+                    ['name' => 'AuthPasswordResetRequestTrait', 'file' => 'client/Controller/Concerns/AuthPasswordResetRequestTrait.php', 'namespace' => 'Client\\Controller\\Concerns'],
+                    ['name' => 'AuthPasswordResetTokenTrait', 'file' => 'client/Controller/Concerns/AuthPasswordResetTokenTrait.php', 'namespace' => 'Client\\Controller\\Concerns'],
+                    ['name' => 'AuthEmailRecoveryFlowTrait', 'file' => 'client/Controller/Concerns/AuthEmailRecoveryFlowTrait.php', 'namespace' => 'Client\\Controller\\Concerns'],
+                ],
+            ],
+            [
+                'owner_file' => 'client/Controller/Concerns/AuthPasswordResetRequestTrait.php',
+                'owner_name' => 'AuthPasswordResetRequestTrait',
+                'owner_kind' => 'trait',
+                'owner_namespace' => 'Client\\Controller\\Concerns',
+                'traits' => [
+                    ['name' => 'AuthRequestMetadataTrait', 'file' => 'client/Controller/Concerns/AuthRequestMetadataTrait.php', 'namespace' => 'Client\\Controller\\Concerns'],
+                ],
+            ],
+            [
                 'owner_file' => 'client/Controller/SocialController.php',
                 'owner_name' => 'SocialController',
                 'owner_kind' => 'class',

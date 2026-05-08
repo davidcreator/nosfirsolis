@@ -167,5 +167,10 @@ Reexecucao dos gates apos as correcoes:
 
 ### Ajuste estrutural adicional aplicado
 
-- Refatoracao do arquivo `client/Controller/Concerns/AuthPasswordResetFlowTrait.php` para reduzir tamanho de trait (de 425 para 406 linhas).
-- Extracao dos metodos de metadados de request para novo trait `client/Controller/Concerns/AuthRequestMetadataTrait.php`.
+- Decomposicao completa do fluxo de recuperacao em traits por responsabilidade:
+  - `client/Controller/Concerns/AuthPasswordResetRequestTrait.php`
+  - `client/Controller/Concerns/AuthPasswordResetTokenTrait.php`
+  - `client/Controller/Concerns/AuthEmailRecoveryFlowTrait.php`
+- `client/Controller/Concerns/AuthPasswordResetFlowTrait.php` passou a atuar como trait agregador.
+- Metadados de request isolados em `client/Controller/Concerns/AuthRequestMetadataTrait.php`.
+- Suite critica atualizada para validar o contrato de reset sobre a composicao multi-trait sem reduzir as garantias de seguranca.
