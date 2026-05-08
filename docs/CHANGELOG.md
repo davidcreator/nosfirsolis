@@ -21,6 +21,14 @@ Todas as mudancas relevantes de codigo e seguranca registradas neste diretorio d
   - `tests/critical/run-critical-flow-suite.php`
 - Contratos de composicao atualizados para novos traits:
   - `tools/architecture/run-service-composition-audit.php`
+- Nova homologacao operacional final de producao com evidencias de:
+  - quality gates
+  - security suite
+  - operational audit
+  - build `system/` e `prod/system`
+  - smoke HTTP do espelho `prod/`
+  - matriz de variaveis criticas (`.env.example` e `prod/.env.example`)
+  - arquivo: `docs/homologacao-operacional-final-producao-solis-2026-05-08.md`
 
 ### Arquitetura E Qualidade
 

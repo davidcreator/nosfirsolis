@@ -33,6 +33,7 @@ Atualizado em: **2026-05-08**.
 26. [Relatorio de Auditoria MVCL Estrutural](relatorio-auditoria-mvcl-estrutural-2026-05-07.md)
 27. [Changelog](CHANGELOG.md)
 28. [Checklist Formal de Fechamento para Producao](checklist-fechamento-producao-solis-2026-05-08.md)
+29. [Homologacao Operacional Final de Producao](homologacao-operacional-final-producao-solis-2026-05-08.md)
 
 ## Guias Complementares (Fora Deste Diretorio)
 
