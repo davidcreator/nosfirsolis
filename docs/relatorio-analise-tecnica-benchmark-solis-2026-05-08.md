@@ -155,7 +155,7 @@ As correcoes P1 foram aplicadas e revalidadas no mesmo dia:
 
 Reexecucao dos gates apos as correcoes:
 
-- `php tools/architecture/run-service-composition-audit.php` -> `PASS_WITH_WARNINGS` (`0 FAIL`, `1 WARN`)
+- `php tools/architecture/run-service-composition-audit.php` -> `PASS` (`0 FAIL`, `0 WARN`)
 - `php tools/quality/run-quality-gates.php` -> `PASS` (`Checks: 6 | Passes: 6 | Failures: 0 | ExitCode: 0`)
 
 ### Estado atualizado apos remediacao
@@ -163,4 +163,9 @@ Reexecucao dos gates apos as correcoes:
 - **Qualidade arquitetural:** `PASS`
 - **Seguranca:** `PASS`
 - **Fluxos criticos:** `PASS`
-- **Observacao residual:** permanece apenas aviso de tamanho do trait `AuthPasswordResetFlowTrait.php` (425 linhas), sem falha bloqueante.
+- **Composicao de servicos:** `PASS` sem warnings estruturais.
+
+### Ajuste estrutural adicional aplicado
+
+- Refatoracao do arquivo `client/Controller/Concerns/AuthPasswordResetFlowTrait.php` para reduzir tamanho de trait (de 425 para 406 linhas).
+- Extracao dos metodos de metadados de request para novo trait `client/Controller/Concerns/AuthRequestMetadataTrait.php`.
