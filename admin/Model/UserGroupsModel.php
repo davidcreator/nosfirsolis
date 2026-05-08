@@ -23,7 +23,17 @@ class UserGroupsModel extends AbstractCrudModel
 
         $column = $this->db->fetch("SHOW COLUMNS FROM user_groups LIKE 'hierarchy_level'");
         if (!$column) {
-            $this->db->execute('ALTER TABLE user_groups ADD COLUMN hierarchy_level INT UNSIGNED NOT NULL DEFAULT 50 AFTER description');
+            error_log(
+                '[Solis] Coluna user_groups.hierarchy_level ausente. '
+                . 'Execute a migracao operacional para liberar hierarquia completa.'
+            );
+            $this->hierarchyEnsured = true;
+            return;
+        }
+
+        if (!$column) {
+            $this->hierarchyEnsured = true;
+            return;
         }
 
         $this->db->execute(
@@ -107,4 +117,5 @@ class UserGroupsModel extends AbstractCrudModel
     {
         return max(1, min(999, $level));
     }
+
 }

@@ -80,7 +80,8 @@ $nextQuery = http_build_query(array_merge(['year' => $nextYear, 'month' => $next
             <?php foreach ($calendar['weeks'] as $week): ?>
                 <tr>
                     <?php foreach ($week as $day): ?>
-                        <td class="<?= $day['in_month'] ? 'in' : 'out' ?>">
+                        <?php $dayClass = !empty($day['in_month']) ? 'in' : 'out'; ?>
+                        <td class="<?= e($dayClass) ?>">
                             <?php if ($day['in_month']): ?>
                                 <span class="day-number"><?= (int) $day['day'] ?></span>
                                 <?php $events = $day['events'] ?? []; ?>

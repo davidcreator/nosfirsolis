@@ -4,6 +4,8 @@ namespace System\Library;
 
 class SocialAuthService
 {
+    use TemporalClockTrait;
+
     public function buildAuthorizationUrl(array $platform, string $redirectUri, string $state, array &$statePayload = []): ?string
     {
         if (($platform['kind'] ?? '') !== 'oauth2') {
@@ -89,7 +91,7 @@ class SocialAuthService
 
         $expiresAt = null;
         if (!empty($data['expires_in'])) {
-            $expiresAt = date('Y-m-d H:i:s', time() + (int) $data['expires_in']);
+            $expiresAt = $this->clockDateTimeAfterSeconds((int) $data['expires_in']);
         }
 
         $scopeRaw = (string) ($data['scope'] ?? '');
@@ -215,5 +217,5 @@ class SocialAuthService
 
         return ['ok' => true, 'data' => $data];
     }
-}
 
+}

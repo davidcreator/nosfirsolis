@@ -2,21 +2,16 @@
 
 namespace Admin\Controller;
 
-use System\Library\AutomationService;
-use System\Library\FeatureFlagService;
-use System\Library\JobMonitorService;
-use System\Library\ObservabilityService;
-
 class OperationsController extends BaseController
 {
     public function index(): void
     {
         $this->boot('admin.operations');
 
-        $featureService = new FeatureFlagService($this->registry);
-        $automation = new AutomationService($this->registry);
-        $jobs = new JobMonitorService($this->registry);
-        $observability = new ObservabilityService($this->registry);
+        $featureService = $this->featureFlags();
+        $automation = $this->automationService();
+        $jobs = $this->jobMonitorService();
+        $observability = $this->observabilityService();
 
         $featureService->ensureTables();
         $automation->ensureTables();
@@ -51,7 +46,7 @@ class OperationsController extends BaseController
         $this->boot('admin.operations');
         $this->requirePostAndCsrf();
 
-        $service = new FeatureFlagService($this->registry);
+        $service = $this->featureFlags();
         $id = $service->save([
             'flag_key' => (string) $this->request->post('flag_key', ''),
             'label' => (string) $this->request->post('label', ''),
@@ -77,7 +72,7 @@ class OperationsController extends BaseController
         $this->boot('admin.operations');
         $this->requirePostAndCsrf();
 
-        $service = new FeatureFlagService($this->registry);
+        $service = $this->featureFlags();
         $service->delete($id);
 
         flash('success', $this->t('operations.flash_feature_deleted', 'Feature flag removida.'));
@@ -89,7 +84,7 @@ class OperationsController extends BaseController
         $this->boot('admin.operations', 'automation.webhooks');
         $this->requirePostAndCsrf();
 
-        $service = new AutomationService($this->registry);
+        $service = $this->automationService();
         $id = $service->saveWebhook([
             'id' => (int) $this->request->post('id', 0),
             'name' => (string) $this->request->post('name', ''),
@@ -121,7 +116,7 @@ class OperationsController extends BaseController
         $this->boot('admin.operations', 'automation.webhooks');
         $this->requirePostAndCsrf();
 
-        $service = new AutomationService($this->registry);
+        $service = $this->automationService();
         $service->deleteWebhook($id);
 
         flash('success', $this->t('operations.flash_webhook_deleted', 'Webhook removido.'));
@@ -133,7 +128,7 @@ class OperationsController extends BaseController
         $this->boot('admin.operations', 'automation.webhooks');
         $this->requirePostAndCsrf();
 
-        $service = new AutomationService($this->registry);
+        $service = $this->automationService();
         $result = $service->testWebhook($id);
 
         if ((int) ($result['success'] ?? 0) > 0 && (int) ($result['failed'] ?? 0) === 0) {
@@ -150,7 +145,7 @@ class OperationsController extends BaseController
         $this->boot('admin.operations', 'jobs.monitoring');
         $this->requirePostAndCsrf();
 
-        $service = new JobMonitorService($this->registry);
+        $service = $this->jobMonitorService();
         $id = $service->upsertMonitor([
             'job_key' => (string) $this->request->post('job_key', ''),
             'name' => (string) $this->request->post('name', ''),
@@ -174,7 +169,7 @@ class OperationsController extends BaseController
         $this->boot('admin.operations', 'jobs.monitoring');
         $this->requirePostAndCsrf();
 
-        $service = new JobMonitorService($this->registry);
+        $service = $this->jobMonitorService();
         $service->deleteMonitor($id);
 
         flash('success', $this->t('operations.flash_monitor_deleted', 'Monitor removido.'));
@@ -186,10 +181,10 @@ class OperationsController extends BaseController
         $this->boot('admin.operations');
         $this->requirePostAndCsrf();
 
-        $jobs = new JobMonitorService($this->registry);
+        $jobs = $this->jobMonitorService();
         $alerts = $jobs->evaluateStaleMonitors();
 
-        $observability = new ObservabilityService($this->registry);
+        $observability = $this->observabilityService();
         $observability->log('info', 'operations', $this->t('operations.log_manual_maintenance', 'Manutencao manual executada no painel admin.'), [
             'new_stale_alerts' => count($alerts),
         ], (int) ($this->auth->user()['id'] ?? 0), 'admin');
@@ -208,7 +203,7 @@ class OperationsController extends BaseController
         $this->requirePostAndCsrf();
 
         try {
-            $result = $this->clearStorageCache();
+            $result = $this->cacheMaintenanceService()->clearStorageCache();
         } catch (\Throwable) {
             flash('error', $this->t(
                 'operations.flash_cache_clear_error',
@@ -217,7 +212,7 @@ class OperationsController extends BaseController
             $this->redirectToRoute('operations/index');
         }
 
-        $observability = new ObservabilityService($this->registry);
+        $observability = $this->observabilityService();
         $observability->log(
             'info',
             'operations',
@@ -240,79 +235,5 @@ class OperationsController extends BaseController
             ]
         ));
         $this->redirectToRoute('operations/index');
-    }
-
-    private function clearStorageCache(): array
-    {
-        $storageDir = defined('DIR_STORAGE')
-            ? (string) DIR_STORAGE
-            : (DIR_ROOT . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'Storage');
-        $cacheDir = rtrim($storageDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'cache';
-
-        if (!is_dir($cacheDir)) {
-            return [
-                'files' => 0,
-                'directories' => 0,
-                'opcache_reset' => $this->resetOpcacheIfAvailable(),
-            ];
-        }
-
-        $removedFiles = 0;
-        $removedDirectories = 0;
-
-        $fileIterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($cacheDir, \FilesystemIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::CHILD_FIRST
-        );
-
-        foreach ($fileIterator as $entry) {
-            if (!$entry->isFile() && !$entry->isLink()) {
-                continue;
-            }
-
-            $basename = strtolower($entry->getBasename());
-            if (in_array($basename, ['.htaccess', '.gitignore', 'index.html'], true)) {
-                continue;
-            }
-
-            if (@unlink($entry->getPathname())) {
-                $removedFiles++;
-            }
-        }
-
-        $directoryIterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($cacheDir, \FilesystemIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::CHILD_FIRST
-        );
-
-        foreach ($directoryIterator as $entry) {
-            if (!$entry->isDir()) {
-                continue;
-            }
-
-            $path = $entry->getPathname();
-            if ($path === $cacheDir) {
-                continue;
-            }
-
-            if (@rmdir($path)) {
-                $removedDirectories++;
-            }
-        }
-
-        return [
-            'files' => $removedFiles,
-            'directories' => $removedDirectories,
-            'opcache_reset' => $this->resetOpcacheIfAvailable(),
-        ];
-    }
-
-    private function resetOpcacheIfAvailable(): bool
-    {
-        if (!function_exists('opcache_reset')) {
-            return false;
-        }
-
-        return (bool) @opcache_reset();
     }
 }

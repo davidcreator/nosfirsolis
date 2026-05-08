@@ -493,6 +493,216 @@ CREATE TABLE IF NOT EXISTS social_format_presets (
     CONSTRAINT fk_social_format_presets_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS social_publications (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED NOT NULL,
+    plan_id INT UNSIGNED NULL,
+    plan_item_id INT UNSIGNED NULL,
+    platform_slug VARCHAR(80) NOT NULL,
+    connection_id INT UNSIGNED NULL,
+    title VARCHAR(220) NULL,
+    message_text LONGTEXT NULL,
+    media_url VARCHAR(1000) NULL,
+    payload_json LONGTEXT NULL,
+    status ENUM('queued', 'processing', 'published', 'failed', 'manual_review') NOT NULL DEFAULT 'queued',
+    provider_post_id VARCHAR(190) NULL,
+    scheduled_at DATETIME NULL,
+    published_at DATETIME NULL,
+    error_message VARCHAR(255) NULL,
+    attempt_count INT UNSIGNED NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
+    INDEX idx_social_publications_user (user_id, status, scheduled_at),
+    INDEX idx_social_publications_item (plan_item_id),
+    CONSTRAINT fk_social_publications_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_social_publications_plan FOREIGN KEY (plan_id) REFERENCES content_plans(id) ON DELETE SET NULL,
+    CONSTRAINT fk_social_publications_item FOREIGN KEY (plan_item_id) REFERENCES content_plan_items(id) ON DELETE SET NULL,
+    CONSTRAINT fk_social_publications_connection FOREIGN KEY (connection_id) REFERENCES social_connections(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS social_publication_logs (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    publication_id INT UNSIGNED NOT NULL,
+    log_level ENUM('info', 'warning', 'error') NOT NULL DEFAULT 'info',
+    message VARCHAR(255) NOT NULL,
+    context_json LONGTEXT NULL,
+    created_at DATETIME NOT NULL,
+    INDEX idx_social_publication_logs_pub (publication_id, created_at),
+    CONSTRAINT fk_social_publication_logs_pub FOREIGN KEY (publication_id) REFERENCES social_publications(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS campaign_tracking_links (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED NOT NULL,
+    campaign_id INT UNSIGNED NULL,
+    plan_item_id INT UNSIGNED NULL,
+    channel_slug VARCHAR(80) NULL,
+    destination_url VARCHAR(1000) NOT NULL,
+    tracking_url VARCHAR(1600) NOT NULL,
+    short_code VARCHAR(24) NOT NULL UNIQUE,
+    short_url VARCHAR(1000) NOT NULL,
+    external_short_url VARCHAR(1000) NULL,
+    short_provider VARCHAR(40) NOT NULL DEFAULT 'internal',
+    utm_source VARCHAR(120) NULL,
+    utm_medium VARCHAR(120) NULL,
+    utm_campaign VARCHAR(160) NULL,
+    utm_content VARCHAR(160) NULL,
+    utm_term VARCHAR(160) NULL,
+    mtm_campaign VARCHAR(160) NULL,
+    mtm_keyword VARCHAR(160) NULL,
+    clicks INT UNSIGNED NOT NULL DEFAULT 0,
+    last_clicked_at DATETIME NULL,
+    status ENUM('active', 'archived') NOT NULL DEFAULT 'active',
+    notes TEXT NULL,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
+    INDEX idx_tracking_user (user_id, created_at),
+    INDEX idx_tracking_campaign (campaign_id),
+    INDEX idx_tracking_item (plan_item_id),
+    CONSTRAINT fk_tracking_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_tracking_campaign FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE SET NULL,
+    CONSTRAINT fk_tracking_plan_item FOREIGN KEY (plan_item_id) REFERENCES content_plan_items(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS feature_flags (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    flag_key VARCHAR(120) NOT NULL UNIQUE,
+    label VARCHAR(180) NOT NULL,
+    description TEXT NULL,
+    enabled TINYINT(1) NOT NULL DEFAULT 1,
+    target_area ENUM('all', 'admin', 'client') NOT NULL DEFAULT 'all',
+    rollout_strategy ENUM('all', 'admins_only', 'clients_only', 'min_hierarchy', 'permission') NOT NULL DEFAULT 'all',
+    min_hierarchy_level INT UNSIGNED NULL,
+    required_permission VARCHAR(160) NULL,
+    payload_json LONGTEXT NULL,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
+    INDEX idx_feature_flags_area (enabled, target_area)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS automations_webhooks (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(160) NOT NULL,
+    event_key VARCHAR(120) NOT NULL,
+    endpoint_url VARCHAR(500) NOT NULL,
+    http_method ENUM('POST', 'PUT', 'PATCH') NOT NULL DEFAULT 'POST',
+    auth_type ENUM('none', 'bearer', 'basic', 'header') NOT NULL DEFAULT 'none',
+    auth_username VARCHAR(190) NULL,
+    auth_secret VARCHAR(255) NULL,
+    header_name VARCHAR(120) NULL,
+    header_value VARCHAR(255) NULL,
+    signing_secret VARCHAR(255) NULL,
+    timeout_seconds TINYINT UNSIGNED NOT NULL DEFAULT 8,
+    retries TINYINT UNSIGNED NOT NULL DEFAULT 1,
+    enabled TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
+    INDEX idx_automation_webhooks_event (enabled, event_key)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS automation_dispatch_logs (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    webhook_id INT UNSIGNED NOT NULL,
+    event_key VARCHAR(120) NOT NULL,
+    status ENUM('success', 'failed') NOT NULL DEFAULT 'failed',
+    http_status SMALLINT NULL,
+    duration_ms INT UNSIGNED NULL,
+    response_body TEXT NULL,
+    error_message VARCHAR(255) NULL,
+    payload_json LONGTEXT NULL,
+    attempted_at DATETIME NOT NULL,
+    INDEX idx_automation_dispatch_event (event_key, attempted_at),
+    INDEX idx_automation_dispatch_webhook (webhook_id, attempted_at),
+    CONSTRAINT fk_automation_dispatch_webhook FOREIGN KEY (webhook_id) REFERENCES automations_webhooks(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS observability_events (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    level ENUM('debug', 'info', 'warning', 'error', 'critical') NOT NULL DEFAULT 'info',
+    category VARCHAR(80) NOT NULL,
+    message VARCHAR(255) NOT NULL,
+    area VARCHAR(20) NOT NULL,
+    user_id INT UNSIGNED NULL,
+    trace_id VARCHAR(64) NULL,
+    context_json LONGTEXT NULL,
+    created_at DATETIME NOT NULL,
+    INDEX idx_observability_level (level, created_at),
+    INDEX idx_observability_category (category, created_at),
+    INDEX idx_observability_area (area, created_at),
+    INDEX idx_observability_user (user_id, created_at),
+    CONSTRAINT fk_observability_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS observability_spans (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    trace_id VARCHAR(64) NOT NULL,
+    span_key VARCHAR(120) NOT NULL,
+    area VARCHAR(20) NOT NULL,
+    user_id INT UNSIGNED NULL,
+    status ENUM('running', 'ok', 'warning', 'error') NOT NULL DEFAULT 'running',
+    context_json LONGTEXT NULL,
+    started_at DATETIME NOT NULL,
+    ended_at DATETIME NULL,
+    duration_ms INT UNSIGNED NULL,
+    INDEX idx_observability_spans_trace (trace_id),
+    INDEX idx_observability_spans_key (span_key, started_at),
+    CONSTRAINT fk_observability_spans_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS job_monitors (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    job_key VARCHAR(140) NOT NULL UNIQUE,
+    name VARCHAR(180) NOT NULL,
+    description TEXT NULL,
+    expected_interval_minutes INT UNSIGNED NOT NULL DEFAULT 60,
+    max_runtime_seconds INT UNSIGNED NOT NULL DEFAULT 300,
+    enabled TINYINT(1) NOT NULL DEFAULT 1,
+    last_checkin_at DATETIME NULL,
+    last_status ENUM('ok', 'warning', 'error', 'stale') NOT NULL DEFAULT 'stale',
+    last_duration_ms INT UNSIGNED NULL,
+    last_error VARCHAR(255) NULL,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
+    INDEX idx_job_monitors_status (enabled, last_status, last_checkin_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS job_checkins (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    monitor_id INT UNSIGNED NOT NULL,
+    status ENUM('ok', 'warning', 'error') NOT NULL DEFAULT 'ok',
+    duration_ms INT UNSIGNED NULL,
+    error_message VARCHAR(255) NULL,
+    payload_json LONGTEXT NULL,
+    checked_at DATETIME NOT NULL,
+    INDEX idx_job_checkins_monitor (monitor_id, checked_at),
+    CONSTRAINT fk_job_checkins_monitor FOREIGN KEY (monitor_id) REFERENCES job_monitors(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS job_alerts (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    monitor_id INT UNSIGNED NOT NULL,
+    alert_type ENUM('failure', 'stale', 'slow') NOT NULL,
+    status ENUM('open', 'resolved') NOT NULL DEFAULT 'open',
+    message VARCHAR(255) NOT NULL,
+    created_at DATETIME NOT NULL,
+    resolved_at DATETIME NULL,
+    INDEX idx_job_alerts_status (status, created_at),
+    INDEX idx_job_alerts_monitor (monitor_id, status),
+    CONSTRAINT fk_job_alerts_monitor FOREIGN KEY (monitor_id) REFERENCES job_monitors(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS user_feature_overrides (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED NOT NULL,
+    feature_key VARCHAR(120) NOT NULL,
+    is_enabled TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
+    UNIQUE KEY ux_user_feature_overrides_user_feature (user_id, feature_key),
+    INDEX idx_user_feature_overrides_feature (feature_key),
+    CONSTRAINT fk_user_feature_overrides_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS security_login_attempts (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     area VARCHAR(20) NOT NULL,

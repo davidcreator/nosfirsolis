@@ -70,7 +70,7 @@ class ContentSuggestionsModel extends AbstractCrudModel
             $this->db->insert('content_suggestion_channels', [
                 'content_suggestion_id' => $suggestionId,
                 'content_platform_id' => (int) $platformId,
-                'created_at' => date('Y-m-d H:i:s'),
+                'created_at' => $this->modelClockDateTimeNow(),
             ]);
         }
     }

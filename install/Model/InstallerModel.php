@@ -464,16 +464,23 @@ class InstallerModel extends Model
 
     private function buildBaseUrl(): string
     {
-        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-        $requestHost = HostGuard::requestHost($_SERVER);
+        $server = $this->requestServer();
+        $https = !empty($server['HTTPS']) && strtolower((string) $server['HTTPS']) !== 'off';
+        $https = $https || (int) ($server['SERVER_PORT'] ?? 0) === 443;
+        $scheme = $https ? 'https' : 'http';
+
+        $requestHost = HostGuard::requestHost($server);
         $host = $requestHost !== ''
             ? $requestHost
             : HostGuard::effectiveHost(
-                $_SERVER,
+                $server,
                 (array) $this->config->get('security.allowed_hosts', []),
                 (string) $this->config->get('app.base_url', '')
             );
-        $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''));
+        $scriptDir = str_replace('\\', '/', dirname((string) ($server['SCRIPT_NAME'] ?? '')));
+        if ($scriptDir === '.' || $scriptDir === '/') {
+            $scriptDir = '';
+        }
         $rootDir = preg_replace('#/install$#', '', rtrim($scriptDir, '/'));
 
         return rtrim($scheme . '://' . $host . $rootDir, '/') . '/';
@@ -481,9 +488,10 @@ class InstallerModel extends Model
 
     private function resolveAllowedHosts(string $rawAllowedHosts, string $baseUrl, string $environment): array
     {
+        $server = $this->requestServer();
         $allowedHosts = $this->parseAllowedHosts($rawAllowedHosts);
         $baseHost = HostGuard::baseUrlHost($baseUrl);
-        $requestHost = HostGuard::requestHost($_SERVER);
+        $requestHost = HostGuard::requestHost($server);
 
         if ($baseHost !== '') {
             $allowedHosts[] = $baseHost;
@@ -510,6 +518,17 @@ class InstallerModel extends Model
         }
 
         return array_keys($normalized);
+    }
+
+    private function requestServer(): array
+    {
+        $request = $this->request ?? null;
+        if (!is_object($request)) {
+            return [];
+        }
+
+        $server = $request->server ?? [];
+        return is_array($server) ? $server : [];
     }
 
     private function parseAllowedHosts(string $value): array

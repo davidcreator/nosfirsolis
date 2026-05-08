@@ -104,24 +104,12 @@ class IndexController extends Controller
 
     private function clientUrl(): string
     {
-        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-        $requestHost = HostGuard::requestHost($_SERVER);
-        $host = $requestHost !== ''
-            ? $requestHost
-            : HostGuard::effectiveHost(
-                $_SERVER,
-                (array) $this->config->get('security.allowed_hosts', []),
-                (string) $this->config->get('app.base_url', '')
-            );
-        $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''));
-        $rootDir = preg_replace('#/(admin|client|install)$#', '', $scriptDir);
-
-        return rtrim($scheme . '://' . $host . $rootDir, '/') . '/client';
+        return $this->areaUrl('client');
     }
 
     private function defaultEnvironment(): string
     {
-        $requestHost = HostGuard::requestHost($_SERVER);
+        $requestHost = $this->effectiveRequestHost();
         $localHosts = ['localhost', '127.0.0.1', '::1'];
 
         if (
@@ -146,7 +134,7 @@ class IndexController extends Controller
             $hosts[] = '::1';
         }
 
-        $requestHost = HostGuard::requestHost($_SERVER);
+        $requestHost = $this->effectiveRequestHost();
         if ($requestHost !== '') {
             $hosts[] = $requestHost;
         }

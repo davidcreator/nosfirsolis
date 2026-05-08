@@ -38,11 +38,17 @@ class SuggestionsController extends BaseController
 
         $model = $this->loader->model('content_suggestions');
         $date = (string) $this->request->post('suggestion_date');
+        $dateTs = $this->parseDateToTimestamp($date);
+        if ($dateTs === null) {
+            flash('error', $this->t('suggestions.flash_invalid_date', 'Data da sugestao invalida.'));
+            $this->redirectToRoute('suggestions/index');
+        }
+
         $id = $model->create([
             'title' => trim((string) $this->request->post('title')),
             'description' => trim((string) $this->request->post('description')),
             'suggestion_date' => $date,
-            'month_day' => date('m-d', strtotime($date)),
+            'month_day' => $this->formatDateTime('m-d', $dateTs),
             'is_recurring' => (int) $this->request->post('is_recurring', 1),
             'recurrence_type' => (string) $this->request->post('recurrence_type', 'yearly'),
             'content_category_id' => $this->request->post('content_category_id') !== '' ? (int) $this->request->post('content_category_id') : null,
@@ -95,11 +101,17 @@ class SuggestionsController extends BaseController
 
         $model = $this->loader->model('content_suggestions');
         $date = (string) $this->request->post('suggestion_date');
+        $dateTs = $this->parseDateToTimestamp($date);
+        if ($dateTs === null) {
+            flash('error', $this->t('suggestions.flash_invalid_date', 'Data da sugestao invalida.'));
+            $this->redirectToRoute('suggestions/index');
+        }
+
         $model->updateById($id, [
             'title' => trim((string) $this->request->post('title')),
             'description' => trim((string) $this->request->post('description')),
             'suggestion_date' => $date,
-            'month_day' => date('m-d', strtotime($date)),
+            'month_day' => $this->formatDateTime('m-d', $dateTs),
             'is_recurring' => (int) $this->request->post('is_recurring', 1),
             'recurrence_type' => (string) $this->request->post('recurrence_type', 'yearly'),
             'content_category_id' => $this->request->post('content_category_id') !== '' ? (int) $this->request->post('content_category_id') : null,

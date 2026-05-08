@@ -2,15 +2,13 @@
 
 namespace Admin\Controller;
 
-use System\Library\SubscriptionService;
-
 class BillingController extends BaseController
 {
     public function index(): void
     {
         $this->boot('admin.billing');
 
-        $service = new SubscriptionService($this->registry);
+        $service = $this->subscriptionService();
         $service->ensureTables();
 
         $this->render('billing/index', [
@@ -29,7 +27,7 @@ class BillingController extends BaseController
         $this->boot('admin.billing');
         $this->requirePostAndCsrf();
 
-        $service = new SubscriptionService($this->registry);
+        $service = $this->subscriptionService();
         $result = $service->savePlanConfig($planId, [
             'name' => (string) $this->request->post('name', ''),
             'description' => (string) $this->request->post('description', ''),
@@ -58,7 +56,7 @@ class BillingController extends BaseController
         $this->boot('admin.billing');
         $this->requirePostAndCsrf();
 
-        $service = new SubscriptionService($this->registry);
+        $service = $this->subscriptionService();
         $result = $service->savePromotion([
             'id' => (int) $this->request->post('id', 0),
             'name' => (string) $this->request->post('name', ''),
@@ -87,7 +85,7 @@ class BillingController extends BaseController
         $this->boot('admin.billing');
         $this->requirePostAndCsrf();
 
-        $service = new SubscriptionService($this->registry);
+        $service = $this->subscriptionService();
         $deleted = $service->deletePromotion($promotionId);
 
         if ($deleted) {
@@ -104,7 +102,7 @@ class BillingController extends BaseController
         $this->boot('admin.billing');
         $this->requirePostAndCsrf();
 
-        $service = new SubscriptionService($this->registry);
+        $service = $this->subscriptionService();
         $result = $service->saveAnnouncement([
             'id' => (int) $this->request->post('id', 0),
             'title' => (string) $this->request->post('title', ''),
@@ -129,7 +127,7 @@ class BillingController extends BaseController
         $this->boot('admin.billing');
         $this->requirePostAndCsrf();
 
-        $service = new SubscriptionService($this->registry);
+        $service = $this->subscriptionService();
         $deleted = $service->deleteAnnouncement($announcementId);
 
         if ($deleted) {
@@ -146,7 +144,7 @@ class BillingController extends BaseController
         $this->boot('admin.billing');
         $this->requirePostAndCsrf();
 
-        $service = new SubscriptionService($this->registry);
+        $service = $this->subscriptionService();
         $result = $service->saveBillingSettings([
             'currency' => (string) $this->request->post('currency', 'BRL'),
             'receiver_name' => (string) $this->request->post('receiver_name', ''),
@@ -183,7 +181,7 @@ class BillingController extends BaseController
         $adminId = (int) ($this->auth->user()['id'] ?? 0);
         $note = trim((string) $this->request->post('validation_note', ''));
 
-        $service = new SubscriptionService($this->registry);
+        $service = $this->subscriptionService();
         $result = $service->approvePaymentTransaction($transactionId, $adminId, $note);
 
         if (!empty($result['success'])) {
@@ -203,7 +201,7 @@ class BillingController extends BaseController
         $adminId = (int) ($this->auth->user()['id'] ?? 0);
         $reason = trim((string) $this->request->post('rejection_reason', ''));
 
-        $service = new SubscriptionService($this->registry);
+        $service = $this->subscriptionService();
         $result = $service->rejectPaymentTransaction($transactionId, $adminId, $reason);
 
         if (!empty($result['success'])) {
