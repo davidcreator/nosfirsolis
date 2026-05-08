@@ -174,3 +174,23 @@ Reexecucao dos gates apos as correcoes:
 - `client/Controller/Concerns/AuthPasswordResetFlowTrait.php` passou a atuar como trait agregador.
 - Metadados de request isolados em `client/Controller/Concerns/AuthRequestMetadataTrait.php`.
 - Suite critica atualizada para validar o contrato de reset sobre a composicao multi-trait sem reduzir as garantias de seguranca.
+
+## 8. Benchmark pos-refatoracao (2026-05-08)
+
+Benchmark repetido apos remediacao arquitetural, usando script versionado:
+
+- `php -d xdebug.mode=off tools/performance/run-auth-http-benchmark.php`
+- Perfil: `120` requisicoes sequenciais + `240` requisicoes concorrentes (`12` workers) por endpoint.
+- Erros HTTP/cURL: `0` em todos os endpoints.
+
+| Endpoint | Seq p50 | Seq p95 | Seq media | Seq RPS | Conc p50 | Conc p95 | Conc p99 | Conc media | Conc RPS |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Landing | 3.76 ms | 4.96 ms | 4.24 ms | 233.39 | 28.21 ms | 43.69 ms | 53.25 ms | 30.55 ms | 380.28 |
+| ClientLogin | 30.99 ms | 34.29 ms | 29.98 ms | 33.31 | 45.55 ms | 107.31 ms | 161.87 ms | 56.43 ms | 206.81 |
+| AdminLogin | 31.00 ms | 36.91 ms | 27.15 ms | 36.77 | 53.34 ms | 101.79 ms | 135.04 ms | 58.97 ms | 198.07 |
+| ForgotPassword | 30.37 ms | 45.84 ms | 37.00 ms | 26.99 | 50.18 ms | 132.62 ms | 155.32 ms | 60.62 ms | 193.38 |
+| ForgotEmail | 31.02 ms | 35.71 ms | 28.98 ms | 34.46 | 51.91 ms | 92.88 ms | 111.57 ms | 56.77 ms | 208.10 |
+
+Observacao:
+
+- No `ForgotPassword` houve pico isolado de `max_ms` em sequencial (`1101.52 ms`), sem refletir degradacao no p95/p99 e sem erros.
