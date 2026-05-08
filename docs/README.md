@@ -38,6 +38,7 @@ Atualizado em: **2026-05-08**.
 31. [Pacote Formal de PR - Fechamento de Producao](pacote-formal-pr-fechamento-producao-solis-2026-05-08.md)
 32. [PR Formal - Fechamento Tecnico de Producao](pr-formal-fechamento-producao-solis-2026-05-08.md)
 33. [Runbook de Merge Controlado para Producao](runbook-merge-controlado-producao-solis-2026-05-08.md)
+34. [Relatorio de Validacao Pre-Merge com Main](relatorio-validacao-pre-merge-main-solis-2026-05-08.md)
 
 ## Guias Complementares (Fora Deste Diretorio)
 
