@@ -6,6 +6,8 @@ Todas as mudancas relevantes de codigo e seguranca registradas neste diretorio d
 
 ### Fechamento De Producao E Benchmark
 
+- Novo pacote formal de PR para fechamento de producao:
+  - `docs/pacote-formal-pr-fechamento-producao-solis-2026-05-08.md`
 - Novo script de benchmark reutilizavel para endpoints de autenticacao:
   - `tools/performance/run-auth-http-benchmark.php`
 - Relatorio tecnico consolidado com benchmark pos-refatoracao:
