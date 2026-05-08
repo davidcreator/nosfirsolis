@@ -43,7 +43,7 @@ Durante a instalacao o sistema:
 - grava configuracao de runtime em:
   - `admin/config.php`
   - `system/Storage/config.php` (ou `system/storage/config.php`, conforme o host)
-  - `.env` (atualiza `APP_ENV`, `ALLOWED_HOSTS` e segredos de runtime)
+  - `.env` (atualiza `APP_ENV`, `ALLOWED_HOSTS`, `HOST_GUARD_COMPATIBILITY_MODE` e segredos de runtime)
 
 ## Ordem De Carga Das Configuracoes
 
@@ -88,7 +88,7 @@ Revise:
 - `security.reinstall_permission`
 - `security.reinstall_key` (valor secreto)
 - `security.allowed_hosts` (em dev inclui localhost; em producao use dominios oficiais)
-- `APP_ENV` e `ALLOWED_HOSTS` no `.env`
+- `APP_ENV`, `ALLOWED_HOSTS` e `HOST_GUARD_COMPATIBILITY_MODE` no `.env` (`0` em producao)
 - parametros de auth/rate-limit em `system/Config/app.php` (`security.auth.*`)
 
 ### Integracoes Sociais
@@ -112,6 +112,14 @@ Revise tambem:
 - `integrations.social_publisher.dry_run`
 - `integrations.social_publisher.linkedin_version`
 - `integrations.tracking.bitly_access_token`
+
+### Billing
+
+Revise:
+
+- `integrations.billing.currency`
+- `integrations.billing.mock_auto_approve`
+- em `admin/billing`: conta recebedora, meios de pagamento e modo de validacao (`automatic`/`manual`)
 
 ### Observabilidade
 
@@ -161,6 +169,14 @@ No `/client/tracking`:
 - usar short links internos (ou Bitly)
 - acompanhar cliques por campanha/canal
 
+### Passo 5: Assinatura E Faturamento
+
+No `/client/billing` e `/admin/billing`:
+
+- cliente troca plano e acompanha consumo/faturas
+- admin ajusta precos, limites, promocoes e comunicados
+- admin valida pagamentos pendentes quando modo manual estiver ativo
+
 ## Controle De Acesso E Hierarquia
 
 - Login e validado por area (`admin` e `client`) com base em `permissions_json`.
@@ -194,6 +210,7 @@ Para liberar reinstalacao apos sistema instalado:
 - Mensagem `Bad Request: host nao permitido.`:
   - revisar `APP_ENV` (`production` online) e `ALLOWED_HOSTS` no ambiente.
   - incluir o host/dominio real de acesso em `ALLOWED_HOSTS`.
+  - confirmar `HOST_GUARD_COMPATIBILITY_MODE=0` em producao (ativar `1` somente em contingencia legada).
 - Erro de conexao MySQL:
   - revisar host/porta/credenciais e permissao do usuario de banco.
 
@@ -208,3 +225,4 @@ Para liberar reinstalacao apos sistema instalado:
 - revisao de falhas de webhook (`automation_dispatch_logs`)
 - revisao de alertas de jobs (`job_alerts`)
 - revisao de erros de observabilidade (`observability_events`)
+- revisao de pendencias de pagamento quando validacao manual estiver habilitada

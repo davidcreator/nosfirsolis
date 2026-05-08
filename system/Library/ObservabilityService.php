@@ -6,7 +6,10 @@ use System\Engine\Registry;
 
 class ObservabilityService
 {
+    use TemporalClockTrait;
+
     private bool $ensured = false;
+    private bool $schemaAvailable = true;
 
     public function __construct(private readonly Registry $registry)
     {
@@ -18,42 +21,23 @@ class ObservabilityService
             return;
         }
 
-        $this->db()->execute(
-            'CREATE TABLE IF NOT EXISTS observability_events (
-                id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-                level ENUM(\'debug\', \'info\', \'warning\', \'error\', \'critical\') NOT NULL DEFAULT \'info\',
-                category VARCHAR(80) NOT NULL,
-                message VARCHAR(255) NOT NULL,
-                area VARCHAR(20) NOT NULL,
-                user_id INT UNSIGNED NULL,
-                trace_id VARCHAR(64) NULL,
-                context_json LONGTEXT NULL,
-                created_at DATETIME NOT NULL,
-                INDEX idx_observability_level (level, created_at),
-                INDEX idx_observability_category (category, created_at),
-                INDEX idx_observability_area (area, created_at),
-                INDEX idx_observability_user (user_id, created_at),
-                CONSTRAINT fk_observability_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4'
-        );
+        $requiredTables = ['observability_events', 'observability_spans'];
+        $missing = [];
+        foreach ($requiredTables as $table) {
+            if (!$this->tableExists($table)) {
+                $missing[] = $table;
+            }
+        }
 
-        $this->db()->execute(
-            'CREATE TABLE IF NOT EXISTS observability_spans (
-                id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-                trace_id VARCHAR(64) NOT NULL,
-                span_key VARCHAR(120) NOT NULL,
-                area VARCHAR(20) NOT NULL,
-                user_id INT UNSIGNED NULL,
-                status ENUM(\'running\', \'ok\', \'warning\', \'error\') NOT NULL DEFAULT \'running\',
-                context_json LONGTEXT NULL,
-                started_at DATETIME NOT NULL,
-                ended_at DATETIME NULL,
-                duration_ms INT UNSIGNED NULL,
-                INDEX idx_observability_spans_trace (trace_id),
-                INDEX idx_observability_spans_key (span_key, started_at),
-                CONSTRAINT fk_observability_spans_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4'
-        );
+        if ($missing !== []) {
+            $this->schemaAvailable = false;
+            error_log(
+                '[Solis] Schema de observabilidade ausente. Execute a migracao operacional. '
+                . 'missing=' . implode(',', $missing)
+            );
+            $this->ensured = true;
+            return;
+        }
 
         $this->ensured = true;
     }
@@ -65,6 +49,9 @@ class ObservabilityService
         }
 
         $this->ensureTables();
+        if (!$this->schemaAvailable) {
+            return '';
+        }
         $traceId = bin2hex(random_bytes(16));
 
         $this->db()->insert('observability_spans', [
@@ -74,7 +61,7 @@ class ObservabilityService
             'user_id' => $userId,
             'status' => 'running',
             'context_json' => json_encode($context, JSON_UNESCAPED_UNICODE),
-            'started_at' => date('Y-m-d H:i:s'),
+            'started_at' => $this->clockDateTimeNow(),
             'ended_at' => null,
             'duration_ms' => null,
         ]);
@@ -89,6 +76,9 @@ class ObservabilityService
         }
 
         $this->ensureTables();
+        if (!$this->schemaAvailable) {
+            return;
+        }
         $status = in_array($status, ['ok', 'warning', 'error'], true) ? $status : 'ok';
 
         $row = $this->db()->fetch(
@@ -103,16 +93,16 @@ class ObservabilityService
             return;
         }
 
-        $started = strtotime((string) ($row['started_at'] ?? ''));
+        $started = $this->parseDateTimeToUnix((string) ($row['started_at'] ?? ''));
         $duration = null;
-        if ($started !== false) {
-            $duration = max(0, (int) ((microtime(true) - (float) $started) * 1000));
+        if ($started !== null) {
+            $duration = max(0, ($this->clockUnixNow() - $started) * 1000);
         }
 
         $this->db()->update('observability_spans', [
             'status' => $status,
             'context_json' => json_encode($context, JSON_UNESCAPED_UNICODE),
-            'ended_at' => date('Y-m-d H:i:s'),
+            'ended_at' => $this->clockDateTimeNow(),
             'duration_ms' => $duration,
         ], 'id = :id', ['id' => (int) $row['id']]);
     }
@@ -131,6 +121,9 @@ class ObservabilityService
         }
 
         $this->ensureTables();
+        if (!$this->schemaAvailable) {
+            return;
+        }
         $allowedLevels = ['debug', 'info', 'warning', 'error', 'critical'];
         if (!in_array($level, $allowedLevels, true)) {
             $level = 'info';
@@ -154,7 +147,7 @@ class ObservabilityService
             'user_id' => $userId,
             'trace_id' => $traceId !== null ? substr(trim($traceId), 0, 64) : null,
             'context_json' => json_encode($context, JSON_UNESCAPED_UNICODE),
-            'created_at' => date('Y-m-d H:i:s'),
+            'created_at' => $this->clockDateTimeNow(),
         ]);
     }
 
@@ -195,6 +188,9 @@ class ObservabilityService
         }
 
         $this->ensureTables();
+        if (!$this->schemaAvailable) {
+            return [];
+        }
         $limit = max(1, min(500, $limit));
 
         $where = [];
@@ -243,9 +239,49 @@ class ObservabilityService
         return $db instanceof Database ? $db : null;
     }
 
+    private function tableExists(string $table): bool
+    {
+        if (preg_match('/^[a-z0-9_]+$/', $table) !== 1) {
+            return false;
+        }
+
+        $row = $this->db()?->fetch("SHOW TABLES LIKE '{$table}'");
+        return (bool) $row;
+    }
+
     private function config(): ?\System\Engine\Config
     {
         $config = $this->registry->get('config');
         return $config instanceof \System\Engine\Config ? $config : null;
     }
+
+    private function parseDateTimeToUnix(string $value): ?int
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return null;
+        }
+
+        if (preg_match('/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})$/', $value, $matches) !== 1) {
+            return null;
+        }
+
+        $year = (int) ($matches[1] ?? 0);
+        $month = (int) ($matches[2] ?? 0);
+        $day = (int) ($matches[3] ?? 0);
+        $hour = (int) ($matches[4] ?? 0);
+        $minute = (int) ($matches[5] ?? 0);
+        $second = (int) ($matches[6] ?? 0);
+
+        if ($year < 1970 || $year > 2100 || !checkdate($month, $day, $year)) {
+            return null;
+        }
+
+        if ($hour < 0 || $hour > 23 || $minute < 0 || $minute > 59 || $second < 0 || $second > 59) {
+            return null;
+        }
+
+        return mktime($hour, $minute, $second, $month, $day, $year);
+    }
+
 }

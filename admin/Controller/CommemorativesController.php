@@ -31,10 +31,16 @@ class CommemorativesController extends BaseController
         $this->requirePostAndCsrf();
 
         $date = (string) $this->request->post('event_date');
+        $dateTs = $this->parseDateToTimestamp($date);
+        if ($dateTs === null) {
+            flash('error', $this->t('commemoratives.flash_invalid_date', 'Data comemorativa invalida.'));
+            $this->redirectToRoute('commemoratives/index');
+        }
+
         $this->loader->model('commemorative_dates')->create([
             'name' => trim((string) $this->request->post('name')),
             'event_date' => $date,
-            'month_day' => date('m-d', strtotime($date)),
+            'month_day' => $this->formatDateTime('m-d', $dateTs),
             'recurrence_type' => (string) $this->request->post('recurrence_type', 'yearly'),
             'context_type' => (string) $this->request->post('context_type', 'editorial'),
             'country_code' => strtoupper(trim((string) $this->request->post('country_code'))),
@@ -69,10 +75,16 @@ class CommemorativesController extends BaseController
         $this->requirePostAndCsrf();
 
         $date = (string) $this->request->post('event_date');
+        $dateTs = $this->parseDateToTimestamp($date);
+        if ($dateTs === null) {
+            flash('error', $this->t('commemoratives.flash_invalid_date', 'Data comemorativa invalida.'));
+            $this->redirectToRoute('commemoratives/index');
+        }
+
         $this->loader->model('commemorative_dates')->updateById($id, [
             'name' => trim((string) $this->request->post('name')),
             'event_date' => $date,
-            'month_day' => date('m-d', strtotime($date)),
+            'month_day' => $this->formatDateTime('m-d', $dateTs),
             'recurrence_type' => (string) $this->request->post('recurrence_type', 'yearly'),
             'context_type' => (string) $this->request->post('context_type', 'editorial'),
             'country_code' => strtoupper(trim((string) $this->request->post('country_code'))),

@@ -14,5 +14,7 @@ return [
     'auth.flash_login_success' => 'Access granted to the {app} admin panel.',
     'auth.flash_logout_success' => 'Session ended successfully.',
     'auth.heading' => 'Administrative access',
+    'auth.link_recover_email' => 'Forgot my login e-mail',
+    'auth.link_recover_password' => 'Forgot my password',
     'auth.title_login' => '{app} | Login',
 ];

@@ -2,8 +2,6 @@
 
 namespace Client\Controller;
 
-use System\Library\SubscriptionService;
-
 class BillingController extends BaseController
 {
     public function index(): void
@@ -11,7 +9,7 @@ class BillingController extends BaseController
         $this->boot('client.dashboard');
 
         $userId = (int) ($this->auth->user()['id'] ?? 0);
-        $service = new SubscriptionService($this->registry);
+        $service = $this->subscriptionService();
         $service->ensureUserSubscription($userId);
 
         $this->render('billing/index', [
@@ -36,7 +34,7 @@ class BillingController extends BaseController
             $paymentMethod = 'pix';
         }
 
-        $service = new SubscriptionService($this->registry);
+        $service = $this->subscriptionService();
         $result = $service->changePlan($userId, $planSlug, $paymentMethod);
 
         if (!empty($result['success'])) {
@@ -64,7 +62,7 @@ class BillingController extends BaseController
             $paymentMethod = 'pix';
         }
 
-        $service = new SubscriptionService($this->registry);
+        $service = $this->subscriptionService();
         $result = $service->payInvoice($userId, $invoiceId, $paymentMethod);
 
         if (!empty($result['success'])) {

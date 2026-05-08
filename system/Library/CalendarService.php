@@ -2,18 +2,24 @@
 
 namespace System\Library;
 
-use DateInterval;
-use DatePeriod;
-use DateTimeImmutable;
-use DateTimeZone;
-
 class CalendarService
 {
     public function buildMonth(int $year, int $month, array $eventsByDate = []): array
     {
-        $firstDay = new DateTimeImmutable(sprintf('%04d-%02d-01', $year, $month));
-        $daysInMonth = (int) $firstDay->format('t');
-        $startWeekday = (int) $firstDay->format('N'); // 1=segunda
+        $firstDayTs = gmmktime(0, 0, 0, $month, 1, $year);
+        if (!is_int($firstDayTs)) {
+            return [
+                'year' => $year,
+                'month' => $month,
+                'first_day_weekday' => 1,
+                'days_in_month' => 0,
+                'is_leap_year' => false,
+                'weeks' => [],
+            ];
+        }
+
+        $daysInMonth = (int) gmdate('t', $firstDayTs);
+        $startWeekday = (int) gmdate('N', $firstDayTs); // 1=segunda
 
         $weeks = [];
         $week = [];
@@ -66,25 +72,22 @@ class CalendarService
             'month' => $month,
             'first_day_weekday' => $startWeekday,
             'days_in_month' => $daysInMonth,
-            'is_leap_year' => (bool) ((new DateTimeImmutable(sprintf('%04d-01-01', $year)))->format('L')),
+            'is_leap_year' => (int) gmdate('L', gmmktime(0, 0, 0, 1, 1, $year)) === 1,
             'weeks' => $weeks,
         ];
     }
 
     public function dateRange(string $startDate, string $endDate): array
     {
-        $start = new DateTimeImmutable($startDate);
-        $end = new DateTimeImmutable($endDate);
-
-        if ($end < $start) {
+        $start = $this->dateToUtcTimestamp($startDate);
+        $end = $this->dateToUtcTimestamp($endDate);
+        if ($start === null || $end === null || $end < $start) {
             return [];
         }
 
-        $period = new DatePeriod($start, new DateInterval('P1D'), $end->modify('+1 day'));
         $dates = [];
-
-        foreach ($period as $date) {
-            $dates[] = $date->format('Y-m-d');
+        for ($cursor = $start; $cursor <= $end; $cursor += 86400) {
+            $dates[] = gmdate('Y-m-d', $cursor);
         }
 
         return $dates;
@@ -92,8 +95,8 @@ class CalendarService
 
     public function moonPhase(string $date): array
     {
-        $targetDate = DateTimeImmutable::createFromFormat('!Y-m-d', $date, new DateTimeZone('UTC'));
-        if (!$targetDate) {
+        $parts = $this->parseDateParts($date);
+        if ($parts === null) {
             return [
                 'key' => 'new_moon',
                 'label' => 'Lua nova',
@@ -102,11 +105,20 @@ class CalendarService
             ];
         }
 
-        $target = $targetDate->setTime(12, 0, 0);
-        $reference = new DateTimeImmutable('2000-01-06 18:14:00', new DateTimeZone('UTC'));
-        $synodicMonthDays = 29.53058867;
+        [$year, $month, $day] = $parts;
+        $target = gmmktime(12, 0, 0, $month, $day, $year);
+        $reference = gmmktime(18, 14, 0, 1, 6, 2000);
+        if (!is_int($target) || !is_int($reference)) {
+            return [
+                'key' => 'new_moon',
+                'label' => 'Lua nova',
+                'icon' => '🌑',
+                'age_days' => 0.0,
+            ];
+        }
 
-        $elapsedDays = ($target->getTimestamp() - $reference->getTimestamp()) / 86400;
+        $synodicMonthDays = 29.53058867;
+        $elapsedDays = ($target - $reference) / 86400;
         $moonAge = fmod($elapsedDays, $synodicMonthDays);
         if ($moonAge < 0) {
             $moonAge += $synodicMonthDays;
@@ -129,5 +141,34 @@ class CalendarService
         $phaseData = $phases[$phaseIndex] ?? $phases[0];
         $phaseData['age_days'] = round($moonAge, 2);
         return $phaseData;
+    }
+
+    private function dateToUtcTimestamp(string $value): ?int
+    {
+        $parts = $this->parseDateParts($value);
+        if ($parts === null) {
+            return null;
+        }
+
+        [$year, $month, $day] = $parts;
+        $timestamp = gmmktime(0, 0, 0, $month, $day, $year);
+        return is_int($timestamp) ? $timestamp : null;
+    }
+
+    private function parseDateParts(string $value): ?array
+    {
+        $value = trim($value);
+        if (preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $value, $matches) !== 1) {
+            return null;
+        }
+
+        $year = (int) ($matches[1] ?? 0);
+        $month = (int) ($matches[2] ?? 0);
+        $day = (int) ($matches[3] ?? 0);
+        if ($year < 1970 || $year > 2100 || !checkdate($month, $day, $year)) {
+            return null;
+        }
+
+        return [$year, $month, $day];
     }
 }

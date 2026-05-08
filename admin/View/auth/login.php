@@ -21,6 +21,12 @@
             <input type="password" name="password" autocomplete="current-password" required>
         </label>
 
+        <p class="auth-inline-link">
+            <a href="<?= e((string) ($password_recovery_url ?? '')) ?>"><?= e($t('auth.link_recover_password', 'Esqueci minha senha')) ?></a>
+            &nbsp;|&nbsp;
+            <a href="<?= e((string) ($email_recovery_url ?? '')) ?>"><?= e($t('auth.link_recover_email', 'Esqueci meu e-mail')) ?></a>
+        </p>
+
         <button type="submit"><i class="fa-solid fa-right-to-bracket"></i> <?= e($t('auth.button_login', 'Entrar no admin')) ?></button>
     </form>
 </section>

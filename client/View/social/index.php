@@ -1,6 +1,6 @@
 <?php
 $frequencyOptions = [
-    'diario' => 'Diario',
+    'diario' => 'Diário',
     'semanal' => 'Semanal',
     'quinzenal' => 'Quinzenal',
     'mensal' => 'Mensal',
@@ -47,16 +47,16 @@ $accessKeyDocs = is_array($access_key_docs ?? null) ? $access_key_docs : [];
 
 <section class="panel social-guide-panel" id="social-guide">
     <div class="panel-head-inline">
-        <h3><i class="fa-solid fa-route"></i> Conexao simplificada em 3 passos</h3>
-        <span class="calendar-subtitle">Fluxo rapido para usuarios iniciantes.</span>
+        <h3><i class="fa-solid fa-route"></i> Conexão simplificada em 3 passos</h3>
+        <span class="calendar-subtitle">Fluxo rápido para usuários iniciantes.</span>
     </div>
     <div class="social-guide-grid">
         <article class="social-guide-card">
             <h4>Passo a passo</h4>
             <ol class="social-step-list">
                 <li>Escolha a plataforma e abra o link oficial para gerar a chave/token.</li>
-                <li>Cole a chave em "Conexao manual por token" e clique em "Verificar chave agora".</li>
-                <li>Se estiver valida, finalize com "Salvar conexao manual".</li>
+                <li>Cole a chave em "Conexão manual por token" e clique em "Verificar chave agora".</li>
+                <li>Se estiver válida, finalize com "Salvar conexão manual".</li>
             </ol>
         </article>
         <article class="social-guide-card">
@@ -269,7 +269,7 @@ $accessKeyDocs = is_array($access_key_docs ?? null) ? $access_key_docs : [];
                 <?php endforeach; ?>
             </select>
         </label>
-        <button type="submit"><i class="fa-solid fa-arrows-rotate"></i> Atualizar padrao</button>
+        <button type="submit"><i class="fa-solid fa-arrows-rotate"></i> Atualizar padrão</button>
     </form>
 
     <?php if ($selectedPreset): ?>
@@ -301,7 +301,7 @@ $accessKeyDocs = is_array($access_key_docs ?? null) ? $access_key_docs : [];
             <article class="standards-card">
                 <h4><i class="fa-solid fa-link"></i> Fontes consultadas</h4>
                 <?php if (empty($selectedSources)): ?>
-                    <p class="social-meta">Este preset usa padrao interno sem fonte publica obrigatoria.</p>
+                    <p class="social-meta">Este preset usa padrão interno sem fonte pública obrigatória.</p>
                 <?php else: ?>
                     <ul class="standards-source-list">
                         <?php foreach ($selectedSources as $source): ?>

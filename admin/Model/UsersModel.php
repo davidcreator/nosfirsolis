@@ -9,10 +9,21 @@ class UsersModel extends AbstractCrudModel
         'user_group_id',
         'name',
         'email',
+        'recovery_email',
         'password_hash',
         'avatar',
         'status',
     ];
+
+    public function existsByEmail(string $email): bool
+    {
+        $row = $this->db->fetch(
+            'SELECT id FROM users WHERE email = :email LIMIT 1',
+            ['email' => $email]
+        );
+
+        return is_array($row) && $row !== [];
+    }
 
     public function allWithGroup(): array
     {

@@ -15,12 +15,24 @@ final class SecuritySuite
     public function run(): int
     {
         $this->testRouterUsesPublicMethodsOnly();
+        $this->testRedirectSanitization();
         $this->testNoMutatingGetLinksInViews();
         $this->testMutatingControllerActionsRequireCsrf();
         $this->testPostFormsIncludeCsrfField();
         $this->testTokenCipherUsesAuthenticatedEncryption();
+        $this->testAuthControllerAvoidsRuntimePasswordResetDdl();
+        $this->testAuthLibraryRuntimeMutationGuard();
+        $this->testRuntimeSchemaMutationGuards();
         $this->testProductionConfigWarnings();
+        $this->testSecurityHeadersBaseline();
+        $this->testLandingHostGuardCoverage();
+        $this->testLandingSecurityHeadersCoverage();
+        $this->testLandingProxyAwareHttpsCoverage();
+        $this->testSessionSecureCookieProxyAwareness();
+        $this->testApplicationEnvironmentOverrides();
+        $this->testSensitiveStorageFilesAreNotVersioned();
         $this->testRawArrayEchoHeuristic();
+        $this->testCriticalViewsOutputEscapingPolicy();
 
         $this->printReport();
 
@@ -41,6 +53,24 @@ final class SecuritySuite
         }
 
         $this->fail('Router sem validacao de metodo publico para rotas dinamicas.', $file);
+    }
+
+    private function testRedirectSanitization(): void
+    {
+        $file = $this->root . '/system/Engine/Response.php';
+        $content = $this->readFile($file);
+
+        $hasNormalizer = str_contains($content, 'normalizeRedirectUrl');
+        $hasCrLfStrip = str_contains($content, "preg_replace('/[\\r\\n]+/', '', \$url)");
+        $hasProtocolRelativeBlock = str_contains($content, "str_starts_with(\$url, '//')");
+        $hasSchemeValidation = str_contains($content, 'parse_url($url, PHP_URL_SCHEME)');
+
+        if ($hasNormalizer && $hasCrLfStrip && $hasProtocolRelativeBlock && $hasSchemeValidation) {
+            $this->pass('Response::redirect aplica sanitizacao contra CRLF e protocolos inseguros.');
+            return;
+        }
+
+        $this->fail('Response::redirect sem sanitizacao completa de URL de redirecionamento.', $this->relative($file));
     }
 
     private function testNoMutatingGetLinksInViews(): void
@@ -216,7 +246,10 @@ final class SecuritySuite
     private function testProductionConfigWarnings(): void
     {
         $config = require $this->root . '/config.php';
+        $app = (array) ($config['app'] ?? []);
         $security = (array) ($config['security'] ?? []);
+        $environment = strtolower(trim((string) ($app['environment'] ?? 'production')));
+        $isProduction = in_array($environment, ['production', 'prod', 'live'], true);
 
         $tokenKey = trim((string) ($security['token_cipher_key'] ?? ''));
         if ($tokenKey === '') {
@@ -238,6 +271,325 @@ final class SecuritySuite
         } else {
             $this->pass('Bloqueio de endpoints privados para webhooks habilitado por padrao.');
         }
+
+        $hostGuardCompatibilityMode = (bool) ($security['host_guard_compatibility_mode'] ?? false);
+        if ($isProduction && $hostGuardCompatibilityMode) {
+            $this->warn('security.host_guard_compatibility_mode=true em producao amplia risco de host bypass legado.');
+        } else {
+            $this->pass('HostGuard compatibility mode seguro para ambiente atual.');
+        }
+
+        $allowedHosts = array_values(array_filter(array_map(
+            static fn ($host): string => strtolower(trim((string) $host)),
+            (array) ($security['allowed_hosts'] ?? [])
+        ), static fn (string $host): bool => $host !== ''));
+
+        if (!$isProduction) {
+            $this->pass('Validacao de allowed_hosts para producao nao se aplica ao ambiente atual.');
+            return;
+        }
+
+        if ($allowedHosts === []) {
+            $this->warn('security.allowed_hosts vazio em producao. Defina dominios oficiais via ALLOWED_HOSTS.');
+            return;
+        }
+
+        $localDefaults = ['localhost', '127.0.0.1', '::1'];
+        $nonLocalHosts = array_values(array_diff($allowedHosts, $localDefaults));
+        if ($nonLocalHosts === []) {
+            $this->warn('security.allowed_hosts em producao contem apenas hosts locais.');
+            return;
+        }
+
+        $this->pass('security.allowed_hosts contem hosts nao locais para producao.');
+    }
+
+    private function testAuthControllerAvoidsRuntimePasswordResetDdl(): void
+    {
+        $file = $this->root . '/client/Controller/AuthController.php';
+        $content = $this->readFile($file);
+
+        if (str_contains($content, 'CREATE TABLE IF NOT EXISTS password_resets')) {
+            $this->fail(
+                'AuthController ainda tenta criar schema de password_resets em runtime.',
+                $this->relative($file)
+            );
+            return;
+        }
+
+        $this->pass('AuthController nao cria schema de password_resets em runtime.');
+    }
+
+    private function testAuthLibraryRuntimeMutationGuard(): void
+    {
+        $file = $this->root . '/system/Library/Auth.php';
+        $content = $this->readFile($file);
+
+        $hasRuntimeAlter = str_contains($content, 'ALTER TABLE users ADD COLUMN language_code');
+        if (!$hasRuntimeAlter) {
+            $this->pass('Auth library sem alteracao de schema runtime para users.language_code.');
+            return;
+        }
+
+        $hasGuardMethod = str_contains($content, 'runtimeSchemaMutationsAllowed');
+        $hasConfigFlag = str_contains($content, 'security.runtime_schema_mutations');
+        if ($hasGuardMethod && $hasConfigFlag) {
+            $this->pass('Auth library protege ALTER TABLE runtime por security.runtime_schema_mutations.');
+            return;
+        }
+
+        $this->fail(
+            'Auth library altera schema runtime sem guard por configuracao de seguranca.',
+            $this->relative($file)
+        );
+    }
+
+    private function testRuntimeSchemaMutationGuards(): void
+    {
+        $targets = [
+            $this->root . '/system/Library/SubscriptionService.php',
+            $this->root . '/system/Library/SocialPublishingService.php',
+            $this->root . '/system/Library/ObservabilityService.php',
+            $this->root . '/system/Library/JobMonitorService.php',
+            $this->root . '/system/Library/FeatureFlagService.php',
+            $this->root . '/system/Library/CampaignTrackingService.php',
+            $this->root . '/system/Library/AutomationService.php',
+            $this->root . '/client/Model/SocialModel.php',
+            $this->root . '/client/Model/PlannerModel.php',
+            $this->root . '/admin/Model/UserGroupsModel.php',
+        ];
+
+        $issues = [];
+        foreach ($targets as $file) {
+            $content = $this->readFile($file);
+            $hasRuntimeDdl = str_contains($content, 'CREATE TABLE IF NOT EXISTS')
+                || str_contains($content, 'ALTER TABLE');
+            if (!$hasRuntimeDdl) {
+                continue;
+            }
+
+            $hasGuardMethod = str_contains($content, 'runtimeSchemaMutationsAllowed');
+            $hasConfigFlag = str_contains($content, 'security.runtime_schema_mutations');
+            if (!$hasGuardMethod || !$hasConfigFlag) {
+                $issues[] = $this->relative($file);
+            }
+        }
+
+        if (empty($issues)) {
+            $this->pass('Componentes com DDL runtime possuem guard por security.runtime_schema_mutations.');
+            return;
+        }
+
+        $this->fail(
+            'Componentes com DDL runtime sem guard por security.runtime_schema_mutations.',
+            implode(' | ', $issues)
+        );
+    }
+
+    private function testSecurityHeadersBaseline(): void
+    {
+        $config = require $this->root . '/config.php';
+        $security = (array) ($config['security'] ?? []);
+        $headers = (array) ($security['headers'] ?? []);
+        $auth = (array) ($security['auth'] ?? []);
+        $app = (array) ($config['app'] ?? []);
+        $environment = strtolower(trim((string) ($app['environment'] ?? 'production')));
+        $isProduction = in_array($environment, ['production', 'prod', 'live'], true);
+
+        if (!array_key_exists('enabled', $headers)) {
+            $this->fail('security.headers.enabled ausente em config.php.', 'security.headers');
+            return;
+        }
+
+        $csp = trim((string) ($headers['content_security_policy'] ?? ''));
+        if ($csp === '') {
+            $this->warn('security.headers.content_security_policy vazio. Defina CSP para reduzir superficie de XSS.');
+        } else {
+            $this->pass('CSP configurada em security.headers.content_security_policy.');
+            if (str_contains(strtolower($csp), "'unsafe-eval'")) {
+                $this->warn("CSP inclui 'unsafe-eval'. Mantenha apenas se houver dependencia tecnica comprovada.");
+            }
+        }
+
+        $hsts = (array) ($headers['hsts'] ?? []);
+        $hstsEnabled = (bool) ($hsts['enabled'] ?? false);
+        if ($isProduction && !$hstsEnabled) {
+            $this->warn('HSTS desabilitado em producao. Recomenda-se habilitar quando HTTPS estiver estavel.');
+        } else {
+            $this->pass('Politica HSTS coerente com o ambiente atual.');
+        }
+
+        if (!array_key_exists('fail_open_on_security_error', $auth)) {
+            $this->fail('security.auth.fail_open_on_security_error ausente em config.php.', 'security.auth');
+            return;
+        }
+
+        $failOpen = (bool) $auth['fail_open_on_security_error'];
+        if ($isProduction && $failOpen) {
+            $this->warn('security.auth.fail_open_on_security_error=true em producao prioriza disponibilidade sobre seguranca.');
+            return;
+        }
+
+        $runtimeSchemaMutations = (bool) ($security['runtime_schema_mutations'] ?? false);
+        if ($isProduction && $runtimeSchemaMutations) {
+            $this->warn('security.runtime_schema_mutations=true em producao aumenta risco operacional e de seguranca.');
+            return;
+        }
+
+        $this->pass('Politica fail-open/fail-closed de autenticacao configurada por ambiente.');
+    }
+
+    private function testLandingHostGuardCoverage(): void
+    {
+        $file = $this->root . '/index.php';
+        $content = $this->readFile($file);
+
+        $usesAllowedCheck = str_contains($content, 'HostGuard::isAllowedRequestHost');
+        $usesEffectiveHost = str_contains($content, 'HostGuard::effectiveHost');
+
+        if ($usesAllowedCheck && $usesEffectiveHost) {
+            $this->pass('Landing principal aplica HostGuard para validacao e resolucao de host efetivo.');
+            return;
+        }
+
+        $this->fail('Landing principal nao cobre HostGuard de forma consistente.', $this->relative($file));
+    }
+
+    private function testLandingSecurityHeadersCoverage(): void
+    {
+        $file = $this->root . '/index.php';
+        $content = $this->readFile($file);
+
+        $checks = [
+            'X-Content-Type-Options',
+            'Content-Security-Policy',
+            'Strict-Transport-Security',
+            "securityConfig['headers']",
+        ];
+
+        foreach ($checks as $needle) {
+            if (!str_contains($content, $needle)) {
+                $this->fail(
+                    'Landing principal sem cobertura completa de headers de seguranca.',
+                    $this->relative($file) . ' missing=' . $needle
+                );
+                return;
+            }
+        }
+
+        $this->pass('Landing principal aplica headers de seguranca configuraveis.');
+    }
+
+    private function testLandingProxyAwareHttpsCoverage(): void
+    {
+        $file = $this->root . '/index.php';
+        $content = $this->readFile($file);
+
+        $checks = [
+            str_contains($content, 'nosfir_request_is_https'),
+            str_contains($content, "trusted_proxies"),
+        ];
+
+        if (!in_array(false, $checks, true)) {
+            $this->pass('Landing principal considera HTTPS em proxy confiavel para scheme/HSTS.');
+            return;
+        }
+
+        $this->fail(
+            'Landing principal sem cobertura completa de HTTPS via proxy confiavel.',
+            $this->relative($file)
+        );
+    }
+
+    private function testSessionSecureCookieProxyAwareness(): void
+    {
+        $sessionFile = $this->root . '/system/Engine/Session.php';
+        $sessionContent = $this->readFile($sessionFile);
+        $applicationFile = $this->root . '/system/Engine/Application.php';
+        $applicationContent = $this->readFile($applicationFile);
+
+        $checks = [
+            str_contains($sessionContent, 'requestIsHttps('),
+            str_contains($sessionContent, 'nosfir_request_is_https'),
+            str_contains($sessionContent, 'HTTP_X_FORWARDED_PROTO'),
+            str_contains($sessionContent, 'trusted_proxies'),
+            str_contains($applicationContent, 'nosfir_request_is_https'),
+            str_contains($applicationContent, "'trusted_proxies' => (array) \$config->get('security.trusted_proxies', [])"),
+        ];
+
+        if (!in_array(false, $checks, true)) {
+            $this->pass('Sessao considera HTTPS em proxy confiavel para cookie Secure.');
+            return;
+        }
+
+        $this->fail(
+            'Sessao sem cobertura completa para cookie Secure atras de proxy confiavel.',
+            $this->relative($sessionFile) . ' | ' . $this->relative($applicationFile)
+        );
+    }
+
+    private function testApplicationEnvironmentOverrides(): void
+    {
+        $file = $this->root . '/system/Engine/Application.php';
+        $content = $this->readFile($file);
+
+        $checks = [
+            str_contains($content, 'applyEnvironmentOverrides'),
+            str_contains($content, "'DB_HOST'"),
+            str_contains($content, "'DB_PORT'"),
+            str_contains($content, "'DB_DATABASE'"),
+            str_contains($content, "'DB_USERNAME'"),
+            str_contains($content, "'DB_PASSWORD'"),
+        ];
+
+        if (!in_array(false, $checks, true)) {
+            $this->pass('Application suporta overrides por variaveis de ambiente para configuracao de banco.');
+            return;
+        }
+
+        $this->fail(
+            'Application sem cobertura completa de overrides DB_* por ambiente.',
+            $this->relative($file)
+        );
+    }
+
+    private function testSensitiveStorageFilesAreNotVersioned(): void
+    {
+        if (!is_dir($this->root . '/.git')) {
+            $this->warn('Repositorio Git nao encontrado para validar versionamento de arquivos sensiveis.');
+            return;
+        }
+
+        $paths = [
+            'system/Storage/config.php',
+            'system/Storage/config-local.php',
+            'system/Storage/config copy.php',
+            'system/Storage/sessions/sess_*',
+        ];
+
+        $command = 'git -C ' . escapeshellarg($this->root) . ' ls-files -- '
+            . implode(' ', array_map('escapeshellarg', $paths));
+
+        $output = [];
+        $exitCode = 0;
+        @exec($command, $output, $exitCode);
+
+        if ($exitCode !== 0) {
+            $this->warn('Nao foi possivel validar arquivos sensiveis versionados via git ls-files.');
+            return;
+        }
+
+        $tracked = array_values(array_filter(array_map(
+            static fn ($line): string => trim((string) $line),
+            $output
+        ), static fn (string $line): bool => $line !== ''));
+
+        if ($tracked === []) {
+            $this->pass('Arquivos sensiveis de storage nao estao versionados no Git.');
+            return;
+        }
+
+        $this->fail('Arquivos sensiveis de storage ainda estao versionados no Git.', implode(' | ', $tracked));
     }
 
     private function testRawArrayEchoHeuristic(): void
@@ -276,6 +628,77 @@ final class SecuritySuite
         }
 
         $this->fail('Heuristica encontrou eco bruto suspeito em views.', implode(' | ', $issues));
+    }
+
+    private function testCriticalViewsOutputEscapingPolicy(): void
+    {
+        $criticalFiles = [
+            'admin/View/users/index.php',
+            'client/View/billing/index.php',
+            'admin/View/suggestions/form.php',
+            'admin/View/holidays/form.php',
+        ];
+
+        $issues = [];
+        $pattern = '/<\?=\s*(.*?)\s*\?>/s';
+
+        foreach ($criticalFiles as $relativePath) {
+            $file = $this->root . '/' . $relativePath;
+            if (!is_file($file)) {
+                $issues[] = $relativePath . ':missing';
+                continue;
+            }
+
+            $content = $this->readFile($file);
+            if (!preg_match_all($pattern, $content, $matches, PREG_OFFSET_CAPTURE) || empty($matches[1])) {
+                continue;
+            }
+
+            foreach ($matches[1] as $match) {
+                $expression = (string) ($match[0] ?? '');
+                $offset = (int) ($match[1] ?? 0);
+                $line = substr_count(substr($content, 0, max(0, $offset)), "\n") + 1;
+                $normalized = trim((string) preg_replace('/\s+/', ' ', $expression));
+
+                if ($normalized === '') {
+                    continue;
+                }
+
+                if ($this->isSafeCriticalViewExpression($normalized)) {
+                    continue;
+                }
+
+                $issues[] = $relativePath . ':' . $line . ' expr=' . $normalized;
+            }
+        }
+
+        if ($issues === []) {
+            $this->pass('Views criticas seguem politica de saida escapada com excecoes controladas.');
+            return;
+        }
+
+        $this->fail('Views criticas com saida curta fora da politica de escape.', implode(' | ', $issues));
+    }
+
+    private function isSafeCriticalViewExpression(string $expression): bool
+    {
+        if (str_starts_with($expression, 'e(') || str_starts_with($expression, 'csrf_field(')) {
+            return true;
+        }
+
+        if (preg_match('/^\((?:int|float|bool)\)\s*.+$/', $expression) === 1) {
+            return true;
+        }
+
+        if (preg_match('/^.+\?\s*\'[^\']*\'\s*:\s*\'[^\']*\'$/s', $expression) === 1) {
+            return true;
+        }
+
+        if (preg_match('/^.+\?\s*e\(.+\)\s*:\s*e\(.+\)$/s', $expression) === 1) {
+            return true;
+        }
+
+        return false;
     }
 
     private function extractPublicMethods(string $code): array

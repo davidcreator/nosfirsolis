@@ -4,6 +4,8 @@ namespace System\Library;
 
 class PlannerService
 {
+    use TemporalClockTrait;
+
     public function __construct(private readonly Database $db)
     {
     }
@@ -14,7 +16,7 @@ class PlannerService
             return 0;
         }
 
-        $planYear = (int) date('Y', strtotime($startDate));
+        $planYear = $this->extractYear($startDate);
 
         $sql = 'SELECT cs.*
                 FROM content_suggestions cs
@@ -54,12 +56,18 @@ class PlannerService
         foreach ($suggestions as $suggestion) {
             $plannedDate = $suggestion['suggestion_date'];
             if ((int) $suggestion['is_recurring'] === 1) {
-                $plannedDate = $planYear . '-' . date('m-d', strtotime($suggestion['suggestion_date']));
+                $monthDay = $this->extractMonthDay((string) ($suggestion['suggestion_date'] ?? ''));
+                if ($monthDay === null) {
+                    continue;
+                }
+
+                $plannedDate = sprintf('%04d-%s', $planYear, $monthDay);
                 if ($plannedDate < $startDate || $plannedDate > $endDate) {
                     continue;
                 }
             }
 
+            $timestamp = $this->clockDateTimeNow();
             $this->db->insert('content_plan_items', [
                 'content_plan_id' => $planId,
                 'planned_date' => $plannedDate,
@@ -72,12 +80,39 @@ class PlannerService
                 'channels_json' => json_encode([]),
                 'status' => 'planned',
                 'manual_note' => null,
-                'created_at' => date('Y-m-d H:i:s'),
-                'updated_at' => date('Y-m-d H:i:s'),
+                'created_at' => $timestamp,
+                'updated_at' => $timestamp,
             ]);
             $inserted++;
         }
 
         return $inserted;
+    }
+
+    private function extractYear(string $date): int
+    {
+        if (preg_match('/^(\d{4})-\d{2}-\d{2}$/', trim($date), $matches) === 1) {
+            $year = (int) ($matches[1] ?? 0);
+            if ($year >= 1970 && $year <= 2100) {
+                return $year;
+            }
+        }
+
+        return (int) $this->clockFormat('Y');
+    }
+
+    private function extractMonthDay(string $date): ?string
+    {
+        if (preg_match('/^\d{4}-(\d{2})-(\d{2})$/', trim($date), $matches) !== 1) {
+            return null;
+        }
+
+        $month = (int) ($matches[1] ?? 0);
+        $day = (int) ($matches[2] ?? 0);
+        if ($month < 1 || $month > 12 || $day < 1 || $day > 31) {
+            return null;
+        }
+
+        return sprintf('%02d-%02d', $month, $day);
     }
 }

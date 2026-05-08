@@ -1,16 +1,37 @@
 <?php
 $requestScheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
 $requestHost = (string) ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? 'localhost');
+$requestHost = preg_replace('/[^a-z0-9\.\-:\[\]]/i', '', $requestHost) ?? 'localhost';
+$requestHost = trim($requestHost) !== '' ? $requestHost : 'localhost';
 $rootPath = rtrim(dirname(base_path_url()), '/');
 if ($rootPath === '.' || $rootPath === '/') {
     $rootPath = '';
 }
 $faviconPath = $rootPath . '/image/solis.png';
 $logoPath = $rootPath . '/image/solis_logo_wt.png';
-$pageUrl = $requestScheme . '://' . $requestHost . (string) ($_SERVER['REQUEST_URI'] ?? (base_path_url() . '/'));
-$metaTitle = (string) ($title ?? $app_name ?? $t('layout.title_default', 'Planner'));
-$metaDescription = (string) $t('layout.header_subtitle', 'Planejamento anual, mensal e por periodo com camadas estrategicas.');
-$ogImageUrl = $requestScheme . '://' . $requestHost . $logoPath;
+$ogImagePath = $rootPath . '/image/solis_og_1200x630.png';
+$requestUri = (string) ($_SERVER['REQUEST_URI'] ?? (base_path_url() . '/'));
+$requestPath = (string) (parse_url($requestUri, PHP_URL_PATH) ?? (base_path_url() . '/'));
+$pageUrl = $requestScheme . '://' . $requestHost . $requestUri;
+$canonicalUrl = $requestScheme . '://' . $requestHost . $requestPath;
+$brandName = (string) ($app_name ?? $t('layout.title_default', 'Solis'));
+$pageTitle = trim((string) ($title ?? ''));
+$metaTitle = $brandName;
+if ($pageTitle !== '') {
+    $metaTitle = stripos($pageTitle, $brandName) !== false
+        ? $pageTitle
+        : ($pageTitle . ' | ' . $brandName);
+}
+$metaDescription = (string) $t('layout.header_subtitle', 'Planejamento anual, mensal e por período com camadas estratégicas.');
+$metaRobots = !empty($current_user) ? 'noindex, nofollow, noarchive' : 'index, follow';
+$ogImageUrl = $requestScheme . '://' . $requestHost . $ogImagePath;
+$languageCode = strtolower((string) ($language_code ?? 'en-us'));
+$ogLocale = str_replace('-', '_', $languageCode);
+if ($ogLocale === 'pt_br') {
+    $ogLocale = 'pt_BR';
+} elseif ($ogLocale === 'en_us') {
+    $ogLocale = 'en_US';
+}
 ?>
 <!doctype html>
 <html lang="<?= e($language_code ?? 'en-us') ?>">
@@ -18,16 +39,24 @@ $ogImageUrl = $requestScheme . '://' . $requestHost . $logoPath;
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= e($metaTitle) ?></title>
+    <meta name="description" content="<?= e($metaDescription) ?>">
+    <meta name="robots" content="<?= e($metaRobots) ?>">
+    <link rel="canonical" href="<?= e($canonicalUrl) ?>">
     <link rel="icon" type="image/png" href="<?= e($faviconPath) ?>">
     <meta property="og:type" content="website">
+    <meta property="og:locale" content="<?= e($ogLocale) ?>">
     <meta property="og:title" content="<?= e($metaTitle) ?>">
     <meta property="og:description" content="<?= e($metaDescription) ?>">
     <meta property="og:url" content="<?= e($pageUrl) ?>">
     <meta property="og:image" content="<?= e($ogImageUrl) ?>">
-    <meta property="og:site_name" content="<?= e($app_name ?? 'Solis') ?>">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="<?= e('Solis - Planejamento estratégico e operação digital') ?>">
+    <meta property="og:site_name" content="<?= e($brandName) ?>">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="<?= e($metaTitle) ?>">
     <meta name="twitter:description" content="<?= e($metaDescription) ?>">
+    <meta name="twitter:url" content="<?= e($pageUrl) ?>">
     <meta name="twitter:image" content="<?= e($ogImageUrl) ?>">
     <link rel="stylesheet" href="<?= e(asset_url('fontawesome/css/all.min.css')) ?>">
     <link rel="stylesheet" href="<?= e(asset_url('css/client.css')) ?>">
@@ -165,7 +194,7 @@ $showTopNotice = $currentRoute === 'dashboard/index' || str_starts_with($current
                                 <div class="language-dropdown-menu">
                                     <div class="language-dropdown-header">
                                         <span><i class="fa-solid fa-language"></i> Translate</span>
-                                        <span aria-hidden="true">�</span>
+                                        <span aria-hidden="true">×</span>
                                     </div>
                                     <div class="language-dropdown-body">
                                         <p class="language-dropdown-label">Languages</p>
@@ -399,7 +428,6 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 </body>
 </html>
-
 
 
 

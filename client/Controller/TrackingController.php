@@ -2,12 +2,6 @@
 
 namespace Client\Controller;
 
-use System\Library\AutomationService;
-use System\Library\CampaignTrackingService;
-use System\Library\JobMonitorService;
-use System\Library\ObservabilityService;
-use System\Library\SubscriptionService;
-
 class TrackingController extends BaseController
 {
     public function index(): void
@@ -15,14 +9,14 @@ class TrackingController extends BaseController
         $this->boot('client.tracking', 'tracking.campaign_links');
 
         $userId = (int) ($this->auth->user()['id'] ?? 0);
-        $subscription = new SubscriptionService($this->registry);
+        $subscription = $this->subscriptionService();
         $feature = $subscription->evaluateFeature($userId, 'allow_tracking_links');
         if (empty($feature['allowed'])) {
             flash('error', (string) ($feature['message'] ?? 'Recurso indisponivel no seu plano atual.'));
             $this->redirectToRoute('billing/index');
         }
 
-        $tracking = new CampaignTrackingService($this->registry);
+        $tracking = $this->campaignTrackingService();
         $tracking->ensureTables();
 
         $this->render('tracking/index', [
@@ -40,7 +34,7 @@ class TrackingController extends BaseController
         $this->ensurePostWithCsrf();
 
         $userId = (int) ($this->auth->user()['id'] ?? 0);
-        $subscription = new SubscriptionService($this->registry);
+        $subscription = $this->subscriptionService();
         $feature = $subscription->evaluateFeature($userId, 'allow_tracking_links');
         if (empty($feature['allowed'])) {
             flash('error', (string) ($feature['message'] ?? 'Recurso indisponivel no seu plano atual.'));
@@ -53,7 +47,7 @@ class TrackingController extends BaseController
             $this->redirectToRoute('billing/index');
         }
 
-        $tracking = new CampaignTrackingService($this->registry);
+        $tracking = $this->campaignTrackingService();
         $tracking->ensureTables();
 
         $result = $tracking->createTrackedLink($userId, [
@@ -71,12 +65,12 @@ class TrackingController extends BaseController
             'notes' => (string) $this->request->post('notes', ''),
         ]);
 
-        $job = new JobMonitorService($this->registry);
+        $job = $this->jobMonitorService();
         $job->checkin('tracking.create_link', $result ? 'ok' : 'warning', null, [
             'user_id' => $userId,
         ], $result ? null : $this->t('tracking.log_create_error', 'Falha ao criar link rastreável'));
 
-        $obs = new ObservabilityService($this->registry);
+        $obs = $this->observabilityService();
         $obs->log(
             $result ? 'info' : 'warning',
             'tracking',
@@ -96,7 +90,7 @@ class TrackingController extends BaseController
             $this->redirectToRoute('tracking/index');
         }
 
-        $automation = new AutomationService($this->registry);
+        $automation = $this->automationService();
         $automation->dispatch('tracking.link_created', [
             'tracking_id' => (int) ($result['id'] ?? 0),
             'short_code' => (string) ($result['short_code'] ?? ''),
@@ -118,7 +112,7 @@ class TrackingController extends BaseController
         $this->ensurePostWithCsrf();
 
         $userId = (int) ($this->auth->user()['id'] ?? 0);
-        $tracking = new CampaignTrackingService($this->registry);
+        $tracking = $this->campaignTrackingService();
         $tracking->archiveById($id, $userId);
 
         flash('success', $this->t('tracking.flash_archived', 'Link rastreável arquivado.'));
@@ -127,7 +121,7 @@ class TrackingController extends BaseController
 
     public function redirect(string $shortCode): void
     {
-        $tracking = new CampaignTrackingService($this->registry);
+        $tracking = $this->campaignTrackingService();
         $url = $tracking->resolveRedirect($shortCode);
 
         if ($url === null || $url === '') {
@@ -137,7 +131,7 @@ class TrackingController extends BaseController
             exit;
         }
 
-        $automation = new AutomationService($this->registry);
+        $automation = $this->automationService();
         $automation->dispatch('tracking.link_clicked', [
             'short_code' => $shortCode,
             'target_url' => $url,

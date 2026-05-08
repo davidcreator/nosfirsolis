@@ -2,10 +2,6 @@
 
 namespace Client\Controller;
 
-use DateTimeImmutable;
-use System\Library\CalendarService;
-use System\Library\SubscriptionService;
-
 class CalendarController extends BaseController
 {
     public function index(): void
@@ -17,16 +13,21 @@ class CalendarController extends BaseController
             $mode = 'monthly';
         }
 
-        $year = (int) $this->request->get('year', date('Y'));
+        $defaultYear = (int) $this->formatDateTime('Y');
+        $defaultMonth = (int) $this->formatDateTime('n');
+        $defaultStartDate = $this->formatDateTime('Y-m-01');
+        $defaultEndDate = $this->formatDateTime('Y-m-t');
+
+        $year = (int) $this->request->get('year', (string) $defaultYear);
         if ($year < 1970 || $year > 2100) {
-            $year = (int) date('Y');
+            $year = $defaultYear;
         }
 
-        $month = (int) $this->request->get('month', date('n'));
+        $month = (int) $this->request->get('month', (string) $defaultMonth);
         $month = max(1, min(12, $month));
 
-        $startDate = (string) $this->request->get('start_date', date('Y-m-01'));
-        $endDate = (string) $this->request->get('end_date', date('Y-m-t'));
+        $startDate = (string) $this->request->get('start_date', $defaultStartDate);
+        $endDate = (string) $this->request->get('end_date', $defaultEndDate);
         if ($endDate < $startDate) {
             [$startDate, $endDate] = [$endDate, $startDate];
         }
@@ -34,7 +35,7 @@ class CalendarController extends BaseController
         $filters = $this->filtersFromRequest();
         $calendarModel = $this->loader->model('calendar');
         $plannerModel = $this->loader->model('planner');
-        $calendarService = new CalendarService();
+        $calendarService = $this->calendarService();
         $filterData = $calendarModel->filterData();
         $userId = (int) ($this->auth->user()['id'] ?? 0);
 
@@ -54,7 +55,7 @@ class CalendarController extends BaseController
 
             for ($m = 1; $m <= 12; $m++) {
                 $monthStart = sprintf('%04d-%02d-01', $year, $m);
-                $monthEnd = (new DateTimeImmutable($monthStart))->modify('last day of this month')->format('Y-m-d');
+                $monthEnd = $this->monthEndDate($monthStart) ?? $monthStart;
                 $events = $calendarModel->eventsByPeriod($monthStart, $monthEnd, $filters);
                 $this->mergeManualLayers($events, $notes, $extraEvents, $monthStart, $monthEnd);
 
@@ -64,7 +65,7 @@ class CalendarController extends BaseController
 
         if ($mode === 'monthly') {
             $visibleStart = sprintf('%04d-%02d-01', $year, $month);
-            $visibleEnd = (new DateTimeImmutable($visibleStart))->modify('last day of this month')->format('Y-m-d');
+            $visibleEnd = $this->monthEndDate($visibleStart) ?? $visibleStart;
             $events = $calendarModel->eventsByPeriod($visibleStart, $visibleEnd, $filters);
             $notes = $plannerModel->notesByPeriod($userId, $visibleStart, $visibleEnd);
             $extraEvents = $plannerModel->extraEventsByPeriod($userId, $visibleStart, $visibleEnd);
@@ -151,8 +152,8 @@ class CalendarController extends BaseController
     {
         $params = [
             'mode' => 'period',
-            'start_date' => (string) $this->request->get('start_date', date('Y-m-01')),
-            'end_date' => (string) $this->request->get('end_date', date('Y-m-t')),
+            'start_date' => (string) $this->request->get('start_date', $this->formatDateTime('Y-m-01')),
+            'end_date' => (string) $this->request->get('end_date', $this->formatDateTime('Y-m-t')),
         ];
         $query = http_build_query(array_merge($params, $this->filtersFromRequest()));
         $this->response->redirect(route_url('calendar/index' . ($query !== '' ? '?' . $query : '')));
@@ -204,7 +205,7 @@ class CalendarController extends BaseController
         }
 
         $userId = (int) ($this->auth->user()['id'] ?? 0);
-        $subscription = new SubscriptionService($this->registry);
+        $subscription = $this->subscriptionService();
         $quota = $subscription->evaluateQuota($userId, 'max_calendar_extra_events_per_month', 1);
         if (empty($quota['allowed'])) {
             flash('error', (string) ($quota['message'] ?? 'Limite de eventos extras atingido para o plano atual.'));
@@ -305,12 +306,17 @@ class CalendarController extends BaseController
 
     private function buildReturnQueryFromPost(): string
     {
+        $defaultYear = $this->formatDateTime('Y');
+        $defaultMonth = $this->formatDateTime('n');
+        $defaultStartDate = $this->formatDateTime('Y-m-01');
+        $defaultEndDate = $this->formatDateTime('Y-m-t');
+
         $base = [
             'mode' => (string) $this->request->post('return_mode', 'monthly'),
-            'year' => (string) $this->request->post('return_year', date('Y')),
-            'month' => (string) $this->request->post('return_month', date('n')),
-            'start_date' => (string) $this->request->post('return_start_date', date('Y-m-01')),
-            'end_date' => (string) $this->request->post('return_end_date', date('Y-m-t')),
+            'year' => (string) $this->request->post('return_year', $defaultYear),
+            'month' => (string) $this->request->post('return_month', $defaultMonth),
+            'start_date' => (string) $this->request->post('return_start_date', $defaultStartDate),
+            'end_date' => (string) $this->request->post('return_end_date', $defaultEndDate),
             'channel_id' => (string) $this->request->post('return_channel_id', ''),
             'objective_id' => (string) $this->request->post('return_objective_id', ''),
             'campaign_id' => (string) $this->request->post('return_campaign_id', ''),

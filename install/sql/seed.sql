@@ -85,8 +85,8 @@ VALUES
 INSERT INTO settings (key_name, value_text, autoload, status, created_at, updated_at)
 VALUES
 ('billing.currency', 'BRL', 1, 1, NOW(), NOW()),
-('billing.validation_mode', 'automatic', 1, 1, NOW(), NOW()),
-('billing.mock_auto_approve', '1', 1, 1, NOW(), NOW()),
+('billing.validation_mode', 'manual', 1, 1, NOW(), NOW()),
+('billing.mock_auto_approve', '0', 1, 1, NOW(), NOW()),
 ('billing.method.pix', '1', 1, 1, NOW(), NOW()),
 ('billing.method.boleto', '1', 1, 1, NOW(), NOW()),
 ('billing.method.card', '1', 1, 1, NOW(), NOW()),

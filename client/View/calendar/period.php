@@ -18,19 +18,19 @@ $periodQuery = http_build_query([
 <section class="panel dashboard-hero">
     <div class="hero-content">
         <span class="hero-badge"><i class="fa-solid fa-timeline"></i> Calendar Hub</span>
-        <h2><i class="fa-solid fa-timeline"></i> Calendario por periodo</h2>
-        <p>Acompanhe janelas personalizadas para validar agenda, campanhas, sugestoes e observacoes do time.</p>
+        <h2><i class="fa-solid fa-timeline"></i> Calendário por período</h2>
+        <p>Acompanhe janelas personalizadas para validar agenda, campanhas, sugestões e observações do time.</p>
     </div>
     <div class="hero-actions">
         <a class="btn" href="#calendar-period-table"><i class="fa-solid fa-table"></i> Ver eventos</a>
-        <a class="btn" href="<?= e(route_url('calendar/index?' . $periodQuery)) ?>"><i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir visao principal</a>
+        <a class="btn" href="<?= e(route_url('calendar/index?' . $periodQuery)) ?>"><i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir visão principal</a>
     </div>
 </section>
 
 <section class="panel" id="calendar-period-table">
     <div class="panel-head-inline">
-        <h2><i class="fa-solid fa-calendar-check"></i> Periodo personalizado</h2>
-        <span class="meta-text"><?= e((string) $start_date) ?> ate <?= e((string) $end_date) ?></span>
+        <h2><i class="fa-solid fa-calendar-check"></i> Período personalizado</h2>
+        <span class="meta-text"><?= e((string) $start_date) ?> até <?= e((string) $end_date) ?></span>
     </div>
 
     <form method="get" class="filters-grid">
@@ -51,7 +51,7 @@ $periodQuery = http_build_query([
                 <th>Data</th>
                 <th>Feriados</th>
                 <th>Comemorativas</th>
-                <th>Sugestoes</th>
+                <th>Sugestões</th>
                 <th>Eventos base</th>
                 <th>Campanhas</th>
                 <th>Eventos extras</th>
@@ -61,7 +61,7 @@ $periodQuery = http_build_query([
             <tbody>
             <?php if (empty($events)): ?>
                 <tr>
-                    <td colspan="8">Nenhum evento encontrado para o periodo e filtros selecionados.</td>
+                    <td colspan="8">Nenhum evento encontrado para o período e filtros selecionados.</td>
                 </tr>
             <?php else: ?>
                 <?php foreach ($events as $date => $pack): ?>

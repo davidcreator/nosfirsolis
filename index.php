@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 define('DIR_ROOT', __DIR__);
+require_once DIR_ROOT . '/system/Library/HostGuard.php';
 
 $rootConfig = require DIR_ROOT . '/config.php';
 $storageConfig = [];
@@ -31,12 +32,136 @@ $appName = isset($storageConfig['app']['name']) && trim((string) $storageConfig[
         ? (string) $rootConfig['app']['name']
         : 'Solis');
 
-$scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-$host = (string) ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? 'localhost');
+$appConfig = is_array($rootConfig) ? (array) ($rootConfig['app'] ?? []) : [];
+$securityConfig = is_array($rootConfig) ? (array) ($rootConfig['security'] ?? []) : [];
+if (is_array($storageConfig)) {
+    $storageApp = (array) ($storageConfig['app'] ?? []);
+    $storageSecurity = (array) ($storageConfig['security'] ?? []);
+    if ($storageApp !== []) {
+        $appConfig = array_replace_recursive($appConfig, $storageApp);
+    }
+    if ($storageSecurity !== []) {
+        $securityConfig = array_replace_recursive($securityConfig, $storageSecurity);
+    }
+}
+
+$allowedHosts = (array) ($securityConfig['allowed_hosts'] ?? []);
+$baseUrl = (string) ($appConfig['base_url'] ?? '');
+$environmentRaw = (string) ($appConfig['environment'] ?? '');
+if (function_exists('nosfir_env_first')) {
+    $environmentOverride = nosfir_env_first(['APP_ENV', 'NOSFIRSOLIS_APP_ENV'], '');
+    if ($environmentOverride !== '') {
+        $environmentRaw = $environmentOverride;
+    }
+}
+
+$environment = function_exists('nosfir_normalize_environment')
+    ? nosfir_normalize_environment($environmentRaw)
+    : (in_array(strtolower(trim($environmentRaw)), ['dev', 'development', 'local', 'localhost'], true) ? 'development' : 'production');
+$isDevelopment = $environment === 'development';
+$requestHost = \System\Library\HostGuard::requestHost($_SERVER);
+$trustedProxies = (array) ($securityConfig['trusted_proxies'] ?? []);
+$isHttpsRequest = function_exists('nosfir_request_is_https')
+    ? nosfir_request_is_https($trustedProxies)
+    : ((!empty($_SERVER['HTTPS']) && strtolower((string) $_SERVER['HTTPS']) !== 'off')
+        || (int) ($_SERVER['SERVER_PORT'] ?? 0) === 443);
+
+// Keep setup ergonomics in development and installer flow by auto-accepting current host.
+if (($isDevelopment || !$installed) && $requestHost !== '') {
+    $normalizedAllowedHosts = \System\Library\HostGuard::normalizedAllowedHosts($allowedHosts, $baseUrl);
+    if (!in_array($requestHost, $normalizedAllowedHosts, true)) {
+        $allowedHosts[] = $requestHost;
+    }
+}
+
+if (!\System\Library\HostGuard::isAllowedRequestHost($_SERVER, $allowedHosts, $baseUrl)) {
+    $normalizedAllowedHosts = \System\Library\HostGuard::normalizedAllowedHosts($allowedHosts, $baseUrl);
+    $localDefaultHosts = ['localhost', '127.0.0.1', '::1'];
+    $onlyLocalDefaults = $normalizedAllowedHosts !== []
+        && array_diff($normalizedAllowedHosts, $localDefaultHosts) === [];
+    $requestHostIsBlockedByDefault = $requestHost !== ''
+        && !in_array($requestHost, $normalizedAllowedHosts, true);
+    $compatibilityModeEnabled = (bool) ($securityConfig['host_guard_compatibility_mode'] ?? false);
+
+    if (
+        !$isDevelopment
+        && $installed
+        && $compatibilityModeEnabled
+        && $onlyLocalDefaults
+        && $requestHostIsBlockedByDefault
+    ) {
+        error_log(
+            '[Solis] HostGuard compatibility mode (landing): allowing host because allowed_hosts still has only local defaults.'
+            . ' host=' . $requestHost
+            . ' allowed_hosts=' . json_encode($allowedHosts, JSON_UNESCAPED_UNICODE)
+        );
+    } else {
+        error_log(
+            '[Solis] Landing blocked by HostGuard. '
+            . 'env=' . $environment
+            . ' host=' . ($requestHost !== '' ? $requestHost : '(empty)')
+            . ' allowed_hosts=' . json_encode($allowedHosts, JSON_UNESCAPED_UNICODE)
+            . ' base_url=' . $baseUrl
+        );
+        if (!headers_sent()) {
+            http_response_code(400);
+            header('Content-Type: text/plain; charset=UTF-8');
+        }
+        echo 'Bad Request: host nao permitido. Configure security.allowed_hosts (ou ALLOWED_HOSTS no ambiente) com o dominio atual.';
+        exit;
+    }
+}
+
+$scheme = $isHttpsRequest ? 'https' : 'http';
+$host = \System\Library\HostGuard::effectiveHost($_SERVER, $allowedHosts, $baseUrl);
 $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''));
 $scriptDir = rtrim($scriptDir, '/');
 $base = rtrim($scheme . '://' . $host . $scriptDir, '/');
 $basePath = $scriptDir === '/' ? '' : $scriptDir;
+
+// Apply security headers in landing flow (outside Application/Response lifecycle).
+$securityHeadersConfig = (array) ($securityConfig['headers'] ?? []);
+$securityHeadersEnabled = (bool) ($securityHeadersConfig['enabled'] ?? true);
+if ($securityHeadersEnabled && !headers_sent()) {
+    $headerMap = [
+        'X-Content-Type-Options' => (string) ($securityHeadersConfig['x_content_type_options'] ?? 'nosniff'),
+        'X-Frame-Options' => (string) ($securityHeadersConfig['x_frame_options'] ?? 'SAMEORIGIN'),
+        'Referrer-Policy' => (string) ($securityHeadersConfig['referrer_policy'] ?? 'strict-origin-when-cross-origin'),
+        'Permissions-Policy' => (string) ($securityHeadersConfig['permissions_policy'] ?? 'geolocation=(), camera=(), microphone=()'),
+        'X-Permitted-Cross-Domain-Policies' => (string) ($securityHeadersConfig['x_permitted_cross_domain_policies'] ?? 'none'),
+    ];
+
+    foreach ($headerMap as $name => $value) {
+        $value = trim($value);
+        if ($value === '') {
+            continue;
+        }
+
+        header($name . ': ' . $value, true);
+    }
+
+    $contentSecurityPolicy = trim((string) ($securityHeadersConfig['content_security_policy'] ?? ''));
+    if ($contentSecurityPolicy !== '') {
+        header('Content-Security-Policy: ' . $contentSecurityPolicy, true);
+    }
+
+    $hsts = (array) ($securityHeadersConfig['hsts'] ?? []);
+    $hstsEnabled = (bool) ($hsts['enabled'] ?? false);
+    if ($hstsEnabled && $isHttpsRequest) {
+        $maxAge = max(0, (int) ($hsts['max_age'] ?? 31536000));
+        if ($maxAge > 0) {
+            $parts = ['max-age=' . $maxAge];
+            if ((bool) ($hsts['include_subdomains'] ?? true)) {
+                $parts[] = 'includeSubDomains';
+            }
+            if ((bool) ($hsts['preload'] ?? false)) {
+                $parts[] = 'preload';
+            }
+
+            header('Strict-Transport-Security: ' . implode('; ', $parts), true);
+        }
+    }
+}
 
 if (!$installed) {
     header('Location: ' . $base . '/install');

@@ -22,7 +22,9 @@
         </label>
 
         <p class="auth-inline-link">
-            <a href="<?= e(route_url('auth/forgotpassword')) ?>"><?= e($t('auth.link_recover_account', 'Recuperar conta ou senha')) ?></a>
+            <a href="<?= e(route_url('auth/forgotpassword')) ?>"><?= e($t('auth.link_recover_password', 'Esqueci minha senha')) ?></a>
+            &nbsp;|&nbsp;
+            <a href="<?= e(route_url('auth/forgotemail')) ?>"><?= e($t('auth.link_recover_email', 'Esqueci meu e-mail')) ?></a>
         </p>
 
         <button type="submit"><i class="fa-solid fa-right-to-bracket"></i> <?= e($t('auth.button_login', 'Entrar no sistema')) ?></button>

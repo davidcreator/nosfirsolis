@@ -22,6 +22,10 @@
             <input type="email" name="email" autocomplete="email" required>
         </label>
 
+        <label><?= e($t('auth.field_recovery_email_optional', 'E-mail de recuperacao (opcional)')) ?>
+            <input type="email" name="recovery_email" autocomplete="email">
+        </label>
+
         <label><?= e($t('auth.field_password', 'Senha')) ?>
             <input type="password" name="password" autocomplete="new-password" required>
         </label>

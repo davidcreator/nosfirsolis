@@ -11,8 +11,8 @@ system/   -> engine, libs, configs e servicos base
 
 ## Areas Da Aplicacao
 
-- `client`: dashboard, calendario, planos e central social.
-- `admin`: gestao de base estrategica e usuarios.
+- `client`: auth, dashboard, calendario, planos, social, tracking e billing.
+- `admin`: gestao de base estrategica, usuarios/hierarquia, operacoes e billing.
 - `install`: setup inicial e reinstalacao controlada.
 
 ## Pipeline De Execucao
@@ -25,6 +25,8 @@ system/   -> engine, libs, configs e servicos base
 6. `View` + layout
 7. `Response`
 
+No bootstrap raiz (`index.php`), o sistema valida se esta instalado via `config.php` e `system/Storage/config.php`; caso nao esteja, redireciona para `/install`.
+
 ## Roteamento
 
 Roteamento dinamico no formato:
@@ -36,11 +38,12 @@ Exemplo:
 - `plans/show/12`
 - `calendar/index?mode=monthly&year=2026&month=4`
 - `tracking/redirect/AbC123xy` (rota publica para short links)
+- `billing/payInvoice/18`
 
 ## Camadas
 
 - **Engine** (`system/Engine`): Application, Router, Request, Response, Loader, View.
-- **Library** (`system/Library`): servicos de negocio e integracao (auth, seguranca, calendario, social, exportacao, publicacao, tracking, automacao, observabilidade, jobs, feature flags).
+- **Library** (`system/Library`): servicos de negocio e integracao (auth, seguranca, calendario, social, exportacao, publicacao, tracking, automacao, observabilidade, jobs, feature flags, subscription/billing).
 - **Model** (`admin/Model`, `client/Model`): acesso a dados e regras por contexto.
 - **Controller** (`admin/Controller`, `client/Controller`): orquestracao de fluxo HTTP.
 - **View** (`admin/View`, `client/View`): camada de interface.
@@ -49,7 +52,9 @@ Exemplo:
 
 Parte do schema e criada no instalador (`install/sql/schema.sql`), e algumas estruturas sao garantidas em runtime:
 
+- `password_resets` via `Client\Controller\AuthController`
 - `security_login_attempts` e `security_audit_logs` via `SecurityService`
+- `subscription_plans`, `plan_limits`, `user_subscriptions`, `billing_*`, `user_feature_overrides` via `SubscriptionService`
 - `calendar_extra_events` e `user_calendar_colors` via `PlannerModel`
 - `social_*` tabelas via `SocialModel`
 - coluna `user_groups.hierarchy_level` via `UserGroupsModel`

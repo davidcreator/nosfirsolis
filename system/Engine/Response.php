@@ -47,10 +47,32 @@ class Response
 
     public function redirect(string $url): void
     {
+        $target = $this->normalizeRedirectUrl($url);
         if (!headers_sent()) {
-            header('Location: ' . $url, true, 302);
+            header('Location: ' . $target, true, 302);
         }
         exit;
+    }
+
+    private function normalizeRedirectUrl(string $url): string
+    {
+        $url = preg_replace('/[\r\n]+/', '', $url) ?? '';
+        $url = trim($url);
+
+        if ($url === '') {
+            return '/';
+        }
+
+        if (str_starts_with($url, '//')) {
+            return '/';
+        }
+
+        $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
+        if ($scheme !== '' && !in_array($scheme, ['http', 'https'], true)) {
+            return '/';
+        }
+
+        return $url;
     }
 
     private function hasHeaderPrefix(string $prefix): bool

@@ -2,10 +2,10 @@
 
 namespace System\Library;
 
-use DateTimeImmutable;
-
 class PlanTemplateService
 {
+    use TemporalClockTrait;
+
     public function templates(): array
     {
         return [
@@ -225,8 +225,12 @@ class PlanTemplateService
 
     private function scheduleDates(int $year, int $month, string $frequency): array
     {
-        $firstDay = new DateTimeImmutable(sprintf('%04d-%02d-01', $year, $month));
-        $lastDay = (int) $firstDay->format('t');
+        $firstDayTs = mktime(0, 0, 0, $month, 1, $year);
+        if (!is_int($firstDayTs)) {
+            return [];
+        }
+
+        $lastDay = (int) $this->clockFormatAt($firstDayTs, 't');
         $dates = [];
 
         if ($frequency === 'diario') {
@@ -248,17 +252,15 @@ class PlanTemplateService
         }
 
         // semanal (padrao): segunda-feira de cada semana.
-        $cursor = $firstDay;
-        while ((int) $cursor->format('N') !== 1) {
-            $cursor = $cursor->modify('+1 day');
-        }
-        while ((int) $cursor->format('m') === $month) {
-            $dates[] = $cursor->format('Y-m-d');
-            $cursor = $cursor->modify('+7 days');
+        $firstWeekday = (int) $this->clockFormatAt($firstDayTs, 'N');
+        $offsetToMonday = (8 - $firstWeekday) % 7;
+        $firstMonday = 1 + $offsetToMonday;
+        for ($day = $firstMonday; $day <= $lastDay; $day += 7) {
+            $dates[] = sprintf('%04d-%02d-%02d', $year, $month, $day);
         }
 
         if ($dates === []) {
-            $dates[] = $firstDay->format('Y-m-d');
+            $dates[] = sprintf('%04d-%02d-01', $year, $month);
         }
 
         return $dates;

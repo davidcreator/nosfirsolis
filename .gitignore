@@ -1,1 +1,16 @@
-﻿.env
+.env
+
+# Runtime and sensitive storage artifacts
+system/Storage/config.php
+system/Storage/config-local.php
+system/Storage/config copy.php
+system/Storage/sessions/*
+system/Storage/cache/*
+system/Storage/logs/*
+system/Storage/exports/*
+
+# Keep directory placeholders/versioned guards
+!system/Storage/sessions/.gitignore
+!system/Storage/cache/.gitignore
+!system/Storage/logs/.gitignore
+!system/Storage/exports/.gitignore

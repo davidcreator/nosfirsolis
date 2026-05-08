@@ -21,7 +21,7 @@ class SettingsModel extends AbstractCrudModel
         if ($row) {
             $this->db->update('settings', [
                 'value_text' => $value,
-                'updated_at' => date('Y-m-d H:i:s'),
+                'updated_at' => $this->modelClockDateTimeNow(),
             ], 'id = :id', ['id' => (int) $row['id']]);
             return;
         }
@@ -31,8 +31,8 @@ class SettingsModel extends AbstractCrudModel
             'value_text' => $value,
             'autoload' => 1,
             'status' => 1,
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s'),
+            'created_at' => $this->modelClockDateTimeNow(),
+            'updated_at' => $this->modelClockDateTimeNow(),
         ]);
     }
 }
