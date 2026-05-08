@@ -4,7 +4,7 @@ return array (
   'app' => 
   array (
     'name' => 'Solis',
-    'environment' => 'production',
+    'environment' => 'development',
     'base_url' => 'https://davidcreator.com/solis/',
     'installed' => true,
     'timezone' => 'America/Sao_Paulo',
@@ -18,7 +18,7 @@ return array (
     'port' => 3306,
     'database' => 'u163008030_nosfirsolis',
     'username' => 'u163008030_solisadmin',
-    'password' => '+DsW^?XVSWh5+99r,2026Ktb',
+    'password' => '',
     'charset' => 'utf8mb4',
     'collation' => 'utf8mb4_unicode_ci',
   ),
