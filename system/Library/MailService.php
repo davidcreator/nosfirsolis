@@ -226,7 +226,7 @@ class MailService
 
     private function smtpHeloHost(): string
     {
-        $host = trim((string) ($_SERVER['SERVER_NAME'] ?? 'localhost'));
+        $host = $this->effectiveRequestHost();
         if ($host === '' || !preg_match('/^[a-z0-9\.\-]+$/i', $host)) {
             return 'localhost';
         }
@@ -322,8 +322,8 @@ class MailService
             return $configured;
         }
 
-        $host = trim((string) ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? 'localhost'));
-        if ($host === '' || filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+        $host = $this->effectiveRequestHost();
+        if ($host === '' || filter_var($host, FILTER_VALIDATE_IP)) {
             $host = 'localhost';
         }
 
@@ -332,6 +332,25 @@ class MailService
         }
 
         return 'no-reply@' . strtolower(trim($host));
+    }
+
+    private function effectiveRequestHost(): string
+    {
+        $request = $this->registry->get('request');
+        $server = is_object($request) && isset($request->server) && is_array($request->server)
+            ? $request->server
+            : [];
+
+        $host = trim((string) ($server['HTTP_HOST'] ?? ''));
+        if ($host === '') {
+            $host = trim((string) ($server['SERVER_NAME'] ?? ''));
+        }
+
+        if ($host === '') {
+            return 'localhost';
+        }
+
+        return strtolower($host);
     }
 
     private function resolveFromName(string $preferred): string

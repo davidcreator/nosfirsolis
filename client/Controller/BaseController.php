@@ -10,6 +10,7 @@ use System\Library\ContentStrategistService;
 use System\Library\ExportService;
 use System\Library\FeatureFlagService;
 use System\Library\JobMonitorService;
+use System\Library\MailService;
 use System\Library\ObservabilityService;
 use System\Library\PlanTemplateService;
 use System\Library\SocialAuthService;
@@ -26,6 +27,7 @@ abstract class BaseController extends Controller
     private ?CampaignTrackingService $campaignTrackingService = null;
     private ?AutomationService $automationService = null;
     private ?JobMonitorService $jobMonitorService = null;
+    private ?MailService $mailService = null;
     private ?ObservabilityService $observabilityService = null;
     private ?SocialPublishingService $socialPublishingService = null;
     private ?CalendarService $calendarService = null;
@@ -129,6 +131,16 @@ abstract class BaseController extends Controller
 
         $this->jobMonitorService = new JobMonitorService($this->registry);
         return $this->jobMonitorService;
+    }
+
+    protected function mailService(): MailService
+    {
+        if ($this->mailService instanceof MailService) {
+            return $this->mailService;
+        }
+
+        $this->mailService = new MailService($this->registry);
+        return $this->mailService;
     }
 
     protected function observabilityService(): ObservabilityService

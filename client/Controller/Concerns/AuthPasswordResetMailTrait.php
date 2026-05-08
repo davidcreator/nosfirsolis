@@ -123,8 +123,4 @@ trait AuthPasswordResetMailTrait
         return implode("\n", array_slice($lines, 0, 10));
     }
 
-    private function mailService(): \System\Library\MailService
-    {
-        return new \System\Library\MailService($this->registry);
-    }
 }
