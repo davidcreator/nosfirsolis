@@ -40,6 +40,7 @@ Atualizado em: **2026-05-08**.
 33. [Runbook de Merge Controlado para Producao](runbook-merge-controlado-producao-solis-2026-05-08.md)
 34. [Relatorio de Validacao Pre-Merge com Main](relatorio-validacao-pre-merge-main-solis-2026-05-08.md)
 35. [Checklist de Execucao Go-Live em Producao](checklist-execucao-go-live-producao-solis-2026-05-08.md)
+36. [Relatorio de Execucao Assistida Go-Live Local](relatorio-execucao-assistida-go-live-local-solis-2026-05-08.md)
 
 ## Guias Complementares (Fora Deste Diretorio)
 

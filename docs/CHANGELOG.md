@@ -18,6 +18,8 @@ Todas as mudancas relevantes de codigo e seguranca registradas neste diretorio d
   - `docs/relatorio-validacao-pre-merge-main-solis-2026-05-08.md`
 - Novo checklist operacional de execucao de go-live em producao:
   - `docs/checklist-execucao-go-live-producao-solis-2026-05-08.md`
+- Novo relatorio de execucao assistida de go-live local:
+  - `docs/relatorio-execucao-assistida-go-live-local-solis-2026-05-08.md`
 - Novo script de benchmark reutilizavel para endpoints de autenticacao:
   - `tools/performance/run-auth-http-benchmark.php`
 - Relatorio tecnico consolidado com benchmark pos-refatoracao:
