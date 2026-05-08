@@ -3,10 +3,24 @@
 namespace Admin\Controller;
 
 use System\Engine\Controller;
+use System\Library\AutomationService;
+use System\Library\CacheMaintenanceService;
 use System\Library\FeatureFlagService;
+use System\Library\JobMonitorService;
+use System\Library\ObservabilityService;
+use System\Library\SubscriptionService;
+use System\Library\UsersListFilterService;
 
 abstract class BaseController extends Controller
 {
+    private ?FeatureFlagService $featureFlagService = null;
+    private ?SubscriptionService $subscriptionService = null;
+    private ?AutomationService $automationService = null;
+    private ?JobMonitorService $jobMonitorService = null;
+    private ?ObservabilityService $observabilityService = null;
+    private ?CacheMaintenanceService $cacheMaintenanceService = null;
+    private ?UsersListFilterService $usersListFilterService = null;
+
     protected function boot(string $permission = '', ?string $featureKey = null): void
     {
         $this->requireAuth($permission);
@@ -35,7 +49,7 @@ abstract class BaseController extends Controller
 
     protected function requireFeature(string $featureKey): void
     {
-        $service = new FeatureFlagService($this->registry);
+        $service = $this->featureFlags();
         $enabled = $service->isEnabled($featureKey, $this->auth ? $this->auth->user() : null, 'admin');
         if ($enabled) {
             return;
@@ -52,9 +66,79 @@ abstract class BaseController extends Controller
 
     protected function render(string $template, array $data = [], ?string $layout = 'layout/main'): void
     {
-        $service = new FeatureFlagService($this->registry);
+        $service = $this->featureFlags();
         $data['feature_flags'] = $service->resolvedMap($this->auth ? $this->auth->user() : null, 'admin');
 
         parent::render($template, $data, $layout);
+    }
+
+    protected function featureFlags(): FeatureFlagService
+    {
+        if ($this->featureFlagService instanceof FeatureFlagService) {
+            return $this->featureFlagService;
+        }
+
+        $this->featureFlagService = new FeatureFlagService($this->registry);
+        return $this->featureFlagService;
+    }
+
+    protected function subscriptionService(): SubscriptionService
+    {
+        if ($this->subscriptionService instanceof SubscriptionService) {
+            return $this->subscriptionService;
+        }
+
+        $this->subscriptionService = new SubscriptionService($this->registry);
+        return $this->subscriptionService;
+    }
+
+    protected function automationService(): AutomationService
+    {
+        if ($this->automationService instanceof AutomationService) {
+            return $this->automationService;
+        }
+
+        $this->automationService = new AutomationService($this->registry);
+        return $this->automationService;
+    }
+
+    protected function jobMonitorService(): JobMonitorService
+    {
+        if ($this->jobMonitorService instanceof JobMonitorService) {
+            return $this->jobMonitorService;
+        }
+
+        $this->jobMonitorService = new JobMonitorService($this->registry);
+        return $this->jobMonitorService;
+    }
+
+    protected function observabilityService(): ObservabilityService
+    {
+        if ($this->observabilityService instanceof ObservabilityService) {
+            return $this->observabilityService;
+        }
+
+        $this->observabilityService = new ObservabilityService($this->registry);
+        return $this->observabilityService;
+    }
+
+    protected function cacheMaintenanceService(): CacheMaintenanceService
+    {
+        if ($this->cacheMaintenanceService instanceof CacheMaintenanceService) {
+            return $this->cacheMaintenanceService;
+        }
+
+        $this->cacheMaintenanceService = new CacheMaintenanceService($this->registry);
+        return $this->cacheMaintenanceService;
+    }
+
+    protected function usersListFilter(): UsersListFilterService
+    {
+        if ($this->usersListFilterService instanceof UsersListFilterService) {
+            return $this->usersListFilterService;
+        }
+
+        $this->usersListFilterService = new UsersListFilterService();
+        return $this->usersListFilterService;
     }
 }

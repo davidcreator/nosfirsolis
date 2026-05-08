@@ -4,6 +4,8 @@ namespace System\Engine;
 
 class Session
 {
+    use TemporalClockTrait;
+
     public function __construct(string $name, string $savePath, array $security = [])
     {
         if (session_status() === PHP_SESSION_ACTIVE) {
@@ -58,7 +60,7 @@ class Session
         if (ini_get('session.use_cookies')) {
             $params = session_get_cookie_params();
             setcookie(session_name(), '', [
-                'expires' => time() - 42000,
+                'expires' => $this->clockUnixNow() - 42000,
                 'path' => (string) ($params['path'] ?? '/'),
                 'domain' => (string) ($params['domain'] ?? ''),
                 'secure' => (bool) ($params['secure'] ?? false),

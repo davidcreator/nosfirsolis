@@ -43,7 +43,7 @@ $hasSavedDefaultFilters = !empty($has_saved_default_filters ?? false);
                     <option value="0"><?= e($t('users.filter_group_all', 'Todos')) ?></option>
                     <?php foreach ($filterGroupOptions as $group): ?>
                         <?php $groupId = (int) ($group['id'] ?? 0); ?>
-                        <option value="<?= $groupId ?>" <?= $groupId === (int) ($listFilters['group_id'] ?? 0) ? 'selected' : '' ?>>
+                        <option value="<?= (int) $groupId ?>" <?= $groupId === (int) ($listFilters['group_id'] ?? 0) ? 'selected' : '' ?>>
                             <?= e((string) ($group['name'] ?? '-')) ?>
                         </option>
                     <?php endforeach; ?>
@@ -55,7 +55,7 @@ $hasSavedDefaultFilters = !empty($has_saved_default_filters ?? false);
                     <option value="0"><?= e($t('users.filter_plan_all', 'Todos')) ?></option>
                     <?php foreach ($planOptions as $plan): ?>
                         <?php $optionId = (int) ($plan['id'] ?? 0); ?>
-                        <option value="<?= $optionId ?>" <?= $optionId === (int) ($listFilters['plan_id'] ?? 0) ? 'selected' : '' ?>>
+                        <option value="<?= (int) $optionId ?>" <?= $optionId === (int) ($listFilters['plan_id'] ?? 0) ? 'selected' : '' ?>>
                             <?= e((string) ($plan['name'] ?? ('Plano #' . $optionId))) ?>
                         </option>
                     <?php endforeach; ?>
@@ -180,7 +180,7 @@ $hasSavedDefaultFilters = !empty($has_saved_default_filters ?? false);
                                 <select name="plan_id" required>
                                     <?php foreach ($planOptions as $plan): ?>
                                         <?php $optionId = (int) ($plan['id'] ?? 0); ?>
-                                        <option value="<?= $optionId ?>" <?= $optionId === $planId ? 'selected' : '' ?>>
+                                        <option value="<?= (int) $optionId ?>" <?= $optionId === $planId ? 'selected' : '' ?>>
                                             <?= e($plan['name'] ?? ('Plano #' . $optionId)) ?>
                                         </option>
                                     <?php endforeach; ?>
@@ -368,3 +368,4 @@ $hasSavedDefaultFilters = !empty($has_saved_default_filters ?? false);
         </table>
     </div>
 </section>
+

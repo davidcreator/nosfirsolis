@@ -126,7 +126,8 @@ $colors = $calendar_colors ?? [];
                             <?php foreach ($monthData['weeks'] as $week): ?>
                                 <tr>
                                     <?php foreach ($week as $day): ?>
-                                        <td class="<?= $day['in_month'] ? 'day in' : 'day out' ?>">
+                                        <?php $annualDayClass = !empty($day['in_month']) ? 'day in' : 'day out'; ?>
+                                        <td class="<?= e($annualDayClass) ?>">
                                             <?php if ($day['in_month']): ?>
                                                 <?php $moonPhase = is_array($day['moon_phase'] ?? null) ? $day['moon_phase'] : null; ?>
                                                 <div class="day-header">
@@ -187,7 +188,8 @@ $colors = $calendar_colors ?? [];
                 <?php foreach ($monthly_calendar['weeks'] as $week): ?>
                     <tr>
                         <?php foreach ($week as $day): ?>
-                            <td class="<?= $day['in_month'] ? 'in' : 'out' ?>">
+                            <?php $monthlyDayClass = !empty($day['in_month']) ? 'in' : 'out'; ?>
+                            <td class="<?= e($monthlyDayClass) ?>">
                                 <?php if ($day['in_month']): ?>
                                     <?php $moonPhase = is_array($day['moon_phase'] ?? null) ? $day['moon_phase'] : null; ?>
                                     <div class="day-header">

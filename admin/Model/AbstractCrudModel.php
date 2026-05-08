@@ -49,8 +49,8 @@ abstract class AbstractCrudModel extends Model
     public function create(array $data): int
     {
         $payload = $this->sanitizeData($data);
-        $payload['created_at'] = date('Y-m-d H:i:s');
-        $payload['updated_at'] = date('Y-m-d H:i:s');
+        $payload['created_at'] = $this->modelClockDateTimeNow();
+        $payload['updated_at'] = $this->modelClockDateTimeNow();
 
         return $this->db->insert($this->table, $payload);
     }
@@ -58,7 +58,7 @@ abstract class AbstractCrudModel extends Model
     public function updateById(int $id, array $data): int
     {
         $payload = $this->sanitizeData($data);
-        $payload['updated_at'] = date('Y-m-d H:i:s');
+        $payload['updated_at'] = $this->modelClockDateTimeNow();
 
         return $this->db->update(
             $this->table,

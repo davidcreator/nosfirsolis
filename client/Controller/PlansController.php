@@ -2,10 +2,6 @@
 
 namespace Client\Controller;
 
-use System\Library\ExportService;
-use System\Library\PlanTemplateService;
-use System\Library\SubscriptionService;
-
 class PlansController extends BaseController
 {
     public function index(): void
@@ -15,7 +11,7 @@ class PlansController extends BaseController
         $user = $this->auth->user();
         $userId = (int) ($user['id'] ?? 0);
 
-        $templateService = new PlanTemplateService();
+        $templateService = $this->planTemplateService();
 
         $this->render('plans/index', [
             'title' => $this->t('plans.title_index', 'Planos Editoriais'),
@@ -34,7 +30,7 @@ class PlansController extends BaseController
 
         $user = $this->auth->user();
         $userId = (int) ($user['id'] ?? 0);
-        $subscription = new SubscriptionService($this->registry);
+        $subscription = $this->subscriptionService();
         $quota = $subscription->evaluateQuota($userId, 'max_editorial_plans_per_month', 1);
         if (empty($quota['allowed'])) {
             flash('error', (string) ($quota['message'] ?? $this->t('plans.flash_limit_reached', 'Limite de plano atingido para este periodo.')));
@@ -61,7 +57,7 @@ class PlansController extends BaseController
 
         $planner = $this->loader->model('planner');
         $planId = $planner->createPlan($userId, [
-            'name' => trim((string) $this->request->post('name', $this->t('plans.default_plan_name', 'Plano {date}', ['date' => date('Y-m-d H:i')]))),
+            'name' => trim((string) $this->request->post('name', $this->t('plans.default_plan_name', 'Plano {date}', ['date' => $this->formatDateTime('Y-m-d H:i')]))),
             'start_date' => $startDate,
             'end_date' => $endDate,
             'campaign_id' => $this->request->post('campaign_id', ''),
@@ -86,7 +82,7 @@ class PlansController extends BaseController
 
         $user = $this->auth->user();
         $userId = (int) ($user['id'] ?? 0);
-        $subscription = new SubscriptionService($this->registry);
+        $subscription = $this->subscriptionService();
         $feature = $subscription->evaluateFeature($userId, 'allow_template_plans');
         if (empty($feature['allowed'])) {
             flash('error', (string) ($feature['message'] ?? $this->t('plans.flash_template_feature_unavailable', 'Seu plano atual nao permite templates anuais.')));
@@ -100,14 +96,15 @@ class PlansController extends BaseController
         }
 
         $templateSlug = trim((string) $this->request->post('template_slug'));
-        $year = (int) $this->request->post('template_year', date('Y'));
+        $defaultYear = (int) $this->formatDateTime('Y');
+        $year = (int) $this->request->post('template_year', (string) $defaultYear);
         $frequency = trim((string) $this->request->post('template_frequency', 'semanal'));
 
         if ($year < 1970 || $year > 2100) {
-            $year = (int) date('Y');
+            $year = $defaultYear;
         }
 
-        $service = new PlanTemplateService();
+        $service = $this->planTemplateService();
         $template = $service->findTemplate($templateSlug);
 
         if (!$template) {
@@ -282,7 +279,7 @@ class PlansController extends BaseController
             ];
         }
 
-        $exporter = new ExportService();
+        $exporter = $this->exportService();
         $csv = $exporter->exportCsv($rows, [
             $this->t('plans.csv_header_planned_date', 'Data planejada'),
             $this->t('plans.csv_header_title', 'Título'),
@@ -300,7 +297,7 @@ class PlansController extends BaseController
             $safeName = 'plano-' . $id;
         }
 
-        $filename = 'nosfirsolis-' . $safeName . '-' . date('Ymd-His') . '.csv';
+        $filename = 'nosfirsolis-' . $safeName . '-' . $this->formatDateTime('Ymd-His') . '.csv';
 
         $this->response->addHeader('Content-Type: text/csv; charset=UTF-8');
         $this->response->addHeader('Content-Disposition: attachment; filename="' . $filename . '"');
@@ -334,7 +331,17 @@ class PlansController extends BaseController
             'Observação salva para {date}.',
             ['date' => $noteDate]
         ));
-        $this->redirectToRoute('calendar/index?mode=monthly&year=' . date('Y', strtotime($noteDate)) . '&month=' . date('n', strtotime($noteDate)));
+        $noteTs = $this->parseDateToTimestamp($noteDate);
+        if ($noteTs === null) {
+            $this->redirectToRoute('calendar/index?mode=monthly');
+        }
+
+        $this->redirectToRoute(
+            'calendar/index?mode=monthly&year='
+            . $this->formatDateTime('Y', $noteTs)
+            . '&month='
+            . $this->formatDateTime('n', $noteTs)
+        );
     }
 
     private function showFiltersFromRequest(): array

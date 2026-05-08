@@ -86,7 +86,7 @@ $resolveTier = static function (string $slug): array {
         </article>
         <article class="plan-insight-card">
             <span>Mensalidade</span>
-            <strong><?= $formatMoney((int) ($currentPlan['price_monthly_cents'] ?? 0), $currency) ?></strong>
+            <strong><?= e($formatMoney((int) ($currentPlan['price_monthly_cents'] ?? 0), $currency)) ?></strong>
             <small>Ciclo <?= e((string) ($subscription['billing_cycle'] ?? 'monthly')) ?></small>
         </article>
         <article class="plan-insight-card">
@@ -109,9 +109,9 @@ $resolveTier = static function (string $slug): array {
             ?>
             <article class="usage-card">
                 <span><?= e((string) ($metric['label'] ?? 'Métrica')) ?></span>
-                <strong><?= $used ?><?= $isUnlimited ? ' / Ilimitado' : ' / ' . $limit ?></strong>
+                <strong><?= (int) $used ?><?= e($isUnlimited ? ' / Ilimitado' : ' / ' . (int) $limit) ?></strong>
                 <div class="metric-progress">
-                    <span style="width: <?= $isUnlimited ? 100 : max(0.0, min(100.0, $percent)) ?>%"></span>
+                    <span style="width: <?= e((string) ($isUnlimited ? 100 : max(0.0, min(100.0, $percent)))) ?>%"></span>
                 </div>
             </article>
         <?php endforeach; ?>
@@ -121,7 +121,7 @@ $resolveTier = static function (string $slug): array {
 <section class="panel billing-client-panel" id="billing-upgrade">
     <div class="panel-head-inline">
         <h3><i class="fa-solid fa-sliders"></i> Alterar plano</h3>
-        <span class="meta-text"><?= count($plans) ?> opção(ões)</span>
+        <span class="meta-text"><?= (int) count($plans) ?> opção(ões)</span>
     </div>
     <div class="pricing-grid">
         <?php foreach ($plans as $plan): ?>
@@ -148,15 +148,15 @@ $resolveTier = static function (string $slug): array {
                 <h4><?= e((string) ($plan['name'] ?? 'Plano')) ?></h4>
                 <p><?= e((string) ($plan['description'] ?? '')) ?></p>
                 <div class="pricing-values">
-                    <strong><?= $formatMoney($priceMonthlyFinal, (string) ($plan['currency'] ?? 'BRL')) ?>/mês</strong>
+                    <strong><?= e($formatMoney($priceMonthlyFinal, (string) ($plan['currency'] ?? 'BRL'))) ?>/mês</strong>
                     <?php if ($discountMonthly > 0): ?>
                         <small>
-                            De <?= $formatMoney($priceMonthly, (string) ($plan['currency'] ?? 'BRL')) ?>
-                            por <?= $formatMoney($priceMonthlyFinal, (string) ($plan['currency'] ?? 'BRL')) ?>
+                            De <?= e($formatMoney($priceMonthly, (string) ($plan['currency'] ?? 'BRL'))) ?>
+                            por <?= e($formatMoney($priceMonthlyFinal, (string) ($plan['currency'] ?? 'BRL'))) ?>
                         </small>
                     <?php endif; ?>
                     <?php if ($priceYearly > 0): ?>
-                        <small><?= $formatMoney($priceYearly, (string) ($plan['currency'] ?? 'BRL')) ?>/ano</small>
+                        <small><?= e($formatMoney($priceYearly, (string) ($plan['currency'] ?? 'BRL'))) ?>/ano</small>
                     <?php endif; ?>
                     <?php if ($activePromotion): ?>
                         <small>
@@ -191,7 +191,7 @@ $resolveTier = static function (string $slug): array {
 <section class="panel billing-client-panel" id="billing-invoices">
     <div class="panel-head-inline">
         <h3><i class="fa-solid fa-file-invoice-dollar"></i> Histórico de cobranças</h3>
-        <span class="meta-text"><?= count($invoices) ?> fatura(s)</span>
+        <span class="meta-text"><?= (int) count($invoices) ?> fatura(s)</span>
     </div>
     <div class="table-wrap">
         <table class="table">
@@ -220,7 +220,7 @@ $resolveTier = static function (string $slug): array {
                     <tr>
                         <td><?= e((string) ($invoice['invoice_number'] ?? ('INV-' . (int) ($invoice['id'] ?? 0)))) ?></td>
                         <td><?= e((string) ($invoice['plan_name'] ?? '-')) ?></td>
-                        <td><?= $formatMoney((int) ($invoice['total_cents'] ?? 0), (string) ($invoice['currency'] ?? 'BRL')) ?></td>
+                        <td><?= e($formatMoney((int) ($invoice['total_cents'] ?? 0), (string) ($invoice['currency'] ?? 'BRL'))) ?></td>
                         <td><span class="invoice-status status-<?= e($statusClass) ?>"><?= e($status) ?></span></td>
                         <td><?= e((string) ($invoice['due_at'] ?? '-')) ?></td>
                         <td><?= e((string) ($invoice['payment_method'] ?? '-')) ?></td>

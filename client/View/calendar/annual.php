@@ -56,7 +56,8 @@ $annualQuery = http_build_query([
                         <?php foreach ($month['weeks'] as $week): ?>
                             <tr>
                                 <?php foreach ($week as $day): ?>
-                                    <td class="<?= $day['in_month'] ? 'day in' : 'day out' ?>">
+                                    <?php $dayCellClass = !empty($day['in_month']) ? 'day in' : 'day out'; ?>
+                                    <td class="<?= e($dayCellClass) ?>">
                                         <?php if ($day['in_month']): ?>
                                             <span class="day-number"><?= (int) $day['day'] ?></span>
                                             <div class="day-markers">

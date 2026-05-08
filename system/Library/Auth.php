@@ -7,6 +7,8 @@ use System\Library\SecurityService;
 
 class Auth
 {
+    use TemporalClockTrait;
+
     private const SUPPORTED_LANGUAGE_CODES = ['en-us', 'pt-br'];
 
     private ?array $user = null;
@@ -106,7 +108,7 @@ class Auth
         $session->regenerate(true);
         $session->set('user_id', (int) $user['id']);
         $session->set('session_fingerprint', $this->sessionFingerprint((int) $user['id']));
-        $session->set('session_started_at', time());
+        $session->set('session_started_at', $this->clockUnixNow());
         $session->set('language_code', $this->resolveUserLanguageCode($user));
 
         $this->security()->registerLoginAttempt($this->area, $email, true, (int) $user['id'], 'login_success');
@@ -114,7 +116,7 @@ class Auth
             'email' => $email,
         ]);
 
-        $db->update('users', ['last_login_at' => date('Y-m-d H:i:s')], 'id = :id', ['id' => (int) $user['id']]);
+        $db->update('users', ['last_login_at' => $this->clockDateTimeNow()], 'id = :id', ['id' => (int) $user['id']]);
         $this->user = null;
         $this->setError('', '');
 
@@ -185,7 +187,7 @@ class Auth
             try {
                 $db->update('users', [
                     'language_code' => $normalized,
-                    'updated_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => $this->clockDateTimeNow(),
                 ], 'id = :id', ['id' => (int) $user['id']]);
                 $this->user['language_code'] = $normalized;
             } catch (\Throwable) {
@@ -220,7 +222,7 @@ class Auth
 
         if ($storedFingerprint === '') {
             $session->set('session_fingerprint', $this->sessionFingerprint($userId));
-            $session->set('session_started_at', time());
+            $session->set('session_started_at', $this->clockUnixNow());
             return true;
         }
 
@@ -232,7 +234,7 @@ class Auth
 
         $ttlMinutes = (int) $this->registry->get('config')->get('security.auth.session_ttl_minutes', 720);
         $ttlMinutes = max(15, $ttlMinutes);
-        if ($startedAt > 0 && (time() - $startedAt) > ($ttlMinutes * 60)) {
+        if ($startedAt > 0 && ($this->clockUnixNow() - $startedAt) > ($ttlMinutes * 60)) {
             $this->security()->audit('session_expired', 'warning', $userId, $this->area, ['ttl_minutes' => $ttlMinutes]);
             $this->forceLogoutSession();
             return false;
@@ -244,7 +246,9 @@ class Auth
     private function sessionFingerprint(int $userId): string
     {
         $request = $this->registry->get('request');
-        $server = is_object($request) ? $request->server : $_SERVER;
+        $server = (is_object($request) && isset($request->server) && is_array($request->server))
+            ? $request->server
+            : [];
         $ip = (string) ($server['REMOTE_ADDR'] ?? '0.0.0.0');
         $userAgent = (string) ($server['HTTP_USER_AGENT'] ?? 'unknown');
 
@@ -353,10 +357,12 @@ class Auth
                 return true;
             }
 
-            $db->execute("ALTER TABLE users ADD COLUMN language_code VARCHAR(10) NOT NULL DEFAULT 'en-us' AFTER avatar");
-            $column = $db->fetch("SHOW COLUMNS FROM users LIKE 'language_code'");
-            $this->languageColumnAvailable = (bool) $column;
-            return $this->languageColumnAvailable;
+            error_log(
+                '[Solis] Coluna users.language_code ausente. '
+                . 'Execute a migracao operacional para manter persistencia de idioma no perfil.'
+            );
+            $this->languageColumnAvailable = false;
+            return false;
         } catch (\Throwable) {
             $this->languageColumnAvailable = false;
             return false;
@@ -394,4 +400,5 @@ class Auth
 
         return strtr($text, $tokens);
     }
+
 }

@@ -33,10 +33,16 @@ class HolidaysController extends BaseController
         $this->requirePostAndCsrf();
 
         $date = (string) $this->request->post('holiday_date');
+        $dateTs = $this->parseDateToTimestamp($date);
+        if ($dateTs === null) {
+            flash('error', $this->t('holidays.flash_invalid_date', 'Data de feriado invalida.'));
+            $this->redirectToRoute('holidays/index');
+        }
+
         $this->loader->model('holidays')->create([
             'name' => trim((string) $this->request->post('name')),
             'holiday_date' => $date,
-            'month_day' => date('m-d', strtotime($date)),
+            'month_day' => $this->formatDateTime('m-d', $dateTs),
             'is_fixed' => (int) $this->request->post('is_fixed', 1),
             'is_movable' => (int) $this->request->post('is_movable', 0),
             'movable_rule' => trim((string) $this->request->post('movable_rule')) ?: null,
@@ -77,10 +83,16 @@ class HolidaysController extends BaseController
         $this->requirePostAndCsrf();
 
         $date = (string) $this->request->post('holiday_date');
+        $dateTs = $this->parseDateToTimestamp($date);
+        if ($dateTs === null) {
+            flash('error', $this->t('holidays.flash_invalid_date', 'Data de feriado invalida.'));
+            $this->redirectToRoute('holidays/index');
+        }
+
         $this->loader->model('holidays')->updateById($id, [
             'name' => trim((string) $this->request->post('name')),
             'holiday_date' => $date,
-            'month_day' => date('m-d', strtotime($date)),
+            'month_day' => $this->formatDateTime('m-d', $dateTs),
             'is_fixed' => (int) $this->request->post('is_fixed', 1),
             'is_movable' => (int) $this->request->post('is_movable', 0),
             'movable_rule' => trim((string) $this->request->post('movable_rule')) ?: null,

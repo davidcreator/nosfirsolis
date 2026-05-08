@@ -32,6 +32,7 @@ final class SecuritySuite
         $this->testApplicationEnvironmentOverrides();
         $this->testSensitiveStorageFilesAreNotVersioned();
         $this->testRawArrayEchoHeuristic();
+        $this->testCriticalViewsOutputEscapingPolicy();
 
         $this->printReport();
 
@@ -627,6 +628,77 @@ final class SecuritySuite
         }
 
         $this->fail('Heuristica encontrou eco bruto suspeito em views.', implode(' | ', $issues));
+    }
+
+    private function testCriticalViewsOutputEscapingPolicy(): void
+    {
+        $criticalFiles = [
+            'admin/View/users/index.php',
+            'client/View/billing/index.php',
+            'admin/View/suggestions/form.php',
+            'admin/View/holidays/form.php',
+        ];
+
+        $issues = [];
+        $pattern = '/<\?=\s*(.*?)\s*\?>/s';
+
+        foreach ($criticalFiles as $relativePath) {
+            $file = $this->root . '/' . $relativePath;
+            if (!is_file($file)) {
+                $issues[] = $relativePath . ':missing';
+                continue;
+            }
+
+            $content = $this->readFile($file);
+            if (!preg_match_all($pattern, $content, $matches, PREG_OFFSET_CAPTURE) || empty($matches[1])) {
+                continue;
+            }
+
+            foreach ($matches[1] as $match) {
+                $expression = (string) ($match[0] ?? '');
+                $offset = (int) ($match[1] ?? 0);
+                $line = substr_count(substr($content, 0, max(0, $offset)), "\n") + 1;
+                $normalized = trim((string) preg_replace('/\s+/', ' ', $expression));
+
+                if ($normalized === '') {
+                    continue;
+                }
+
+                if ($this->isSafeCriticalViewExpression($normalized)) {
+                    continue;
+                }
+
+                $issues[] = $relativePath . ':' . $line . ' expr=' . $normalized;
+            }
+        }
+
+        if ($issues === []) {
+            $this->pass('Views criticas seguem politica de saida escapada com excecoes controladas.');
+            return;
+        }
+
+        $this->fail('Views criticas com saida curta fora da politica de escape.', implode(' | ', $issues));
+    }
+
+    private function isSafeCriticalViewExpression(string $expression): bool
+    {
+        if (str_starts_with($expression, 'e(') || str_starts_with($expression, 'csrf_field(')) {
+            return true;
+        }
+
+        if (preg_match('/^\((?:int|float|bool)\)\s*.+$/', $expression) === 1) {
+            return true;
+        }
+
+        if (preg_match('/^.+\?\s*\'[^\']*\'\s*:\s*\'[^\']*\'$/s', $expression) === 1) {
+            return true;
+        }
+
+        if (preg_match('/^.+\?\s*e\(.+\)\s*:\s*e\(.+\)$/s', $expression) === 1) {
+            return true;
+        }
+
+        return false;
     }
 
     private function extractPublicMethods(string $code): array

@@ -14,6 +14,16 @@ class UsersModel extends AbstractCrudModel
         'status',
     ];
 
+    public function existsByEmail(string $email): bool
+    {
+        $row = $this->db->fetch(
+            'SELECT id FROM users WHERE email = :email LIMIT 1',
+            ['email' => $email]
+        );
+
+        return is_array($row) && $row !== [];
+    }
+
     public function allWithGroup(): array
     {
         $sql = 'SELECT u.*, ug.name AS group_name, ug.hierarchy_level AS group_hierarchy_level
