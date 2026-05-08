@@ -10,6 +10,11 @@
       "System\\": ""
     }
   },
+  "scripts": {
+    "build": [
+      "@composer dump-autoload --optimize --classmap-authoritative"
+    ]
+  },
   "config": {
     "vendor-dir": "Vendor"
   }

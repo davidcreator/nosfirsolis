@@ -7,6 +7,7 @@ Ele foca planejamento estrategico, execucao diaria, publicacao social, tracking 
 
 - Area cliente com:
   - login, cadastro publico e recuperacao de senha por token
+  - recuperacao de e-mail de acesso via e-mail de recuperacao
   - ativacao automatica de assinatura no plano Basico Gratuito apos cadastro
   - dashboard estrategico e dashboard executivo
   - calendario unificado (anual, mensal e por periodo)
@@ -126,6 +127,10 @@ Use `.env.example` como base e configure:
 - `ALLOWED_HOSTS`: hosts permitidos separados por virgula
 - `HOST_GUARD_COMPATIBILITY_MODE`: manter `0` em producao (habilitar `1` apenas em migracao legada controlada)
 - `AUTOMATION_ALLOW_PRIVATE_WEBHOOK_ENDPOINTS`: `0` (recomendado) ou `1`
+- `MAIL_DRIVER`: `php_mail` (padrao) ou `smtp`
+- `MAIL_FROM_EMAIL`, `MAIL_FROM_NAME`: remetente padrao
+- `MAIL_SMTP_HOST`, `MAIL_SMTP_PORT`, `MAIL_SMTP_ENCRYPTION`, `MAIL_SMTP_USERNAME`, `MAIL_SMTP_PASSWORD`: configuracao SMTP
+- `DB_MIGRATION_*`: credenciais privilegiadas para migracoes DDL (recomendado em producao)
 
 Gerar chave forte:
 
@@ -150,7 +155,18 @@ Composer e utilizado dentro de `system/` com vendor em `system/Vendor`.
 ```bash
 cd system
 composer install
+composer build
 ```
+
+## Build De Producao (Pasta `prod`)
+
+Para gerar o espelho de producao na raiz do projeto:
+
+1. `composer --working-dir=system build`
+2. copiar projeto para `prod/` (sem `.git`, `docs/`, `tests/`, `tools/`)
+3. `composer --working-dir=prod/system build`
+
+A pasta `prod/` possui `.gitignore` proprio para evitar duplicacao de artefatos no GitHub.
 
 ## Testes De Seguranca
 

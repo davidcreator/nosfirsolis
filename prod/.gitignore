@@ -1,0 +1,6 @@
+# Ignore all generated production artifacts in this directory.
+*
+
+# Keep control files versioned.
+!.gitignore
+!README.md
