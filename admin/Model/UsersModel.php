@@ -9,6 +9,7 @@ class UsersModel extends AbstractCrudModel
         'user_group_id',
         'name',
         'email',
+        'recovery_email',
         'password_hash',
         'avatar',
         'status',

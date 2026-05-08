@@ -191,14 +191,15 @@ class InstallerModel extends Model
     {
         $groupId = $this->resolveAdminGroup($pdo);
 
-        $sql = 'INSERT INTO users (user_group_id, name, email, password_hash, language_code, status, created_at, updated_at)
-                VALUES (:user_group_id, :name, :email, :password_hash, :language_code, 1, NOW(), NOW())';
+        $sql = 'INSERT INTO users (user_group_id, name, email, recovery_email, password_hash, language_code, status, created_at, updated_at)
+                VALUES (:user_group_id, :name, :email, :recovery_email, :password_hash, :language_code, 1, NOW(), NOW())';
 
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
             'user_group_id' => $groupId,
             'name' => $data['admin_name'],
             'email' => $data['admin_email'],
+            'recovery_email' => $data['admin_email'],
             'password_hash' => password_hash((string) $data['admin_password'], PASSWORD_DEFAULT),
             'language_code' => $this->normalizeLanguageCode((string) ($data['language_code'] ?? 'en-us')),
         ]);

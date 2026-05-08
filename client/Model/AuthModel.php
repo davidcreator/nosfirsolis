@@ -42,12 +42,17 @@ class AuthModel extends Model
 
     public function passwordResetTableExists(): bool
     {
-        $row = $this->db->fetch(
-            'SHOW TABLES LIKE :table_name',
-            ['table_name' => 'password_resets']
-        );
+        return $this->tableExists('password_resets');
+    }
 
-        return is_array($row) && $row !== [];
+    public function usersRecoveryEmailColumnExists(): bool
+    {
+        return $this->columnExists('users', 'recovery_email');
+    }
+
+    public function authRecoveryRequestsTableExists(): bool
+    {
+        return $this->tableExists('auth_recovery_requests');
     }
 
     public function purgeExpiredPasswordResets(string $now): void
@@ -63,7 +68,7 @@ class AuthModel extends Model
         );
     }
 
-    public function resolvePasswordRecoveryUser(string $email): ?array
+    public function resolvePasswordRecoveryUser(string $email, ?string $requiredArea = null): ?array
     {
         $user = $this->db->fetch(
             'SELECT u.id, u.name, u.email, ug.permissions_json
@@ -79,12 +84,43 @@ class AuthModel extends Model
             return null;
         }
 
-        $permissionsJson = (string) ($user['permissions_json'] ?? '[]');
-        if (!$this->hasClientAccessPermission($permissionsJson)) {
+        if ($requiredArea !== null && !$this->hasAreaAccessPermission((string) ($user['permissions_json'] ?? '[]'), $requiredArea)) {
             return null;
         }
 
         return $user;
+    }
+
+    public function resolveEmailRecoveryUsersByRecoveryEmail(
+        string $recoveryEmail,
+        int $limit = 5,
+        ?string $requiredArea = null
+    ): array {
+        $limit = max(1, min(20, $limit));
+
+        $users = $this->db->fetchAll(
+            'SELECT u.id, u.name, u.email, ug.permissions_json
+             FROM users u
+             LEFT JOIN user_groups ug ON ug.id = u.user_group_id
+             WHERE u.recovery_email = :recovery_email
+               AND u.status = 1
+             ORDER BY u.id ASC
+             LIMIT ' . $limit,
+            ['recovery_email' => $recoveryEmail]
+        );
+
+        if ($requiredArea === null) {
+            return $users;
+        }
+
+        $filtered = [];
+        foreach ($users as $user) {
+            if ($this->hasAreaAccessPermission((string) ($user['permissions_json'] ?? '[]'), $requiredArea)) {
+                $filtered[] = $user;
+            }
+        }
+
+        return $filtered;
     }
 
     public function markOpenPasswordResetsAsUsed(int $userId, string $now): void
@@ -117,6 +153,53 @@ class AuthModel extends Model
             'used_at' => null,
             'created_at' => $now,
             'updated_at' => $now,
+        ]);
+    }
+
+    public function countRecentPasswordResetRequests(string $email, string $windowStart): int
+    {
+        return $this->countRecentRecoveryRequests('password_reset', $email, '0.0.0.0', $windowStart);
+    }
+
+    public function countRecentRecoveryRequests(
+        string $requestType,
+        string $identifierEmail,
+        string $requestIp,
+        string $windowStart
+    ): int
+    {
+        $row = $this->db->fetch(
+            'SELECT COUNT(*) AS total
+             FROM auth_recovery_requests
+             WHERE created_at >= :window_start
+               AND request_type = :request_type
+               AND (identifier_email = :identifier_email OR requester_ip = :requester_ip)',
+            [
+                'window_start' => $windowStart,
+                'request_type' => $requestType,
+                'identifier_email' => $identifierEmail,
+                'requester_ip' => $requestIp,
+            ]
+        );
+
+        return (int) ($row['total'] ?? 0);
+    }
+
+    public function registerRecoveryRequest(
+        string $requestType,
+        string $identifierEmail,
+        int $matchesCount,
+        string $requestIp,
+        string $userAgent,
+        string $now
+    ): void {
+        $this->db->insert('auth_recovery_requests', [
+            'request_type' => $requestType,
+            'identifier_email' => $identifierEmail,
+            'matches_count' => $matchesCount,
+            'requester_ip' => $requestIp,
+            'user_agent' => $userAgent,
+            'created_at' => $now,
         ]);
     }
 
@@ -209,14 +292,19 @@ class AuthModel extends Model
         return (int) ($group['id'] ?? 0);
     }
 
-    private function hasClientAccessPermission(string $permissionsJson): bool
+    private function hasAreaAccessPermission(string $permissionsJson, string $area): bool
     {
+        $area = strtolower(trim($area));
+        if ($area === '') {
+            return false;
+        }
+
         $permissions = json_decode($permissionsJson, true);
         if (!is_array($permissions)) {
             return false;
         }
 
-        if (in_array('*', $permissions, true) || in_array('client.*', $permissions, true)) {
+        if (in_array('*', $permissions, true) || in_array($area . '.*', $permissions, true)) {
             return true;
         }
 
@@ -225,11 +313,38 @@ class AuthModel extends Model
                 continue;
             }
 
-            if (str_starts_with($permission, 'client.')) {
+            if (str_starts_with($permission, $area . '.')) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    private function tableExists(string $table): bool
+    {
+        if (!$this->isSafeIdentifier($table)) {
+            return false;
+        }
+
+        $row = $this->db->fetch("SHOW TABLES LIKE '{$table}'");
+
+        return is_array($row) && $row !== [];
+    }
+
+    private function columnExists(string $table, string $column): bool
+    {
+        if (!$this->isSafeIdentifier($table) || !$this->isSafeIdentifier($column)) {
+            return false;
+        }
+
+        $row = $this->db->fetch("SHOW COLUMNS FROM {$table} LIKE '{$column}'");
+
+        return is_array($row) && $row !== [];
+    }
+
+    private function isSafeIdentifier(string $value): bool
+    {
+        return preg_match('/^[a-z0-9_]+$/', strtolower(trim($value))) === 1;
     }
 }

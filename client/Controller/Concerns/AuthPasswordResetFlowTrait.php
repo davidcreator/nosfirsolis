@@ -4,6 +4,8 @@ namespace Client\Controller\Concerns;
 
 trait AuthPasswordResetFlowTrait
 {
+    private bool $emailRecoveryStorageChecked = false;
+
     public function forgotPassword(): void
     {
         if ($this->auth->check()) {
@@ -14,6 +16,19 @@ trait AuthPasswordResetFlowTrait
 
         $this->render('auth/forgot_password', [
             'title' => $this->t('auth.title_forgot_password', '{app} | Recuperar senha', ['app' => $appName]),
+        ]);
+    }
+
+    public function forgotEmail(): void
+    {
+        if ($this->auth->check()) {
+            $this->redirectToRoute('dashboard/index');
+        }
+
+        $appName = (string) $this->config->get('app.name', 'Solis');
+
+        $this->render('auth/forgot_email', [
+            'title' => $this->t('auth.title_forgot_email', '{app} | Lembrar e-mail de acesso', ['app' => $appName]),
         ]);
     }
 
@@ -36,16 +51,38 @@ trait AuthPasswordResetFlowTrait
             $this->redirectToRoute('auth/forgotpassword');
         }
 
+        $now = $this->formatDateTime();
+        $requestIp = $this->requestClientIp();
+        $userAgent = $this->requestUserAgent();
+        $matchesCount = 0;
+
         try {
             $this->assertPasswordResetStorageReady();
+            $this->assertRecoveryRequestStorageReady();
             $this->purgeExpiredPasswordResets();
+
+            if (!$this->canSendRecoveryRequest('password_reset', $email, $requestIp)) {
+                $this->authModel()->registerRecoveryRequest(
+                    'password_reset',
+                    $email,
+                    0,
+                    $requestIp,
+                    $userAgent,
+                    $now
+                );
+                flash('error', $this->t(
+                    'auth.flash_password_recovery_rate_limited',
+                    'Muitas solicitacoes recentes. Aguarde alguns minutos e tente novamente.'
+                ));
+                $this->redirectToRoute('auth/forgotpassword');
+            }
 
             $user = $this->resolvePasswordRecoveryUser($email);
             if ($user !== null) {
                 $token = bin2hex(random_bytes(32));
                 $tokenHash = hash('sha256', $token);
-                $now = $this->formatDateTime();
                 $expiresAt = $this->formatDateTime('Y-m-d H:i:s', $this->nowUnixTime() + $this->passwordResetTtlSeconds());
+                $matchesCount = 1;
 
                 $this->authModel()->markOpenPasswordResetsAsUsed((int) $user['id'], $now);
                 $this->authModel()->createPasswordReset(
@@ -68,6 +105,15 @@ trait AuthPasswordResetFlowTrait
                     error_log('[Solis] Falha ao enviar e-mail de recuperacao para: ' . (string) $user['email']);
                 }
             }
+
+            $this->authModel()->registerRecoveryRequest(
+                'password_reset',
+                $email,
+                $matchesCount,
+                $requestIp,
+                $userAgent,
+                $now
+            );
         } catch (\Throwable) {
             flash('error', $this->t('auth.flash_password_recovery_unavailable', 'Recuperacao de senha temporariamente indisponivel.'));
             $this->redirectToRoute('auth/forgotpassword');
@@ -177,6 +223,78 @@ trait AuthPasswordResetFlowTrait
         $this->redirectToRoute('auth/login');
     }
 
+    public function sendEmailRecovery(): void
+    {
+        if (!$this->request->isPost() || !verify_csrf($this->request->post('_token'))) {
+            flash('error', $this->t('auth.flash_invalid_request', 'Requisicao invalida.'));
+            $this->redirectToRoute('auth/forgotemail');
+        }
+
+        $recoveryEmail = strtolower(trim((string) $this->request->post('recovery_email', '')));
+        if (!filter_var($recoveryEmail, FILTER_VALIDATE_EMAIL)) {
+            flash('error', $this->t('auth.flash_recovery_email_invalid', 'Informe um e-mail de recuperacao valido.'));
+            $this->redirectToRoute('auth/forgotemail');
+        }
+
+        if (!$this->authModel()->databaseConnected()) {
+            flash('error', $this->t('auth.flash_password_recovery_unavailable', 'Recuperacao de senha temporariamente indisponivel.'));
+            $this->redirectToRoute('auth/forgotemail');
+        }
+
+        $now = $this->formatDateTime();
+        $requestIp = $this->requestClientIp();
+        $userAgent = $this->requestUserAgent();
+        $matchesCount = 0;
+
+        try {
+            $this->assertEmailRecoveryStorageReady();
+            $this->assertRecoveryRequestStorageReady();
+
+            if (!$this->canSendRecoveryRequest('email_recovery', $recoveryEmail, $requestIp)) {
+                $this->authModel()->registerRecoveryRequest(
+                    'email_recovery',
+                    $recoveryEmail,
+                    0,
+                    $requestIp,
+                    $userAgent,
+                    $now
+                );
+                flash('error', $this->t(
+                    'auth.flash_email_recovery_rate_limited',
+                    'Muitas solicitacoes recentes. Aguarde alguns minutos e tente novamente.'
+                ));
+                $this->redirectToRoute('auth/forgotemail');
+            }
+
+            $accounts = $this->authModel()->resolveEmailRecoveryUsersByRecoveryEmail($recoveryEmail, 10);
+            $matchesCount = count($accounts);
+            if ($matchesCount > 0) {
+                $emailSent = $this->sendEmailAccessReminder($recoveryEmail, $accounts);
+                if (!$emailSent) {
+                    error_log('[Solis] Falha ao enviar lembrete de e-mail de acesso para: ' . $recoveryEmail);
+                }
+            }
+
+            $this->authModel()->registerRecoveryRequest(
+                'email_recovery',
+                $recoveryEmail,
+                $matchesCount,
+                $requestIp,
+                $userAgent,
+                $now
+            );
+        } catch (\Throwable) {
+            flash('error', $this->t('auth.flash_password_recovery_unavailable', 'Recuperacao de senha temporariamente indisponivel.'));
+            $this->redirectToRoute('auth/forgotemail');
+        }
+
+        flash('success', $this->t(
+            'auth.flash_email_recovery_sent',
+            'Se o e-mail de recuperacao estiver vinculado a alguma conta, enviaremos um lembrete de acesso.'
+        ));
+        $this->redirectToRoute('auth/login');
+    }
+
     private function assertPasswordResetStorageReady(): void
     {
         if ($this->passwordResetStorageChecked) {
@@ -196,6 +314,56 @@ trait AuthPasswordResetFlowTrait
         throw new \RuntimeException($message);
     }
 
+    private function assertEmailRecoveryStorageReady(): void
+    {
+        if ($this->emailRecoveryStorageChecked) {
+            return;
+        }
+
+        if (!$this->authModel()->usersRecoveryEmailColumnExists()) {
+            throw new \RuntimeException(
+                'Coluna users.recovery_email ausente. Execute a migracao operacional para habilitar lembrete de e-mail.'
+            );
+        }
+
+        $this->emailRecoveryStorageChecked = true;
+    }
+
+    private function assertRecoveryRequestStorageReady(): void
+    {
+        if ($this->authModel()->authRecoveryRequestsTableExists()) {
+            return;
+        }
+
+        throw new \RuntimeException(
+            'Tabela auth_recovery_requests ausente. Execute a migracao operacional para habilitar rate limit de recuperacao.'
+        );
+    }
+
+    private function canSendRecoveryRequest(string $requestType, string $identifierEmail, string $requestIp): bool
+    {
+        $requestType = strtolower(trim($requestType));
+        if (!in_array($requestType, ['password_reset', 'email_recovery'], true)) {
+            return false;
+        }
+
+        $configKey = $requestType === 'email_recovery'
+            ? 'security.auth.email_recovery_max_requests_per_hour'
+            : 'security.auth.password_recovery_max_requests_per_hour';
+
+        $maxPerHour = (int) $this->config->get($configKey, 5);
+        $maxPerHour = max(1, min(50, $maxPerHour));
+        $windowStart = $this->formatDateTime('Y-m-d H:i:s', $this->nowUnixTime() - 3600);
+        $recent = $this->authModel()->countRecentRecoveryRequests(
+            $requestType,
+            strtolower(trim($identifierEmail)),
+            $requestIp,
+            $windowStart
+        );
+
+        return $recent < $maxPerHour;
+    }
+
     private function purgeExpiredPasswordResets(): void
     {
         $now = $this->formatDateTime();
@@ -205,6 +373,27 @@ trait AuthPasswordResetFlowTrait
     private function resolvePasswordRecoveryUser(string $email): ?array
     {
         return $this->authModel()->resolvePasswordRecoveryUser($email);
+    }
+
+    private function requestClientIp(): string
+    {
+        $request = $this->registry->get('request');
+        $server = is_object($request) && isset($request->server) && is_array($request->server)
+            ? $request->server
+            : [];
+        $ip = (string) ($server['REMOTE_ADDR'] ?? '');
+
+        return filter_var($ip, FILTER_VALIDATE_IP) ? $ip : '0.0.0.0';
+    }
+
+    private function requestUserAgent(): string
+    {
+        $request = $this->registry->get('request');
+        $server = is_object($request) && isset($request->server) && is_array($request->server)
+            ? $request->server
+            : [];
+
+        return mb_substr((string) ($server['HTTP_USER_AGENT'] ?? ''), 0, 255);
     }
 
     private function findValidPasswordReset(string $token): ?array

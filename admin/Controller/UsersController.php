@@ -98,6 +98,7 @@ class UsersController extends BaseController
 
         $name = trim((string) $this->request->post('name'));
         $email = strtolower(trim((string) $this->request->post('email')));
+        $recoveryEmail = strtolower(trim((string) $this->request->post('recovery_email', '')));
         $password = (string) $this->request->post('password');
 
         if ($name === '' || $email === '' || $password === '') {
@@ -108,6 +109,15 @@ class UsersController extends BaseController
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             flash('error', $this->t('users.flash_invalid_email', 'Informe um email valido.'));
             $this->redirectToRoute('users/index');
+        }
+
+        if ($recoveryEmail !== '' && !filter_var($recoveryEmail, FILTER_VALIDATE_EMAIL)) {
+            flash('error', $this->t('users.flash_invalid_recovery_email', 'Informe um e-mail de recuperacao valido.'));
+            $this->redirectToRoute('users/index');
+        }
+
+        if ($recoveryEmail === '') {
+            $recoveryEmail = $email;
         }
 
         if (strlen($password) < 8) {
@@ -125,6 +135,7 @@ class UsersController extends BaseController
             'user_group_id' => $groupId,
             'name' => $name,
             'email' => $email,
+            'recovery_email' => $recoveryEmail,
             'password_hash' => password_hash($password, PASSWORD_DEFAULT),
             'status' => (int) $this->request->post('status', 1),
         ]);

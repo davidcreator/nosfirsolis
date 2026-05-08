@@ -18,6 +18,8 @@
     <p class="auth-help-link">
         <a href="<?= e(route_url('auth/login')) ?>"><?= e($t('auth.link_back_to_login', 'Voltar para login')) ?></a>
         &nbsp;|&nbsp;
+        <a href="<?= e(route_url('auth/forgotemail')) ?>"><?= e($t('auth.link_recover_email', 'Esqueci meu e-mail')) ?></a>
+        &nbsp;|&nbsp;
         <a href="<?= e(route_url('auth/register')) ?>"><?= e($t('auth.link_register', 'Criar conta gratuita')) ?></a>
     </p>
 </section>

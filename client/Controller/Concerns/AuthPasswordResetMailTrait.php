@@ -11,16 +11,9 @@ trait AuthPasswordResetMailTrait
 
     private function sendPasswordRecoveryEmail(string $toEmail, string $toName, string $resetLink, string $expiresAt): bool
     {
-        if (!function_exists('mail')) {
-            return false;
-        }
-
         $appName = (string) $this->config->get('app.name', 'Solis');
-        $host = $this->effectiveRequestHost();
-        $emailDomain = $this->hostForEmailDomain($host);
-
-        $fromEmail = (string) $this->config->get('security.auth.password_reset_from_email', 'no-reply@' . $emailDomain);
-        $fromName = (string) $this->config->get('security.auth.password_reset_from_name', $appName);
+        $fromEmail = (string) $this->config->get('security.auth.password_reset_from_email', '');
+        $fromName = (string) $this->config->get('security.auth.password_reset_from_name', '');
         $expiresTs = $this->parseDateToTimestamp($expiresAt);
         $expiryLabel = $expiresTs === null ? $expiresAt : $this->formatDateTime('d/m/Y H:i', $expiresTs);
         $safeName = trim($toName) !== '' ? $toName : $toEmail;
@@ -42,26 +35,51 @@ trait AuthPasswordResetMailTrait
             ]
         );
 
-        $headers = [
-            'MIME-Version: 1.0',
-            'Content-Type: text/plain; charset=UTF-8',
-            'From: ' . $this->formatEmailHeader($fromName, $fromEmail),
-            'Reply-To: ' . $fromEmail,
-        ];
-
-        return (bool) @mail($toEmail, $subject, $body, implode("\r\n", $headers));
+        return $this->mailService()->sendText(
+            $toEmail,
+            $subject,
+            $body,
+            $fromEmail,
+            $fromName,
+            $safeName
+        );
     }
 
-    private function formatEmailHeader(string $name, string $email): string
+    private function sendEmailAccessReminder(string $toEmail, array $accounts): bool
     {
-        $safeEmail = preg_replace('/[\r\n]+/', '', trim($email)) ?? '';
-        $safeName = trim(preg_replace('/[\r\n]+/', '', $name) ?? '');
-
-        if ($safeName === '') {
-            return $safeEmail;
+        if ($accounts === []) {
+            return false;
         }
 
-        return sprintf('"%s" <%s>', addslashes($safeName), $safeEmail);
+        $appName = (string) $this->config->get('app.name', 'Solis');
+        $fromEmail = (string) $this->config->get('security.auth.password_reset_from_email', '');
+        $fromName = (string) $this->config->get('security.auth.password_reset_from_name', '');
+        $resetUrl = $this->absoluteRouteUrl('auth/forgotpassword');
+
+        $subject = $this->t(
+            'auth.mail_email_recovery_subject',
+            'Lembrete do e-mail de acesso - {app}',
+            ['app' => $appName]
+        );
+
+        $accountLines = $this->formatAccountsForReminder($accounts);
+        $body = $this->t(
+            'auth.mail_email_recovery_body',
+            "Ola,\n\nRecebemos uma solicitacao para lembrar os e-mails de acesso da sua conta em {app}.\n\nE-mails encontrados:\n{accounts}\n\nSe tambem precisar redefinir a senha, use:\n{reset_url}\n\nSe voce nao solicitou este lembrete, ignore este e-mail.\n",
+            [
+                'app' => $appName,
+                'accounts' => $accountLines,
+                'reset_url' => $resetUrl,
+            ]
+        );
+
+        return $this->mailService()->sendText(
+            $toEmail,
+            $subject,
+            $body,
+            $fromEmail,
+            $fromName
+        );
     }
 
     private function maskEmail(string $email): string
@@ -83,18 +101,30 @@ trait AuthPasswordResetMailTrait
         return $maskedLocal . '@' . $domain;
     }
 
-    private function hostForEmailDomain(string $host): string
+    private function formatAccountsForReminder(array $accounts): string
     {
-        $host = trim($host);
-        if ($host === '') {
-            return 'localhost';
+        $lines = [];
+
+        foreach ($accounts as $account) {
+            $email = strtolower(trim((string) ($account['email'] ?? '')));
+            if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                continue;
+            }
+
+            $name = trim((string) ($account['name'] ?? ''));
+            $label = $name !== '' ? $name . ' <' . $email . '>' : $email;
+            $lines[] = '- ' . $label;
         }
 
-        // Avoid invalid fallback emails like no-reply@::1.
-        if (filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
-            return 'localhost';
+        if ($lines === []) {
+            return '-';
         }
 
-        return $host;
+        return implode("\n", array_slice($lines, 0, 10));
+    }
+
+    private function mailService(): \System\Library\MailService
+    {
+        return new \System\Library\MailService($this->registry);
     }
 }

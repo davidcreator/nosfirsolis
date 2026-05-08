@@ -81,6 +81,7 @@ class AuthController extends BaseController
 
         $name = trim((string) $this->request->post('name', ''));
         $email = strtolower(trim((string) $this->request->post('email', '')));
+        $recoveryEmail = strtolower(trim((string) $this->request->post('recovery_email', '')));
         $password = (string) $this->request->post('password', '');
         $passwordConfirmation = (string) $this->request->post('password_confirmation', '');
 
@@ -92,6 +93,15 @@ class AuthController extends BaseController
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             flash('error', $this->t('auth.flash_register_email_invalid', 'Informe um e-mail valido.'));
             $this->redirectToRoute('auth/register');
+        }
+
+        if ($recoveryEmail !== '' && !filter_var($recoveryEmail, FILTER_VALIDATE_EMAIL)) {
+            flash('error', $this->t('auth.flash_register_recovery_email_invalid', 'Informe um e-mail de recuperacao valido.'));
+            $this->redirectToRoute('auth/register');
+        }
+
+        if ($recoveryEmail === '') {
+            $recoveryEmail = $email;
         }
 
         if (strlen($password) < 8) {
@@ -130,6 +140,7 @@ class AuthController extends BaseController
                 $groupId,
                 $name,
                 $email,
+                $recoveryEmail,
                 $password,
                 $timestamp,
                 $subscription
@@ -138,6 +149,7 @@ class AuthController extends BaseController
                     'user_group_id' => $groupId,
                     'name' => $name,
                     'email' => $email,
+                    'recovery_email' => $recoveryEmail,
                     'password_hash' => password_hash($password, PASSWORD_DEFAULT),
                     'avatar' => null,
                     'language_code' => 'pt-br',

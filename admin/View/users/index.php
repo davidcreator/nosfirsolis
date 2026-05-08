@@ -248,6 +248,9 @@ $hasSavedDefaultFilters = !empty($has_saved_default_filters ?? false);
             <label><?= e($t('users.field_email', 'Email')) ?>
                 <input type="email" name="email" required>
             </label>
+            <label><?= e($t('users.field_recovery_email_optional', 'E-mail de recuperacao (opcional)')) ?>
+                <input type="email" name="recovery_email">
+            </label>
             <label><?= e($t('users.field_password', 'Senha')) ?>
                 <input type="password" name="password" required minlength="8">
             </label>

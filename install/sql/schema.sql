@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS users (
     user_group_id INT UNSIGNED NOT NULL,
     name VARCHAR(120) NOT NULL,
     email VARCHAR(190) NOT NULL UNIQUE,
+    recovery_email VARCHAR(190) NULL,
     password_hash VARCHAR(255) NOT NULL,
     avatar VARCHAR(255) NULL,
     language_code VARCHAR(10) NOT NULL DEFAULT 'en-us',
@@ -41,6 +42,18 @@ CREATE TABLE IF NOT EXISTS password_resets (
     INDEX idx_password_resets_token (token_hash),
     INDEX idx_password_resets_expires (expires_at),
     CONSTRAINT fk_password_resets_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS auth_recovery_requests (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    request_type VARCHAR(40) NOT NULL,
+    identifier_email VARCHAR(190) NOT NULL,
+    matches_count INT UNSIGNED NOT NULL DEFAULT 0,
+    requester_ip VARCHAR(45) NOT NULL,
+    user_agent VARCHAR(255) NOT NULL,
+    created_at DATETIME NOT NULL,
+    INDEX idx_auth_recovery_type_email_date (request_type, identifier_email, created_at),
+    INDEX idx_auth_recovery_ip_date (requester_ip, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS subscription_plans (

@@ -14,5 +14,7 @@ return [
     'auth.flash_login_success' => 'Acesso liberado ao painel administrativo do {app}.',
     'auth.flash_logout_success' => 'Sessão encerrada com sucesso.',
     'auth.heading' => 'Acesso administrativo',
+    'auth.link_recover_email' => 'Esqueci meu e-mail',
+    'auth.link_recover_password' => 'Esqueci minha senha',
     'auth.title_login' => '{app} | Admin Login',
 ];

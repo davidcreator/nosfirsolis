@@ -8,6 +8,8 @@ return [
         'auth/authenticate',
         'auth/forgotpassword',
         'auth/sendpasswordreset',
+        'auth/forgotemail',
+        'auth/sendemailrecovery',
         'auth/resetpassword',
         'auth/updatepassword',
         'tracking/redirect',

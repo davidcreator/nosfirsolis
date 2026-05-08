@@ -14,13 +14,15 @@ class AuthController extends BaseController
 
         $this->render('auth/login', [
             'title' => $this->t('auth.title_login', '{app} | Admin Login', ['app' => $appName]),
+            'password_recovery_url' => $this->clientPath('/auth/forgotpassword'),
+            'email_recovery_url' => $this->clientPath('/auth/forgotemail'),
         ]);
     }
 
     public function authenticate(): void
     {
         if (!$this->request->isPost() || !verify_csrf($this->request->post('_token'))) {
-            flash('error', $this->t('auth.flash_invalid_request', 'Requisição inválida.'));
+            flash('error', $this->t('auth.flash_invalid_request', 'Requisicao invalida.'));
             $this->redirectToRoute('auth/login');
         }
 
@@ -29,7 +31,7 @@ class AuthController extends BaseController
 
         if (!$this->auth->attempt($email, $password)) {
             $message = trim($this->auth->lastErrorMessage());
-            flash('error', $message !== '' ? $message : $this->t('auth.flash_invalid_credentials', 'Credenciais inválidas.'));
+            flash('error', $message !== '' ? $message : $this->t('auth.flash_invalid_credentials', 'Credenciais invalidas.'));
             $this->redirectToRoute('auth/login');
         }
 
@@ -45,7 +47,24 @@ class AuthController extends BaseController
     {
         $this->requirePostAndCsrf();
         $this->auth->logout();
-        flash('success', $this->t('auth.flash_logout_success', 'Sessão encerrada com sucesso.'));
+        flash('success', $this->t('auth.flash_logout_success', 'Sessao encerrada com sucesso.'));
         $this->redirectToRoute('auth/login');
+    }
+
+    private function clientPath(string $route): string
+    {
+        $route = '/' . ltrim(trim($route), '/');
+        $adminBase = rtrim(route_url(''), '/');
+
+        if (str_ends_with($adminBase, '/admin')) {
+            $root = substr($adminBase, 0, -strlen('/admin'));
+            if ($root === '') {
+                return '/client' . $route;
+            }
+
+            return rtrim($root, '/') . '/client' . $route;
+        }
+
+        return '/client' . $route;
     }
 }
