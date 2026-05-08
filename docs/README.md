@@ -1,7 +1,7 @@
 # Docs NosfirSolis
 
 Este diretorio concentra a documentacao funcional e tecnica do Solis dentro do ecossistema Nosfir.
-Atualizado em: **2026-05-07**.
+Atualizado em: **2026-05-08**.
 
 ## Como Navegar
 
@@ -32,6 +32,7 @@ Atualizado em: **2026-05-07**.
 25. [Pacote de Evidencias de Homologacao](pacote-evidencias-homologacao-seguranca-2026-05-07.md)
 26. [Relatorio de Auditoria MVCL Estrutural](relatorio-auditoria-mvcl-estrutural-2026-05-07.md)
 27. [Changelog](CHANGELOG.md)
+28. [Checklist Formal de Fechamento para Producao](checklist-fechamento-producao-solis-2026-05-08.md)
 
 ## Guias Complementares (Fora Deste Diretorio)
 
