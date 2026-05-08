@@ -9,6 +9,7 @@ A area `admin` e o centro de governanca do Solis:
 - controle de hierarquia
 - monitoramento operacional
 - governanca de integracoes e automacoes
+- governanca de monetizacao e pagamentos
 
 ## Dashboard Administrativo (`admin/dashboard/index`)
 
@@ -32,7 +33,7 @@ Tambem apresenta:
 ### Feriados (`admin/holidays/*`)
 
 - create/read/update/delete
-- tipo: national, regional, international
+- tipo: `national`, `regional`, `international`
 - suporte a regra movel (`is_movable`, `movable_rule`)
 
 ### Datas Comemorativas (`admin/commemoratives/*`)
@@ -45,7 +46,7 @@ Tambem apresenta:
 
 - create/read/update/delete
 - associacoes com categoria, pilar, objetivo e campanha
-- relacionamento N:N com plataformas (`content_suggestion_channels`)
+- relacao N:N com plataformas (`content_suggestion_channels`)
 
 ### Canais E Plataformas (`admin/channels/*`)
 
@@ -61,7 +62,7 @@ Tambem apresenta:
 
 ### Objetivo
 
-Permitir governanca de niveis de acesso sem depender apenas de permissao textual.
+Permitir governanca de niveis de acesso e de entitlements de produto sem depender apenas de permissao textual.
 
 ### Modelo De Nivel
 
@@ -72,13 +73,17 @@ Permitir governanca de niveis de acesso sem depender apenas de permissao textual
 
 - admin so cria usuario em grupo com nivel >= ao seu
 - admin so altera niveis de grupos dentro do seu escopo
-- atualizacao de hierarquia em lote na tela de usuarios
+- admin so altera plano/recursos de usuarios gerenciaveis pelo nivel
 
 ### Fluxos
 
-- `users/index`: lista usuarios + grupos gerenciaveis
+- `users/index`: lista usuarios, grupos, plano atual, recursos efetivos e filtros
 - `users/store`: cria usuario com validacoes de hierarquia e email unico
-- `users/saveHierarchy`: salva niveis de grupos respeitando limite de escopo
+- `users/saveHierarchy`: atualiza niveis hierarquicos em lote
+- `users/saveDefaultFilters`: salva filtro padrao da listagem por admin
+- `users/clearDefaultFilters`: remove filtro padrao salvo
+- `users/updatePlan/{userId}`: altera plano da assinatura do usuario
+- `users/saveUserFeatures/{userId}`: sobrescreve recursos por usuario (`user_feature_overrides`)
 
 ## Operacoes E Integracoes (`admin/operations/*`)
 
@@ -98,20 +103,44 @@ Permitir governanca de niveis de acesso sem depender apenas de permissao textual
 - **Monitores de job** (`job_monitors`)
   - intervalo esperado
   - runtime maximo
-- **Check-ins e alertas de job**
-  - `job_checkins`
-  - `job_alerts`
-- **Observabilidade**
-  - visualizacao de `observability_events`
+- **Check-ins e alertas de job** (`job_checkins`, `job_alerts`)
+- **Observabilidade** (`observability_events`)
+- **Manutencao operacional**
+  - avaliacao de monitores stale
+  - limpeza de cache em `system/Storage/cache`
 
 ### Fluxos
 
 - `operations/index`: painel consolidado de operacoes
 - `operations/saveFeatureFlag`: cria/atualiza flag
-- `operations/saveWebhook`: cria webhook
+- `operations/deleteFeatureFlag/{id}`: remove flag
+- `operations/saveWebhook`: cria/atualiza webhook
+- `operations/deleteWebhook/{id}`: remove webhook
 - `operations/testWebhook/{id}`: valida endpoint
-- `operations/saveMonitor`: cria monitor
-- `operations/runMaintenance`: executa manutencao operacional
+- `operations/saveMonitor`: cria/atualiza monitor
+- `operations/deleteMonitor/{id}`: remove monitor
+- `operations/runMaintenance`: executa manutencao manual
+- `operations/clearCache`: limpa cache local e registra evento
+
+## Billing Admin (`admin/billing/*`)
+
+### O Que Centraliza
+
+- catalogo de planos (`subscription_plans`)
+- limites por plano (`plan_limits`)
+- promocoes (`billing_promotions`)
+- comunicados de preco/reajuste (`billing_announcements`)
+- configuracoes de pagamento e validacao (`settings`)
+- fila de validacoes manuais (`payment_transactions` pendentes)
+
+### Fluxos
+
+- `billing/index`: painel completo de planos e pagamentos
+- `billing/savePlan/{planId}`: atualiza nome, preco, visibilidade e limites
+- `billing/savePromotion` e `billing/deletePromotion/{id}`
+- `billing/saveAnnouncement` e `billing/deleteAnnouncement/{id}`
+- `billing/savePaymentSettings`: conta recebedora, meios e modo de validacao
+- `billing/approvePayment/{transactionId}` e `billing/rejectPayment/{transactionId}`
 
 ## Principais Controllers/Models
 
@@ -123,6 +152,7 @@ Permitir governanca de niveis de acesso sem depender apenas de permissao textual
 - `Admin\Controller\CampaignsController`
 - `Admin\Controller\UsersController`
 - `Admin\Controller\OperationsController`
+- `Admin\Controller\BillingController`
 - `Admin\Model\UserGroupsModel`
 - `Admin\Model\UsersModel`
 - `Admin\Model\ContentSuggestionsModel`

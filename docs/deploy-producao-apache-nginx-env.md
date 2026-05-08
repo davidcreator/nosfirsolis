@@ -11,12 +11,14 @@ Padronizar deploy do NosfirSolis em producao sem depender de `.env` no servidor.
 - `TOKEN_CIPHER_KEY_PREVIOUS` (somente durante rotacao)
 - `TRUSTED_PROXIES`
 - `ALLOWED_HOSTS`
+- `HOST_GUARD_COMPATIBILITY_MODE` (manter `0` em producao)
 - `AUTOMATION_ALLOW_PRIVATE_WEBHOOK_ENDPOINTS`
 
 Exemplo para multiplos dominios:
 
 - `APP_ENV=production`
 - `ALLOWED_HOSTS=app.exemplo.com,www.exemplo.com,painel.exemplo.com`
+- `HOST_GUARD_COMPATIBILITY_MODE=0`
 
 ## Gerar chave forte
 
@@ -67,6 +69,7 @@ env[TOKEN_CIPHER_KEY] = replace_with_strong_key
 env[TOKEN_CIPHER_KEY_PREVIOUS] =
 env[TRUSTED_PROXIES] = 127.0.0.1,::1
 env[ALLOWED_HOSTS] = nosfirsolis.example.com
+env[HOST_GUARD_COMPATIBILITY_MODE] = 0
 env[AUTOMATION_ALLOW_PRIVATE_WEBHOOK_ENDPOINTS] = 0
 ```
 
@@ -82,6 +85,7 @@ sudo systemctl reload nginx
 - Nao manter `.env` no servidor de producao.
 - Manter segredos em variaveis do host/orquestrador.
 - Configurar `ALLOWED_HOSTS` com os dominios oficiais do ambiente.
+- Manter `HOST_GUARD_COMPATIBILITY_MODE=0` em producao (usar `1` apenas em contingencia legada temporaria).
 - Garantir `AUTOMATION_ALLOW_PRIVATE_WEBHOOK_ENDPOINTS=0` por padrao.
 
 ## 5) Rotacao sem downtime

@@ -30,7 +30,8 @@ Atualizado em: **2026-05-07**.
 23. [Ata Curta para Diretoria](ata-curta-diretoria-2026-05-07.md)
 24. [Checklist Formal de Homologacao de Seguranca](checklist-homologacao-seguranca-solis-2026-05-07.md)
 25. [Pacote de Evidencias de Homologacao](pacote-evidencias-homologacao-seguranca-2026-05-07.md)
-26. [Changelog](CHANGELOG.md)
+26. [Relatorio de Auditoria MVCL Estrutural](relatorio-auditoria-mvcl-estrutural-2026-05-07.md)
+27. [Changelog](CHANGELOG.md)
 
 ## Guias Complementares (Fora Deste Diretorio)
 
