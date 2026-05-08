@@ -454,6 +454,84 @@ $securityRuntimeSchemaMutationsRaw = strtolower(nosfir_env_first([
 
 $securityRuntimeSchemaMutations = in_array($securityRuntimeSchemaMutationsRaw, ['1', 'true', 'yes', 'on'], true);
 
+$mailDriverRaw = strtolower(nosfir_env_first([
+    'MAIL_DRIVER',
+    'NOSFIRSOLIS_MAIL_DRIVER',
+], 'php_mail'));
+
+$mailDriver = in_array($mailDriverRaw, ['php_mail', 'smtp'], true)
+    ? $mailDriverRaw
+    : 'php_mail';
+
+$mailFallbackToPhpRaw = strtolower(nosfir_env_first([
+    'MAIL_FALLBACK_TO_PHP_MAIL',
+    'NOSFIRSOLIS_MAIL_FALLBACK_TO_PHP_MAIL',
+], '1'));
+
+$mailFallbackToPhp = in_array($mailFallbackToPhpRaw, ['1', 'true', 'yes', 'on'], true);
+
+$mailFromEmail = nosfir_env_first([
+    'MAIL_FROM_EMAIL',
+    'NOSFIRSOLIS_MAIL_FROM_EMAIL',
+], '');
+
+$mailFromName = nosfir_env_first([
+    'MAIL_FROM_NAME',
+    'NOSFIRSOLIS_MAIL_FROM_NAME',
+], 'Solis');
+
+$mailSmtpHost = nosfir_env_first([
+    'MAIL_SMTP_HOST',
+    'NOSFIRSOLIS_MAIL_SMTP_HOST',
+], '');
+
+$mailSmtpPortRaw = nosfir_env_first([
+    'MAIL_SMTP_PORT',
+    'NOSFIRSOLIS_MAIL_SMTP_PORT',
+], '587');
+
+$mailSmtpPort = ctype_digit($mailSmtpPortRaw) ? (int) $mailSmtpPortRaw : 587;
+
+$mailSmtpEncryptionRaw = strtolower(nosfir_env_first([
+    'MAIL_SMTP_ENCRYPTION',
+    'NOSFIRSOLIS_MAIL_SMTP_ENCRYPTION',
+], 'tls'));
+
+$mailSmtpEncryption = in_array($mailSmtpEncryptionRaw, ['none', 'tls', 'ssl'], true)
+    ? $mailSmtpEncryptionRaw
+    : 'tls';
+
+$mailSmtpUsername = nosfir_env_first([
+    'MAIL_SMTP_USERNAME',
+    'NOSFIRSOLIS_MAIL_SMTP_USERNAME',
+], '');
+
+$mailSmtpPassword = nosfir_env_first([
+    'MAIL_SMTP_PASSWORD',
+    'NOSFIRSOLIS_MAIL_SMTP_PASSWORD',
+], '');
+
+$mailSmtpAuthRaw = strtolower(nosfir_env_first([
+    'MAIL_SMTP_AUTH',
+    'NOSFIRSOLIS_MAIL_SMTP_AUTH',
+], '1'));
+
+$mailSmtpAuth = in_array($mailSmtpAuthRaw, ['1', 'true', 'yes', 'on'], true);
+
+$mailSmtpTimeoutRaw = nosfir_env_first([
+    'MAIL_SMTP_TIMEOUT',
+    'NOSFIRSOLIS_MAIL_SMTP_TIMEOUT',
+], '15');
+
+$mailSmtpTimeout = ctype_digit($mailSmtpTimeoutRaw) ? (int) $mailSmtpTimeoutRaw : 15;
+
+$mailSmtpVerifyPeerRaw = strtolower(nosfir_env_first([
+    'MAIL_SMTP_VERIFY_PEER',
+    'NOSFIRSOLIS_MAIL_SMTP_VERIFY_PEER',
+], '1'));
+
+$mailSmtpVerifyPeer = in_array($mailSmtpVerifyPeerRaw, ['1', 'true', 'yes', 'on'], true);
+
 if ($appEnvironment === 'production') {
     if ($cspAllowUnsafeEval) {
         error_log('[Solis] CSP_ALLOW_UNSAFE_EVAL=1 em producao. Revisar necessidade e reduzir superficie de execucao dinamica.');
@@ -540,6 +618,22 @@ return [
         'runtime_schema_mutations' => $securityRuntimeSchemaMutations,
         'auth' => [
             'fail_open_on_security_error' => $authFailOpenOnSecurityError,
+        ],
+        'mail' => [
+            'driver' => $mailDriver,
+            'fallback_to_php_mail' => $mailFallbackToPhp,
+            'from_email' => $mailFromEmail,
+            'from_name' => $mailFromName,
+            'smtp' => [
+                'host' => $mailSmtpHost,
+                'port' => max(1, min(65535, $mailSmtpPort)),
+                'encryption' => $mailSmtpEncryption,
+                'username' => $mailSmtpUsername,
+                'password' => $mailSmtpPassword,
+                'auth' => $mailSmtpAuth,
+                'timeout_seconds' => max(5, min(60, $mailSmtpTimeout)),
+                'verify_peer' => $mailSmtpVerifyPeer,
+            ],
         ],
         'headers' => [
             'enabled' => $securityHeadersEnabled,

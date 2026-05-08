@@ -155,7 +155,57 @@ final class OperationalSecurityAudit
             $this->pass('security.trusted_proxies configurado.');
         }
 
+        $this->checkMailConfiguration();
+
         $this->inspectRuntimeStorageConfig();
+    }
+
+    private function checkMailConfiguration(): void
+    {
+        $mail = (array) $this->config->get('security.mail', []);
+        $driver = strtolower(trim((string) ($mail['driver'] ?? 'php_mail')));
+        if (!in_array($driver, ['php_mail', 'smtp'], true)) {
+            $this->fail('security.mail.driver invalido. Use php_mail ou smtp.');
+            return;
+        }
+
+        if ($driver === 'php_mail') {
+            if ($this->isProduction) {
+                $this->warn('security.mail.driver=php_mail em producao. Considere SMTP autenticado para maior confiabilidade.');
+            } else {
+                $this->pass('security.mail.driver definido como php_mail para ambiente atual.');
+            }
+            return;
+        }
+
+        $smtp = (array) ($mail['smtp'] ?? []);
+        $host = trim((string) ($smtp['host'] ?? ''));
+        if ($host === '') {
+            $this->fail('security.mail.smtp.host vazio com driver SMTP.');
+            return;
+        }
+
+        $port = (int) ($smtp['port'] ?? 0);
+        if ($port <= 0 || $port > 65535) {
+            $this->fail('security.mail.smtp.port invalido com driver SMTP.');
+            return;
+        }
+
+        $authEnabled = $this->toBool($smtp['auth'] ?? true);
+        $username = trim((string) ($smtp['username'] ?? ''));
+        $password = trim((string) ($smtp['password'] ?? ''));
+        if ($authEnabled && ($username === '' || $password === '')) {
+            $this->fail('SMTP autenticado requer username/password.');
+            return;
+        }
+
+        $encryption = strtolower(trim((string) ($smtp['encryption'] ?? 'tls')));
+        if (!in_array($encryption, ['none', 'tls', 'ssl'], true)) {
+            $this->fail('security.mail.smtp.encryption invalido. Use none|tls|ssl.');
+            return;
+        }
+
+        $this->pass('Configuracao de mail SMTP valida para ambiente atual.');
     }
 
     private function checkDatabaseReadiness(): void
@@ -182,6 +232,7 @@ final class OperationalSecurityAudit
             'users',
             'user_groups',
             'password_resets',
+            'auth_recovery_requests',
             'security_login_attempts',
             'security_audit_logs',
             'settings',

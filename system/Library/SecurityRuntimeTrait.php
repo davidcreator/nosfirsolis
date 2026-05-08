@@ -90,12 +90,18 @@ trait SecurityRuntimeTrait
             return false;
         }
 
+        if (preg_match('/^[a-z0-9_]+$/i', $table) !== 1) {
+            return false;
+        }
+
         $db = $this->registry->get('db');
         if (!$db || !$db->connected()) {
             return false;
         }
 
-        $row = $db->fetch('SHOW TABLES LIKE :table_name', ['table_name' => $table]);
+        // PDO native prepared statements do not support placeholders in `SHOW TABLES LIKE`
+        // for all MySQL/MariaDB configurations. Keep a validated literal table name here.
+        $row = $db->fetch("SHOW TABLES LIKE '{$table}'");
 
         return is_array($row) && $row !== [];
     }
