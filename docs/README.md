@@ -41,6 +41,7 @@ Atualizado em: **2026-05-08**.
 34. [Relatorio de Validacao Pre-Merge com Main](relatorio-validacao-pre-merge-main-solis-2026-05-08.md)
 35. [Checklist de Execucao Go-Live em Producao](checklist-execucao-go-live-producao-solis-2026-05-08.md)
 36. [Relatorio de Execucao Assistida Go-Live Local](relatorio-execucao-assistida-go-live-local-solis-2026-05-08.md)
+37. [Ata de Encerramento de Go-Live (Producao)](ata-encerramento-go-live-producao-solis-2026-05-08.md)
 
 ## Guias Complementares (Fora Deste Diretorio)
 
