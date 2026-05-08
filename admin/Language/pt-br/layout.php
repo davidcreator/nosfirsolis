@@ -17,7 +17,7 @@ return [
     'layout.nav_users' => 'Usuários e Hierarquia',
     'layout.open_menu' => 'Abrir menu',
     'layout.panel_subtitle' => 'Painel Administrativo',
-    'layout.title_default' => 'Admin',
+    'layout.title_default' => 'Solis',
     'layout.topbar_subtitle' => 'Gestão administrativa e hierarquia de acesso do {app}',
     'layout.topbar_title' => 'Painel Administrativo',
 ];

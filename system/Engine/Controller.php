@@ -19,7 +19,7 @@ abstract class Controller
 
     protected function render(string $template, array $data = [], ?string $layout = 'layout/main'): void
     {
-        $data['app_name'] = $this->config->get('app.name', 'Solis');
+        $data['app_name'] = $this->normalizeAppNameForDisplay((string) $this->config->get('app.name', 'Solis'));
         $data['current_route'] = $this->request->route();
         $data['current_user'] = $this->auth ? $this->auth->user() : null;
         $data['message_success'] = flash('success');
@@ -29,6 +29,28 @@ abstract class Controller
 
         $output = $this->view->render($template, $data, $layout);
         $this->response->setOutput($output);
+    }
+
+    private function normalizeAppNameForDisplay(string $appName): string
+    {
+        $appName = preg_replace('/\s+/', ' ', trim($appName)) ?? '';
+
+        if ($appName === '') {
+            return 'Solis';
+        }
+
+        if (preg_match('/^nosfir\s*solis$/i', $appName) === 1 || preg_match('/^nosfirsolis$/i', $appName) === 1) {
+            return 'Solis';
+        }
+
+        $withoutPrefix = preg_replace('/^nosfir[\s\-\_\|:]+/i', '', $appName);
+        $withoutPrefix = is_string($withoutPrefix) ? trim($withoutPrefix) : '';
+
+        if ($withoutPrefix === '') {
+            return 'Solis';
+        }
+
+        return $withoutPrefix;
     }
 
     protected function redirectToRoute(string $route): never

@@ -17,7 +17,7 @@ return [
     'layout.nav_users' => 'Users and Hierarchy',
     'layout.open_menu' => 'Open menu',
     'layout.panel_subtitle' => 'Admin Panel',
-    'layout.title_default' => 'Planner',
+    'layout.title_default' => 'Solis',
     'layout.topbar_subtitle' => 'Administrative management and access hierarchy for {app}',
     'layout.topbar_title' => 'Admin Panel',
 ];

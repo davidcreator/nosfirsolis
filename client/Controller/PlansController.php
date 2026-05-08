@@ -297,7 +297,7 @@ class PlansController extends BaseController
             $safeName = 'plano-' . $id;
         }
 
-        $filename = 'nosfirsolis-' . $safeName . '-' . $this->formatDateTime('Ymd-His') . '.csv';
+        $filename = 'solis-' . $safeName . '-' . $this->formatDateTime('Ymd-His') . '.csv';
 
         $this->response->addHeader('Content-Type: text/csv; charset=UTF-8');
         $this->response->addHeader('Content-Disposition: attachment; filename="' . $filename . '"');

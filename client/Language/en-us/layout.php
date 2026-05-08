@@ -20,6 +20,6 @@ return [
     'layout.nav_tracking' => 'Tracking',
     'layout.open_menu' => 'Open menu',
     'layout.search_menu_placeholder' => 'Search menu',
-    'layout.title_default' => 'Planner',
+    'layout.title_default' => 'Solis',
     'layout.workspace_subtitle' => 'Client workspace',
 ];
