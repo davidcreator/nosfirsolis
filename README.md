@@ -76,6 +76,10 @@ Documentacao complementar fora de `docs/`:
 - [`tools/wordpress-plugin/nosfir-solis-bridge/README.md`](tools/wordpress-plugin/nosfir-solis-bridge/README.md) - plugin WordPress MVP
 - [`install/extensions/README.md`](install/extensions/README.md) - extensoes opcionais do instalador
 
+## Governanca De Contribuicao
+
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) - fluxo formal de branches, commits, PR e gates obrigatorios
+
 ## Fluxo Rapido De Operacao
 
 1. Admin configura base estrategica (`/admin`) e usuarios/hierarquia.
