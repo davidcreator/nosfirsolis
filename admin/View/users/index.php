@@ -23,7 +23,7 @@ $hasSavedDefaultFilters = !empty($has_saved_default_filters ?? false);
 
 <section class="panel users-subscription-panel">
     <div class="panel-header">
-        <h2><i class="fa-solid fa-sliders"></i> <?= e($t('users.heading_plan_access', 'Planos e recursos por usuario')) ?></h2>
+        <h2><i class="fa-solid fa-sliders"></i> <?= e($t('users.heading_plan_access', 'Planos e recursos por usuário')) ?></h2>
         <span class="meta-text"><?= e($t('users.plan_access_hint', 'Ative/desative recursos conforme necessidade e troque o plano direto nesta tela.')) ?></span>
     </div>
 
@@ -66,12 +66,12 @@ $hasSavedDefaultFilters = !empty($has_saved_default_filters ?? false);
                 <select name="f_scope">
                     <?php $scope = (string) ($listFilters['scope'] ?? 'all'); ?>
                     <option value="all" <?= $scope === 'all' ? 'selected' : '' ?>><?= e($t('users.filter_scope_all', 'Todos')) ?></option>
-                    <option value="manageable" <?= $scope === 'manageable' ? 'selected' : '' ?>><?= e($t('users.filter_scope_manageable', 'Gerenciaveis')) ?></option>
+                    <option value="manageable" <?= $scope === 'manageable' ? 'selected' : '' ?>><?= e($t('users.filter_scope_manageable', 'Gerenciáveis')) ?></option>
                     <option value="restricted" <?= $scope === 'restricted' ? 'selected' : '' ?>><?= e($t('users.filter_scope_restricted', 'Restritos')) ?></option>
                 </select>
             </label>
             <label>
-                <span><?= e($t('users.filter_user_status', 'Status do usuario')) ?></span>
+                <span><?= e($t('users.filter_user_status', 'Status do usuário')) ?></span>
                 <?php $userStatusFilter = (string) ($listFilters['user_status'] ?? 'all'); ?>
                 <select name="f_user_status">
                     <option value="all" <?= $userStatusFilter === 'all' ? 'selected' : '' ?>><?= e($t('users.filter_user_status_all', 'Todos')) ?></option>
@@ -96,8 +96,8 @@ $hasSavedDefaultFilters = !empty($has_saved_default_filters ?? false);
                 <?php $overrideModeFilter = (string) ($listFilters['override_mode'] ?? 'all'); ?>
                 <select name="f_override_mode">
                     <option value="all" <?= $overrideModeFilter === 'all' ? 'selected' : '' ?>><?= e($t('users.filter_override_mode_all', 'Todos')) ?></option>
-                    <option value="custom" <?= $overrideModeFilter === 'custom' ? 'selected' : '' ?>><?= e($t('users.filter_override_mode_custom', 'Com personalizacao')) ?></option>
-                    <option value="no_custom" <?= $overrideModeFilter === 'no_custom' ? 'selected' : '' ?>><?= e($t('users.filter_override_mode_no_custom', 'Sem personalizacao')) ?></option>
+                    <option value="custom" <?= $overrideModeFilter === 'custom' ? 'selected' : '' ?>><?= e($t('users.filter_override_mode_custom', 'Com personalização')) ?></option>
+                    <option value="no_custom" <?= $overrideModeFilter === 'no_custom' ? 'selected' : '' ?>><?= e($t('users.filter_override_mode_no_custom', 'Sem personalização')) ?></option>
                 </select>
             </label>
         </div>
@@ -115,28 +115,28 @@ $hasSavedDefaultFilters = !empty($has_saved_default_filters ?? false);
                 <input type="hidden" name="f_user_status" value="<?= e((string) ($listFilters['user_status'] ?? 'all')) ?>">
                 <input type="hidden" name="f_subscription_status" value="<?= e((string) ($listFilters['subscription_status'] ?? 'all')) ?>">
                 <input type="hidden" name="f_override_mode" value="<?= e((string) ($listFilters['override_mode'] ?? 'all')) ?>">
-                <button type="submit" class="btn-link"><i class="fa-solid fa-bookmark"></i> <?= e($t('users.button_save_default_filters', 'Salvar filtro padrao')) ?></button>
+                <button type="submit" class="btn-link"><i class="fa-solid fa-bookmark"></i> <?= e($t('users.button_save_default_filters', 'Salvar filtro padrão')) ?></button>
             </form>
             <?php if ($hasSavedDefaultFilters): ?>
                 <form method="post" action="<?= e(route_url('users/clearDefaultFilters')) ?>" class="users-default-filter-form">
                     <?= csrf_field() ?>
                     <input type="hidden" name="_return_qs" value="<?= e($listFiltersQuery) ?>">
-                    <button type="submit" class="btn-link danger"><i class="fa-solid fa-bookmark-slash"></i> <?= e($t('users.button_clear_default_filters', 'Remover filtro padrao')) ?></button>
+                    <button type="submit" class="btn-link danger"><i class="fa-solid fa-bookmark-slash"></i> <?= e($t('users.button_clear_default_filters', 'Remover filtro padrão')) ?></button>
                 </form>
             <?php endif; ?>
             <?php if ($isUsingDefaultFilters): ?>
-                <span class="meta-text users-filter-default-note"><?= e($t('users.default_filters_applied', 'Filtro padrao aplicado automaticamente.')) ?></span>
+                <span class="meta-text users-filter-default-note"><?= e($t('users.default_filters_applied', 'Filtro padrão aplicado automaticamente.')) ?></span>
             <?php endif; ?>
-            <span class="meta-text users-filter-summary"><?= e($t('users.filters_results', 'Exibindo {shown} de {total} usuarios.', ['shown' => $shownCount, 'total' => $totalCount])) ?></span>
+            <span class="meta-text users-filter-summary"><?= e($t('users.filters_results', 'Exibindo {shown} de {total} usuários.', ['shown' => $shownCount, 'total' => $totalCount])) ?></span>
         </div>
     </form>
 
     <?php if (empty($users) || empty($planOptions) || empty($featureCatalog)): ?>
-        <p><?= e($t('users.empty_plan_access', 'Nao ha dados suficientes para gerenciar planos e recursos neste momento.')) ?></p>
+        <p><?= e($t('users.empty_plan_access', 'Não há dados suficientes para gerenciar planos e recursos neste momento.')) ?></p>
     <?php else: ?>
         <div class="users-admin-list">
             <div class="users-admin-list-head">
-                <span><?= e($t('users.col_user', 'Usuario')) ?></span>
+                <span><?= e($t('users.col_user', 'Usuário')) ?></span>
                 <span><?= e($t('users.col_plan_current', 'Plano atual')) ?></span>
                 <span><?= e($t('users.col_plan_change', 'Alterar plano')) ?></span>
                 <span><?= e($t('users.col_feature_access', 'Recursos')) ?></span>
@@ -158,7 +158,7 @@ $hasSavedDefaultFilters = !empty($has_saved_default_filters ?? false);
                         <p class="meta-text"><?= e($user['email'] ?? '-') ?></p>
                         <div class="users-admin-inline">
                             <span><i class="fa-solid fa-user-group"></i> <?= e($user['group_name'] ?? '-') ?></span>
-                            <span><i class="fa-solid fa-sitemap"></i> <?= e($t('users.group_level_label', 'Nivel')) ?> <?= (int) ($user['group_hierarchy_level'] ?? 50) ?></span>
+                            <span><i class="fa-solid fa-sitemap"></i> <?= e($t('users.group_level_label', 'Nível')) ?> <?= (int) ($user['group_hierarchy_level'] ?? 50) ?></span>
                         </div>
                         <span class="user-scope-pill <?= $canManage ? 'is-ok' : 'is-locked' ?>">
                             <?= $canManage

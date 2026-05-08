@@ -1,5 +1,5 @@
 <?php
-$monthNames = [1 => 'Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+$monthNames = [1 => 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 $weekNames = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom'];
 $annualQuery = http_build_query([
     'mode' => 'annual',
@@ -19,12 +19,12 @@ $annualQuery = http_build_query([
 <section class="panel dashboard-hero">
     <div class="hero-content">
         <span class="hero-badge"><i class="fa-solid fa-table-cells-large"></i> Calendar Hub</span>
-        <h2><i class="fa-solid fa-calendar-days"></i> Calendario anual</h2>
-        <p>Visao consolidada de janeiro a dezembro com marcadores de feriados, campanhas e observacoes.</p>
+        <h2><i class="fa-solid fa-calendar-days"></i> Calendário anual</h2>
+        <p>Visão consolidada de janeiro a dezembro com marcadores de feriados, campanhas e observações.</p>
     </div>
     <div class="hero-actions">
         <a class="btn" href="#calendar-annual-grid"><i class="fa-solid fa-table-cells-large"></i> Ver meses</a>
-        <a class="btn" href="<?= e(route_url('calendar/index?' . $annualQuery)) ?>"><i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir visao principal</a>
+        <a class="btn" href="<?= e(route_url('calendar/index?' . $annualQuery)) ?>"><i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir visão principal</a>
     </div>
 </section>
 

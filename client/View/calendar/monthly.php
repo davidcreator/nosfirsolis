@@ -1,5 +1,5 @@
 <?php
-$monthNames = [1 => 'Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+$monthNames = [1 => 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 $weekNames = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom'];
 $currentYear = (int) $year;
 $currentMonth = max(1, min(12, (int) $month));
@@ -38,12 +38,12 @@ $nextQuery = http_build_query(array_merge(['year' => $nextYear, 'month' => $next
 <section class="panel dashboard-hero">
     <div class="hero-content">
         <span class="hero-badge"><i class="fa-solid fa-calendar-week"></i> Calendar Hub</span>
-        <h2><i class="fa-solid fa-calendar-week"></i> Calendario mensal</h2>
-        <p>Detalhe diario do periodo com contexto de eventos estrategicos, campanhas e observacoes.</p>
+        <h2><i class="fa-solid fa-calendar-week"></i> Calendário mensal</h2>
+        <p>Detalhe diário do período com contexto de eventos estratégicos, campanhas e observações.</p>
     </div>
     <div class="hero-actions">
         <a class="btn" href="#calendar-month-grid"><i class="fa-solid fa-table"></i> Ver grade mensal</a>
-        <a class="btn" href="<?= e(route_url('calendar/index?mode=monthly&year=' . $currentYear . '&month=' . $currentMonth)) ?>"><i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir visao principal</a>
+        <a class="btn" href="<?= e(route_url('calendar/index?mode=monthly&year=' . $currentYear . '&month=' . $currentMonth)) ?>"><i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir visão principal</a>
     </div>
 </section>
 
@@ -51,8 +51,8 @@ $nextQuery = http_build_query(array_merge(['year' => $nextYear, 'month' => $next
     <div class="panel-head-inline">
         <h2><i class="fa-solid fa-calendar-day"></i> <?= e($monthNames[$currentMonth] ?? '') ?> / <?= $currentYear ?></h2>
         <div class="inline-links">
-            <a href="<?= e(route_url('calendar/monthly?' . $previousQuery)) ?>">Mes anterior</a>
-            <a href="<?= e(route_url('calendar/monthly?' . $nextQuery)) ?>">Proximo mes</a>
+            <a href="<?= e(route_url('calendar/monthly?' . $previousQuery)) ?>">Mês anterior</a>
+            <a href="<?= e(route_url('calendar/monthly?' . $nextQuery)) ?>">Próximo mês</a>
         </div>
     </div>
 
@@ -61,7 +61,7 @@ $nextQuery = http_build_query(array_merge(['year' => $nextYear, 'month' => $next
         <label>Ano
             <input type="number" name="year" value="<?= $currentYear ?>" min="1970" max="2100">
         </label>
-        <label>Mes
+        <label>Mês
             <input type="number" name="month" value="<?= $currentMonth ?>" min="1" max="12">
         </label>
         <?php include __DIR__ . '/../partials/filters.php'; ?>
