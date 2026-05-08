@@ -4,11 +4,29 @@
 
 A area `client` concentra operacao diaria de estrategia e execucao:
 
-- Dashboard
-- Calendario
-- Planos editoriais
-- Central social
-- Rastreamento de campanhas
+- autenticacao e conta
+- dashboard
+- calendario
+- planos editoriais
+- central social
+- rastreamento de campanhas
+- planos e faturamento
+
+## Autenticacao E Conta (`client/auth/*`)
+
+### Fluxos Publicos
+
+- `auth/login` e `auth/authenticate`
+- `auth/register` e `auth/createAccount`
+- `auth/forgotpassword` e `auth/sendpasswordreset`
+- `auth/resetpassword` e `auth/updatepassword`
+
+### Regras Principais
+
+- cadastro valida nome, email e senha minima
+- conta nova entra em grupo cliente e recebe plano Basico Gratuito automaticamente
+- login/logout usam CSRF e validacao de metodo
+- reset de senha usa token de 64 chars com hash (`password_resets`) e expiracao configuravel
 
 ## Dashboard (`client/dashboard/index`)
 
@@ -18,7 +36,7 @@ Exibe:
 - total de itens planejados
 - campanhas ativas
 - sugestoes estrategicas ativas
-- pipeline por status (planned, scheduled, published, skipped)
+- pipeline por status (`planned`, `scheduled`, `published`, `skipped`)
 - proximas publicacoes
 - bloco executivo com:
   - links rastreados e cliques
@@ -27,12 +45,13 @@ Exibe:
   - alertas de jobs
   - erros de observabilidade (24h)
 
-## Calendario Unificado (`client/calendar/index`)
+## Calendario Unificado (`client/calendar/*`)
 
 Modos disponiveis:
 
-- `annual`
-- `monthly`
+- `index`
+- `annual/{year}`
+- `monthly/{year}/{month}`
 - `period`
 
 Camadas consolidadas por data:
@@ -49,7 +68,7 @@ Recursos de apoio:
 
 - filtros por canal, objetivo e campanha
 - toggles de visibilidade por camada
-- personalizacao de paleta de cores por usuario (`user_calendar_colors`)
+- paleta de cores por usuario (`user_calendar_colors`)
 
 ## Planos Editoriais (`client/plans/*`)
 
@@ -67,23 +86,19 @@ Recursos de apoio:
   - taxa de publicacao
   - atrasos
   - proximo item pendente
-- atualizacao individual de item:
-  - status
-  - observacao manual
-- atualizacao em lote de status:
-  - selecao multipla
-  - marcar todos / limpar selecao
+- atualizacao individual de item (`plans/updateItem/{itemId}`)
+- atualizacao em lote (`plans/bulkUpdateStatus`)
 - exportacao CSV (`plans/exportCsv/{id}`)
 
 ### Seguranca De Plano
 
 Operacoes de leitura/edicao/exportacao validam escopo do usuario (`planByIdForUser`, `planItemsForUser`).
 
-## Central Social (`client/social/index`)
+## Central Social (`client/social/*`)
 
 ### Conexoes De Plataforma
 
-- OAuth2 para plataformas configuradas no `SocialPlatformRegistry`
+- OAuth2 para plataformas do `SocialPlatformRegistry`
 - conexao manual por token quando necessario
 - disconnect com auditoria
 
@@ -95,27 +110,22 @@ Operacoes de leitura/edicao/exportacao validam escopo do usuario (`planByIdForUs
 ### Padroes De Formato
 
 - matriz de standards via `SocialFormatStandardsService`
-- fontes de referencia por plataforma/formato
-- presets personalizados por usuario (`social_format_presets`)
+- presets por usuario (`social_format_presets`)
 
 ### Hub De Publicacao
 
-- fila de publicacoes por plataforma (`social_publications`)
-- publicacao avulsa ou por item de plano
-- processamento em lote da fila
-- status de envio:
-  - `queued`
-  - `processing`
-  - `published`
-  - `failed`
-  - `manual_review`
-- logs por publicacao (`social_publication_logs`)
+- fila em `social_publications`
+- logs em `social_publication_logs`
+- enfileirar (`social/queuePublication`)
+- publicar agora (`social/publishNow/{id}`)
+- processar fila (`social/processQueue`)
+- status: `queued`, `processing`, `published`, `failed`, `manual_review`
 
 ## Rastreamento De Campanhas (`client/tracking/*`)
 
 ### Recursos
 
-- geracao de links rastreaveis com UTM/MTM
+- geracao de links UTM/MTM
 - short link interno publico (`tracking/redirect/{shortCode}`)
 - encurtamento externo Bitly (opcional)
 - consolidado de cliques por campanha/canal
@@ -125,12 +135,31 @@ Operacoes de leitura/edicao/exportacao validam escopo do usuario (`planByIdForUs
 
 - tabela `campaign_tracking_links`
 
+## Planos E Faturamento (`client/billing/*`)
+
+### O Que Centraliza
+
+- contexto da assinatura ativa (`user_subscriptions` + `subscription_plans`)
+- consumo por limite (`plan_limits` + uso mensal)
+- catalogo de planos publicos com promocao ativa
+- historico de faturas (`billing_invoices`)
+- pagamento de faturas e troca de plano
+
+### Fluxos
+
+- `billing/index`: painel de assinatura, limites e historico
+- `billing/subscribe`: upgrade/downgrade com metodo de pagamento
+- `billing/payInvoice/{invoiceId}`: pagamento de fatura aberta/falha
+
 ## Principais Controllers/Models
 
+- `Client\Controller\AuthController`
+- `Client\Controller\DashboardController`
 - `Client\Controller\CalendarController`
 - `Client\Controller\PlansController`
 - `Client\Controller\SocialController`
 - `Client\Controller\TrackingController`
+- `Client\Controller\BillingController`
 - `Client\Model\CalendarModel`
 - `Client\Model\PlannerModel`
 - `Client\Model\SocialModel`

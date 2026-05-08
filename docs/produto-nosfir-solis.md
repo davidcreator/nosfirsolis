@@ -2,35 +2,42 @@
 
 ## Contexto De Produto
 
-O **NosfirSolis** nao e um sistema isolado de escopo universal.  
-Ele representa o **Solis**, que e um sub-sistema do ecossistema **Nosfir**.
+O **NosfirSolis** nao e um sistema isolado de escopo universal.
+Ele representa o **Solis**, um sub-sistema dentro do ecossistema **Nosfir**.
 
 ## Papel Do Solis
 
-Resolver problemas especificos de estrategia de campanhas para redes sociais:
+Resolver operacao de conteudo ponta a ponta em um escopo tatico:
 
 - planejamento anual/mensal por calendario
 - organizacao de campanhas, datas e sugestoes editoriais
-- execucao orientada por status e operacao diaria
-- apoio a distribuicao em multiplos canais sociais
+- execucao orientada por status e rotina diaria
+- apoio a distribuicao social em multiplos canais
+- tracking de campanha com links rastreaveis
+- gestao basica de planos e cobranca no proprio produto
 
-## Limite De Escopo (Atual)
+## Escopo Atual (Implementado)
 
-O Solis cobre:
+O Solis cobre hoje:
 
 - planejamento editorial e operacional
 - gestao de base estrategica (feriados, comemorativas, sugestoes, campanhas)
-- central social para conexao de contas e padronizacao de formatos
+- central social para conexoes, drafts, presets e fila de publicacao
+- tracking de campanhas (UTM/MTM, short links e cliques)
+- billing interno (planos, limites, promocoes, anuncios, faturas e pagamento mock)
+- governanca operacional (feature flags, webhooks, monitores de jobs e observabilidade)
 
-O Solis nao cobre (nativamente, neste estado):
+## Limites De Escopo (Nao Coberto Nativamente)
 
-- automacao completa de publicacao multi-canal ponta a ponta
-- analytics avancado com BI dedicado
-- modulo financeiro/comercial completo do ecossistema Nosfir
+No estado atual, o Solis ainda nao cobre nativamente:
+
+- gateway real de pagamentos com conciliacao bancaria completa
+- billing multi-tenant corporativo com repasse fiscal complexo
+- analytics avancado em stack de BI externa
+- operacao omnichannel completa alem do foco social/editorial
 
 ## Publicos Do Sistema
 
-- **Equipe de operacao de conteudo**: usa modulo cliente para calendario, planos e social.
-- **Equipe administrativa**: usa modulo admin para governanca de dados e usuarios.
-- **Equipe tecnica**: mantem instalacao, seguranca, configuracao e evolucao.
-
+- **Equipe de operacao de conteudo**: usa modulo cliente para auth, dashboard, calendario, planos, social, tracking e billing.
+- **Equipe administrativa**: usa modulo admin para governanca de base, usuarios/hierarquia, operacoes e monetizacao.
+- **Equipe tecnica**: mantem instalacao, seguranca, configuracao e evolucao do core.

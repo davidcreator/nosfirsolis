@@ -23,8 +23,21 @@ A conexao e carregada por `system/Config/database.php` e sobrescrita na instalac
 
 - `user_groups`: grupos, permissoes (`permissions_json`) e nivel hierarquico (`hierarchy_level`).
 - `users`: usuarios, grupo, senha hash, status e ultimo login.
+- `password_resets`: tokens de recuperacao de senha para clientes.
 - `settings`: configuracoes chave/valor.
 - `languages`: idiomas disponiveis no sistema.
+
+### Assinaturas, Billing E Entitlements
+
+- `subscription_plans`: catalogo de planos (gratuito, bronze, prata, ouro e futuros).
+- `plan_limits`: limites e capacidades por plano (`int`, `bool`, `text`).
+- `user_subscriptions`: assinatura atual de cada usuario.
+- `billing_invoices`: cobrancas geradas por troca/ciclo de plano.
+- `payment_transactions`: tentativa/resultado de pagamento por fatura.
+- `subscription_events`: trilha de eventos da assinatura.
+- `billing_promotions`: descontos por periodo/plano.
+- `billing_announcements`: comunicados de desconto/reajuste para o cliente.
+- `user_feature_overrides`: sobrescritas de recursos por usuario.
 
 ### Base Estrategica De Conteudo
 
@@ -85,6 +98,19 @@ A conexao e carregada por `system/Config/database.php` e sobrescrita na instalac
 ## Relacionamentos Principais
 
 - `users.user_group_id -> user_groups.id`
+- `password_resets.user_id -> users.id`
+- `plan_limits.plan_id -> subscription_plans.id`
+- `user_subscriptions.user_id -> users.id`
+- `user_subscriptions.plan_id -> subscription_plans.id`
+- `billing_invoices.user_id -> users.id`
+- `billing_invoices.subscription_id -> user_subscriptions.id`
+- `billing_invoices.plan_id -> subscription_plans.id`
+- `payment_transactions.user_id -> users.id`
+- `payment_transactions.invoice_id -> billing_invoices.id`
+- `subscription_events.user_id -> users.id`
+- `subscription_events.subscription_id -> user_subscriptions.id`
+- `billing_promotions.plan_id -> subscription_plans.id`
+- `user_feature_overrides.user_id -> users.id`
 - `holidays.holiday_region_id -> holiday_regions.id`
 - `content_suggestions.content_category_id -> content_categories.id`
 - `content_suggestions.content_pillar_id -> content_pillars.id`
@@ -124,6 +150,12 @@ A conexao e carregada por `system/Config/database.php` e sobrescrita na instalac
 
 ## Enums E Campos Criticos
 
+- `user_subscriptions.status`: `trial`, `active`, `past_due`, `suspended`, `canceled`
+- `user_subscriptions.billing_cycle`: `monthly`, `yearly`
+- `billing_invoices.status`: `open`, `paid`, `void`, `failed`
+- `payment_transactions.status`: `pending`, `paid`, `failed`, `refunded`
+- `billing_promotions.discount_type`: `percent`, `amount`
+- `billing_announcements.announcement_type`: `discount`, `reajuste`, `informativo`
 - `campaigns.status`: `planned`, `active`, `completed`, `archived`
 - `content_plans.status`: `draft`, `active`, `archived`
 - `content_plan_items.status`: `planned`, `scheduled`, `published`, `skipped`
@@ -154,6 +186,8 @@ O `install/sql/seed.sql` entrega uma base inicial com:
 - canais/plataformas sociais e de video
 - feriados, datas comemorativas, campanhas e sugestoes de exemplo
 
+Os planos padrao e limites sao reforcados em runtime por `SubscriptionService` quando necessario.
+
 ## Evolucao De Schema Em Runtime
 
 Mesmo com schema inicial pronto, algumas camadas reforcam compatibilidade:
@@ -164,6 +198,10 @@ Mesmo com schema inicial pronto, algumas camadas reforcam compatibilidade:
   - garante `calendar_extra_events`, `user_calendar_colors` e coluna `color_hex`
 - `Client\Model\SocialModel::ensureSocialTables`
   - garante tabelas do dominio social
+- `Client\Controller\AuthController::ensurePasswordResetTable`
+  - garante `password_resets` para bases antigas
+- `System\Library\SubscriptionService::ensureTables`
+  - garante dominio de assinaturas/billing e `user_feature_overrides`
 - `System\Library\SecurityService::ensureTables`
   - garante tabelas de login attempts e auditoria
 - `System\Library\FeatureFlagService::ensureTables`
