@@ -24,7 +24,7 @@ A conexao e carregada por `system/Config/database.php` e sobrescrita na instalac
 - `user_groups`: grupos, permissoes (`permissions_json`) e nivel hierarquico (`hierarchy_level`).
 - `users`: usuarios, grupo, senha hash, status e ultimo login.
 - `password_resets`: tokens de recuperacao de senha para clientes.
-- `settings`: configuracoes chave/valor.
+- `settings`: configuracoes chave/valor (inclui governanca de IA de planos/campanhas, como `plans_ai_default_manager` e `plans_ai_user_{id}`).
 - `languages`: idiomas disponiveis no sistema.
 
 ### Assinaturas, Billing E Entitlements
@@ -66,6 +66,7 @@ A conexao e carregada por `system/Config/database.php` e sobrescrita na instalac
 - `content_day_notes`: observacoes manuais por data/contexto.
 - `calendar_extra_events`: eventos extras no calendario do usuario.
 - `user_calendar_colors`: paleta personalizada de cores por usuario.
+- `content_plans.filters_json`: armazena metadados de geracao (ex.: origem por IA, manager selecionado, modo de campanha).
 
 ### Social E Distribuicao
 

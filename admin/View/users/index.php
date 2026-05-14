@@ -104,7 +104,7 @@ $hasSavedDefaultFilters = !empty($has_saved_default_filters ?? false);
 
         <div class="users-filter-actions">
             <button type="submit"><i class="fa-solid fa-filter"></i> <?= e($t('users.button_apply_filters', 'Aplicar filtros')) ?></button>
-            <a class="btn-link" href="<?= e(route_url('users/index?skip_default_filters=1')) ?>"><i class="fa-solid fa-eraser"></i> <?= e($t('users.button_clear_filters', 'Limpar')) ?></a>
+            <a class="btn-link panel-action-btn" href="<?= e(route_url('users/index?skip_default_filters=1')) ?>"><i class="fa-solid fa-eraser"></i> <?= e($t('users.button_clear_filters', 'Limpar')) ?></a>
             <form method="post" action="<?= e(route_url('users/saveDefaultFilters')) ?>" class="users-default-filter-form">
                 <?= csrf_field() ?>
                 <input type="hidden" name="_return_qs" value="<?= e($listFiltersQuery) ?>">
@@ -115,13 +115,13 @@ $hasSavedDefaultFilters = !empty($has_saved_default_filters ?? false);
                 <input type="hidden" name="f_user_status" value="<?= e((string) ($listFilters['user_status'] ?? 'all')) ?>">
                 <input type="hidden" name="f_subscription_status" value="<?= e((string) ($listFilters['subscription_status'] ?? 'all')) ?>">
                 <input type="hidden" name="f_override_mode" value="<?= e((string) ($listFilters['override_mode'] ?? 'all')) ?>">
-                <button type="submit" class="btn-link"><i class="fa-solid fa-bookmark"></i> <?= e($t('users.button_save_default_filters', 'Salvar filtro padrão')) ?></button>
+                <button type="submit" class="btn-link panel-action-btn"><i class="fa-solid fa-bookmark"></i> <?= e($t('users.button_save_default_filters', 'Salvar filtro padrão')) ?></button>
             </form>
             <?php if ($hasSavedDefaultFilters): ?>
                 <form method="post" action="<?= e(route_url('users/clearDefaultFilters')) ?>" class="users-default-filter-form">
                     <?= csrf_field() ?>
                     <input type="hidden" name="_return_qs" value="<?= e($listFiltersQuery) ?>">
-                    <button type="submit" class="btn-link danger"><i class="fa-solid fa-bookmark-slash"></i> <?= e($t('users.button_clear_default_filters', 'Remover filtro padrão')) ?></button>
+                    <button type="submit" class="btn-link panel-action-btn danger"><i class="fa-solid fa-bookmark-slash"></i> <?= e($t('users.button_clear_default_filters', 'Remover filtro padrão')) ?></button>
                 </form>
             <?php endif; ?>
             <?php if ($isUsingDefaultFilters): ?>
@@ -240,7 +240,7 @@ $hasSavedDefaultFilters = !empty($has_saved_default_filters ?? false);
     <?php if (empty($groups)): ?>
         <p><?= e($t('users.empty_groups_for_create', 'Nenhum grupo disponível para atribuição de usuários no seu nível hierárquico.')) ?></p>
     <?php else: ?>
-        <form method="post" action="<?= e(route_url('users/store')) ?>" class="form-grid form-grid-user-create">
+        <form method="post" action="<?= e(route_url('users/store')) ?>" class="form-grid form-grid-user-create admin-form-highlight">
             <?= csrf_field() ?>
             <label><?= e($t('users.field_name', 'Nome')) ?>
                 <input type="text" name="name" required>
@@ -283,7 +283,7 @@ $hasSavedDefaultFilters = !empty($has_saved_default_filters ?? false);
     <?php if (empty($hierarchyGroups)): ?>
         <p><?= e($t('users.empty_hierarchy_groups', 'Sem grupos disponíveis para gerenciar neste nível.')) ?></p>
     <?php else: ?>
-        <form method="post" action="<?= e(route_url('users/saveHierarchy')) ?>">
+        <form method="post" action="<?= e(route_url('users/saveHierarchy')) ?>" class="users-hierarchy-form admin-form-highlight">
             <?= csrf_field() ?>
 
             <div class="table-wrap">

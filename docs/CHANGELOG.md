@@ -2,6 +2,43 @@
 
 Todas as mudancas relevantes de codigo e seguranca registradas neste diretorio de documentacao.
 
+## 2026-05-14
+
+### Produto E UX
+
+- Area cliente (`client/plans`) ganhou central de IA para gestao de planos e campanhas:
+  - novo fluxo `plans/storeAi` para gerar campanha + plano + itens em transacao unica
+  - suporte a modo de campanha: `new`, `existing` ou `none`
+  - heranca da IA configurada pelo Admin e override manual opcional no formulario
+- Area admin ganhou modulo de governanca dedicado:
+  - novo controller `admin/Controller/PlansCampaignsController.php`
+  - novo model `admin/Model/PlansCampaignsModel.php`
+  - nova view `admin/View/plans_campaigns/index.php`
+  - entrada de navegacao `Planos e Campanhas IA` no layout admin
+  - operacoes de governanca: IA padrao global, IA por cliente, ajustes de campanha e ajustes de plano
+- Central social da area cliente recebeu melhoria visual na area de seguranca com glifos para leitura rapida do estado das redes.
+
+### Autenticacao E Acesso
+
+- Login do admin atualizado para aceitar identificador por:
+  - `users.email`
+  - `users.recovery_email`
+  - `users.name` (usuario)
+- Correcao de erro fatal no bind de parametros PDO (`SQLSTATE[HY093]`) durante autenticacao admin com consulta de multiplos identificadores.
+- Processo de normalizacao operacional de acesso admin aplicado no ambiente local de trabalho para remover regressao de `user_not_found`.
+
+### Documentacao
+
+- Atualizados:
+  - `README.md`
+  - `docs/README.md`
+  - `docs/modulo-admin.md`
+  - `docs/modulo-cliente.md`
+  - `docs/seguranca-e-autenticacao.md`
+  - `docs/banco-de-dados.md`
+  - `docs/produto-nosfir-solis.md`
+  - `docs/CHANGELOG.md`
+
 ## 2026-05-08
 
 ### Fechamento De Producao E Benchmark

@@ -22,11 +22,92 @@ foreach ((array) $platforms as $slug => $platform) {
     $platformNameBySlug[(string) $slug] = (string) ($platform['name'] ?? $slug);
 }
 
+$platformGlyphBySlug = [
+    'instagram' => 'fa-brands fa-instagram',
+    'facebook' => 'fa-brands fa-facebook-f',
+    'linkedin' => 'fa-brands fa-linkedin-in',
+    'tiktok' => 'fa-brands fa-tiktok',
+    'x-twitter' => 'fa-brands fa-x-twitter',
+    'twitter' => 'fa-brands fa-x-twitter',
+    'x' => 'fa-brands fa-x-twitter',
+    'pinterest' => 'fa-brands fa-pinterest-p',
+    'threads' => 'fa-brands fa-threads',
+    'youtube' => 'fa-brands fa-youtube',
+    'vimeo' => 'fa-brands fa-vimeo-v',
+    'blog' => 'fa-solid fa-blog',
+    'podcast' => 'fa-solid fa-podcast',
+    'email-marketing' => 'fa-solid fa-envelope-open-text',
+    'email' => 'fa-solid fa-envelope-open-text',
+];
+
+$platformToneBySlug = [
+    'instagram' => 'instagram',
+    'facebook' => 'facebook',
+    'linkedin' => 'linkedin',
+    'tiktok' => 'tiktok',
+    'x-twitter' => 'xtwitter',
+    'twitter' => 'xtwitter',
+    'x' => 'xtwitter',
+    'pinterest' => 'pinterest',
+    'threads' => 'threads',
+    'youtube' => 'youtube',
+    'vimeo' => 'vimeo',
+    'blog' => 'blog',
+    'podcast' => 'podcast',
+    'email-marketing' => 'email',
+    'email' => 'email',
+];
+
+$resolvePlatformGlyph = static function (string $slug, string $platformName = '') use ($platformGlyphBySlug): string {
+    $normalizedSlug = strtolower(trim($slug));
+    if (isset($platformGlyphBySlug[$normalizedSlug])) {
+        return $platformGlyphBySlug[$normalizedSlug];
+    }
+
+    $normalizedName = strtolower(trim($platformName));
+    foreach ($platformGlyphBySlug as $knownSlug => $glyphClass) {
+        if ($normalizedName !== '' && str_contains($normalizedName, $knownSlug)) {
+            return $glyphClass;
+        }
+    }
+
+    return 'fa-solid fa-share-nodes';
+};
+
+$resolvePlatformTone = static function (string $slug, string $platformName = '') use ($platformToneBySlug): string {
+    $normalizedSlug = strtolower(trim($slug));
+    if (isset($platformToneBySlug[$normalizedSlug])) {
+        return $platformToneBySlug[$normalizedSlug];
+    }
+
+    $normalizedName = strtolower(trim($platformName));
+    foreach ($platformToneBySlug as $knownSlug => $tone) {
+        if ($normalizedName !== '' && str_contains($normalizedName, $knownSlug)) {
+            return $tone;
+        }
+    }
+
+    return 'neutral';
+};
+
 $publicationQueue = (array) ($publication_queue ?? []);
 $publishPlanItems = (array) ($publish_plan_items ?? []);
 $featureFlags = (array) ($feature_flags ?? []);
 $publishHubEnabled = (bool) ($featureFlags['social.publish_hub'] ?? true);
 $accessKeyDocs = is_array($access_key_docs ?? null) ? $access_key_docs : [];
+$bulkFailedPlatforms = array_values(array_filter(array_map(
+    static fn ($slug): string => strtolower(trim((string) $slug)),
+    (array) ($bulk_failed_platforms ?? [])
+), static fn (string $slug): bool => $slug !== ''));
+$oauthReadyPlatforms = [];
+foreach ((array) $platforms as $slug => $platform) {
+    $kind = strtolower(trim((string) ($platform['kind'] ?? 'manual')));
+    $enabled = (bool) ($platform['enabled'] ?? true);
+    $hasCreds = trim((string) ($platform['client_id'] ?? '')) !== '' && trim((string) ($platform['client_secret'] ?? '')) !== '';
+    if ($kind === 'oauth2' && $enabled && $hasCreds) {
+        $oauthReadyPlatforms[(string) $slug] = $platform;
+    }
+}
 ?>
 
 <section class="panel dashboard-hero">
@@ -81,10 +162,56 @@ $accessKeyDocs = is_array($access_key_docs ?? null) ? $access_key_docs : [];
         <span class="calendar-subtitle">Conecte cada rede individualmente e proteja seus acessos.</span>
     </div>
 
+    <div class="social-quick-connect">
+        <div class="social-quick-connect-head">
+            <h3><i class="fa-solid fa-bolt"></i> Conexao rapida de redes</h3>
+            <p>Escolha as redes OAuth e o sistema abre a autorizacao em sequencia automaticamente.</p>
+        </div>
+        <form method="post" action="<?= e(route_url('social/connectAll')) ?>" class="social-quick-connect-form">
+            <?= csrf_field() ?>
+            <div class="social-quick-list">
+                <?php if ($oauthReadyPlatforms === []): ?>
+                    <p class="hint">Nenhuma rede OAuth esta pronta. Configure as credenciais e tente novamente.</p>
+                <?php else: ?>
+                    <?php foreach ($oauthReadyPlatforms as $slug => $platform): ?>
+                        <?php $platformName = (string) ($platform['name'] ?? $slug); ?>
+                        <?php $platformIconClass = $resolvePlatformGlyph((string) $slug, $platformName); ?>
+                        <?php $platformToneClass = $resolvePlatformTone((string) $slug, $platformName); ?>
+                        <label class="social-quick-item social-quick-item-<?= e($platformToneClass) ?>">
+                            <input type="checkbox" name="platforms[]" value="<?= e((string) $slug) ?>" checked>
+                            <span class="social-platform-glyph social-platform-glyph-<?= e($platformToneClass) ?>" aria-hidden="true">
+                                <i class="<?= e($platformIconClass) ?>"></i>
+                            </span>
+                            <span class="social-quick-item-label"><?= e($platformName) ?></span>
+                        </label>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+            <div class="social-quick-actions">
+                <button type="button" class="btn-link js-social-check-all"><i class="fa-solid fa-check-double"></i> Marcar todas</button>
+                <button type="button" class="btn-link js-social-uncheck-all"><i class="fa-solid fa-eraser"></i> Limpar</button>
+                <button type="submit"><i class="fa-solid fa-plug-circle-check"></i> Conectar redes selecionadas</button>
+            </div>
+        </form>
+        <?php if ($bulkFailedPlatforms !== []): ?>
+            <form method="post" action="<?= e(route_url('social/connectFailed')) ?>" class="social-quick-retry-form">
+                <?= csrf_field() ?>
+                <button type="submit" class="btn-link danger"><i class="fa-solid fa-rotate-right"></i> Tentar novamente somente as falhas</button>
+            </form>
+        <?php endif; ?>
+    </div>
+
     <div class="social-grid">
         <?php foreach ($platforms as $slug => $platform): ?>
             <?php $conn = $connections[$slug] ?? null; ?>
             <?php $connected = $conn && in_array((string) ($conn['status'] ?? ''), ['connected', 'manual'], true); ?>
+            <?php $isOauth = strtolower(trim((string) ($platform['kind'] ?? 'manual'))) === 'oauth2'; ?>
+            <?php $oauthReady = $isOauth && trim((string) ($platform['client_id'] ?? '')) !== '' && trim((string) ($platform['client_secret'] ?? '')) !== ''; ?>
+            <?php $accountNameValue = trim((string) ($conn['account_name'] ?? '')); ?>
+            <?php $tokenExpiresInput = ''; ?>
+            <?php if (!empty($conn['token_expires_at'])): ?>
+                <?php $tokenExpiresInput = str_replace(' ', 'T', substr((string) $conn['token_expires_at'], 0, 16)); ?>
+            <?php endif; ?>
             <?php $connMeta = (is_array($conn) && is_array($conn['metadata'] ?? null)) ? $conn['metadata'] : []; ?>
             <?php $validationStatus = strtolower(trim((string) ($connMeta['validation_status'] ?? ''))); ?>
             <?php $validationLabel = trim((string) ($connMeta['validation_label'] ?? '')); ?>
@@ -92,10 +219,21 @@ $accessKeyDocs = is_array($access_key_docs ?? null) ? $access_key_docs : [];
             <?php $validationCheckedAt = trim((string) ($connMeta['validation_checked_at'] ?? '')); ?>
             <?php $validationClass = in_array($validationStatus, ['valid', 'invalid', 'unknown'], true) ? 'token-status-' . $validationStatus : 'token-status-default'; ?>
             <?php $doc = is_array($accessKeyDocs[$slug] ?? null) ? $accessKeyDocs[$slug] : null; ?>
-            <article class="social-card">
-                <h3><?= e($platform['name']) ?></h3>
+            <?php $platformName = (string) ($platform['name'] ?? $slug); ?>
+            <?php $platformIconClass = $resolvePlatformGlyph((string) $slug, $platformName); ?>
+            <?php $platformToneClass = $resolvePlatformTone((string) $slug, $platformName); ?>
+            <article class="social-card social-card-<?= e($platformToneClass) ?>">
+                <div class="social-card-head">
+                    <span class="social-platform-glyph social-platform-glyph-<?= e($platformToneClass) ?>" aria-hidden="true">
+                        <i class="<?= e($platformIconClass) ?>"></i>
+                    </span>
+                    <h3><?= e($platformName) ?></h3>
+                </div>
                 <p class="social-meta">Tipo: <?= e(strtoupper((string) $platform['kind'])) ?></p>
                 <p class="social-meta">Status: <strong><?= $connected ? 'Conectado' : 'Não conectado' ?></strong></p>
+                <?php if ($isOauth && !$oauthReady): ?>
+                    <p class="social-meta hint">Configure `client_id` e `client_secret` em `config.php`.</p>
+                <?php endif; ?>
                 <?php if ($validationLabel !== ''): ?>
                     <p class="social-meta">
                         Chave/token:
@@ -114,13 +252,11 @@ $accessKeyDocs = is_array($access_key_docs ?? null) ? $access_key_docs : [];
                 <?php endif; ?>
 
                 <div class="social-actions">
-                    <?php if (($platform['kind'] ?? '') === 'oauth2'): ?>
-                        <?php if (!empty($platform['client_id']) && !empty($platform['client_secret'])): ?>
+                    <?php if ($isOauth): ?>
+                        <?php if ($oauthReady): ?>
                             <a class="btn-link" href="<?= e(route_url('social/connect/' . $slug)) ?>">
                                 <?= $connected ? '<i class="fa-solid fa-rotate"></i> Reconectar OAuth' : '<i class="fa-solid fa-link"></i> Conectar OAuth' ?>
                             </a>
-                        <?php else: ?>
-                            <span class="hint">Configure `client_id` e `client_secret` em `config.php`.</span>
                         <?php endif; ?>
                     <?php endif; ?>
                     <?php if (!empty($doc['url'])): ?>
@@ -136,10 +272,62 @@ $accessKeyDocs = is_array($access_key_docs ?? null) ? $access_key_docs : [];
                         </form>
                     <?php endif; ?>
                 </div>
+
+                <details class="social-inline-manual" <?= $connected ? '' : 'open' ?>>
+                    <summary><i class="fa-solid fa-key"></i> Conectar manualmente (token)</summary>
+                    <form method="post" action="<?= e(route_url('social/saveManualConnection')) ?>" class="social-inline-form">
+                        <?= csrf_field() ?>
+                        <input type="hidden" name="platform_slug" value="<?= e((string) $slug) ?>">
+                        <label>Nome da conta
+                            <input type="text" name="account_name" value="<?= e($accountNameValue) ?>" placeholder="Ex.: Perfil oficial">
+                        </label>
+                        <label>Token expira em
+                            <input type="datetime-local" name="token_expires_at" value="<?= e($tokenExpiresInput) ?>">
+                        </label>
+                        <label class="wide">Access token
+                            <input type="text" name="access_token" required placeholder="Cole aqui o token da plataforma">
+                        </label>
+                        <label class="wide">Refresh token (opcional)
+                            <input type="text" name="refresh_token" placeholder="Opcional para renovacao automatica">
+                        </label>
+                        <div class="wide manual-actions">
+                            <button type="submit" name="manual_action" value="verify" class="btn-link"><i class="fa-solid fa-shield-check"></i> Verificar</button>
+                            <button type="submit" name="manual_action" value="save"><i class="fa-solid fa-floppy-disk"></i> Salvar conexao</button>
+                        </div>
+                    </form>
+                </details>
             </article>
         <?php endforeach; ?>
     </div>
 </section>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var quickScope = document.querySelector('.social-quick-connect');
+    if (!quickScope) {
+        return;
+    }
+
+    var checkboxes = quickScope.querySelectorAll('input[name="platforms[]"]');
+    var checkAllButton = quickScope.querySelector('.js-social-check-all');
+    var uncheckAllButton = quickScope.querySelector('.js-social-uncheck-all');
+
+    if (checkAllButton) {
+        checkAllButton.addEventListener('click', function () {
+            checkboxes.forEach(function (input) {
+                input.checked = true;
+            });
+        });
+    }
+
+    if (uncheckAllButton) {
+        uncheckAllButton.addEventListener('click', function () {
+            checkboxes.forEach(function (input) {
+                input.checked = false;
+            });
+        });
+    }
+});
+</script>
 <?php endif; ?>
 
 <section class="panel" id="social-publish-hub">
@@ -577,4 +765,3 @@ $accessKeyDocs = is_array($access_key_docs ?? null) ? $access_key_docs : [];
         </div>
     <?php endif; ?>
 </section>
-

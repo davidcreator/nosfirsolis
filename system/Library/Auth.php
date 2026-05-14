@@ -65,41 +65,33 @@ class Auth
             return false;
         }
 
-        $email = strtolower(trim($email));
-        $gate = $this->security()->canAttemptLogin($this->area, $email);
+        $identifier = strtolower(trim($email));
+        $gate = $this->security()->canAttemptLogin($this->area, $identifier);
         if (empty($gate['allowed'])) {
             $this->setError('blocked', (string) ($gate['message'] ?? $this->t('common.auth_blocked', 'Acesso temporariamente bloqueado por seguranca.')));
             $this->security()->audit('login_blocked', 'warning', null, $this->area, [
-                'email' => $email,
+                'email' => $identifier,
                 'reason' => $gate['reason'] ?? 'unknown',
                 'retry_after' => (int) ($gate['retry_after'] ?? 0),
             ]);
             return false;
         }
 
-        $user = $db->fetch(
-            'SELECT u.*, ug.permissions_json
-             FROM users u
-             LEFT JOIN user_groups ug ON ug.id = u.user_group_id
-             WHERE u.email = :email
-               AND u.status = 1
-             LIMIT 1',
-            ['email' => $email]
-        );
+        $user = $this->resolveUserForAuthentication($identifier);
         if (!$user) {
-            $this->security()->registerLoginAttempt($this->area, $email, false, null, 'user_not_found');
+            $this->security()->registerLoginAttempt($this->area, $identifier, false, null, 'user_not_found');
             $this->setError('invalid_credentials', $this->t('common.auth_invalid_credentials', 'Credenciais invalidas.'));
             return false;
         }
 
         if (!password_verify($password, (string) $user['password_hash'])) {
-            $this->security()->registerLoginAttempt($this->area, $email, false, (int) $user['id'], 'invalid_password');
+            $this->security()->registerLoginAttempt($this->area, $identifier, false, (int) $user['id'], 'invalid_password');
             $this->setError('invalid_credentials', $this->t('common.auth_invalid_credentials', 'Credenciais invalidas.'));
             return false;
         }
 
         if (!$this->canAccessArea($user)) {
-            $this->security()->registerLoginAttempt($this->area, $email, false, (int) $user['id'], 'area_not_allowed');
+            $this->security()->registerLoginAttempt($this->area, $identifier, false, (int) $user['id'], 'area_not_allowed');
             $this->setError('area_not_allowed', $this->accessDeniedMessage());
             return false;
         }
@@ -111,9 +103,9 @@ class Auth
         $session->set('session_started_at', $this->clockUnixNow());
         $session->set('language_code', $this->resolveUserLanguageCode($user));
 
-        $this->security()->registerLoginAttempt($this->area, $email, true, (int) $user['id'], 'login_success');
+        $this->security()->registerLoginAttempt($this->area, $identifier, true, (int) $user['id'], 'login_success');
         $this->security()->audit('login_success', 'info', (int) $user['id'], $this->area, [
-            'email' => $email,
+            'email' => $identifier,
         ]);
 
         $db->update('users', ['last_login_at' => $this->clockDateTimeNow()], 'id = :id', ['id' => (int) $user['id']]);
@@ -121,6 +113,54 @@ class Auth
         $this->setError('', '');
 
         return true;
+    }
+
+    private function resolveUserForAuthentication(string $identifier): ?array
+    {
+        $db = $this->registry->get('db');
+        if (!$db || !$db->connected()) {
+            return null;
+        }
+
+        // Admin accepts e-mail, recovery e-mail, or username to reduce lockouts.
+        if ($this->area === 'admin') {
+            return $db->fetch(
+                'SELECT u.*, ug.permissions_json
+                 FROM users u
+                 LEFT JOIN user_groups ug ON ug.id = u.user_group_id
+                 WHERE u.status = 1
+                   AND (
+                     LOWER(u.email) = :identifier_email
+                     OR LOWER(COALESCE(u.recovery_email, \'\')) = :identifier_recovery
+                     OR LOWER(u.name) = :identifier_name
+                   )
+                 ORDER BY
+                   CASE
+                     WHEN LOWER(u.email) = :identifier_order_email THEN 0
+                     WHEN LOWER(COALESCE(u.recovery_email, \'\')) = :identifier_order_recovery THEN 1
+                     ELSE 2
+                   END,
+                   u.id ASC
+                 LIMIT 1',
+                [
+                    'identifier_email' => $identifier,
+                    'identifier_recovery' => $identifier,
+                    'identifier_name' => $identifier,
+                    'identifier_order_email' => $identifier,
+                    'identifier_order_recovery' => $identifier,
+                ]
+            );
+        }
+
+        return $db->fetch(
+            'SELECT u.*, ug.permissions_json
+             FROM users u
+             LEFT JOIN user_groups ug ON ug.id = u.user_group_id
+             WHERE u.email = :email
+               AND u.status = 1
+             LIMIT 1',
+            ['email' => $identifier]
+        );
     }
 
     public function logout(): void

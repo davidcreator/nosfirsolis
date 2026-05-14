@@ -7,6 +7,7 @@ return [
     'auth.feature_hierarchy' => 'Administrative group hierarchy control',
     'auth.feature_security_audit' => 'Monitored access with security trail',
     'auth.feature_users_permissions' => 'User and permission management by level',
+    'auth.field_login' => 'E-mail or username',
     'auth.field_email' => 'E-mail',
     'auth.field_password' => 'Password',
     'auth.flash_invalid_credentials' => 'Invalid credentials.',

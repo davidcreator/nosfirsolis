@@ -6,12 +6,18 @@
 
 - login em `admin` exige permissoes administrativas
 - login em `client` exige permissoes de cliente
+- login em `admin` aceita identificador por:
+  - e-mail principal (`users.email`)
+  - e-mail de recuperacao (`users.recovery_email`)
+  - nome de usuario (`users.name`)
 
 Aceita acesso quando o grupo possui:
 
 - `*`
 - `{area}.*` (ex.: `admin.*`, `client.*`)
 - permissoes especificas iniciando com `{area}.`
+
+No admin, o identificador de login e normalizado para lowercase e auditado em `security_login_attempts` com `reason_code` (`user_not_found`, `invalid_password`, `area_not_allowed`, `login_success`).
 
 ## Permissoes De Grupo
 
@@ -75,4 +81,3 @@ Reinstalacao so e permitida com:
 - `security.allow_reinstall = true`
 - usuario autenticado com permissao `admin.install.reinstall`
 - chave valida `security.reinstall_key` via query ou post
-

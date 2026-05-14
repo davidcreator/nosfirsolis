@@ -8,6 +8,7 @@ A area `client` concentra operacao diaria de estrategia e execucao:
 - dashboard
 - calendario
 - planos editoriais
+- central IA para planos e campanhas
 - central social
 - rastreamento de campanhas
 - planos e faturamento
@@ -77,6 +78,17 @@ Recursos de apoio:
 - por periodo manual (`plans/store`)
 - por templates anuais (`plans/storeTemplate`) via `PlanTemplateService`
 
+### Central IA De Planos E Campanhas (`plans/storeAi`)
+
+- gera campanha + plano + itens em um unico fluxo transacional
+- suporta estrategia de campanha:
+  - criar nova campanha
+  - vincular campanha existente
+  - gerar plano sem campanha
+- usa IA definida pelo Admin como padrao global, com possibilidade de override por cliente
+- permite override manual de IA no formulario do cliente (quando necessario)
+- valida feature flag/comercial (`allow_ai_draft_generator`) e quotas antes da geracao
+
 ### Detalhe Do Plano (`plans/show/{id}`)
 
 - filtros por status e busca textual
@@ -101,6 +113,7 @@ Operacoes de leitura/edicao/exportacao validam escopo do usuario (`planByIdForUs
 - OAuth2 para plataformas do `SocialPlatformRegistry`
 - conexao manual por token quando necessario
 - disconnect com auditoria
+- painel de seguranca de conexoes com glifos para status visual rapido por rede
 
 ### Estrategia De Conteudo
 

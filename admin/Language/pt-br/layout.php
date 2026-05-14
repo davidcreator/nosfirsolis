@@ -8,6 +8,7 @@ return [
     'layout.logout' => 'Sair',
     'layout.nav_billing' => 'Planos e Pagamentos',
     'layout.nav_campaigns' => 'Campanhas',
+    'layout.nav_plans_campaigns' => 'Planos e Campanhas IA',
     'layout.nav_channels' => 'Canais',
     'layout.nav_commemoratives' => 'Comemorativas',
     'layout.nav_dashboard' => 'Dashboard',

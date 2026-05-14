@@ -1,7 +1,7 @@
 <section class="panel">
     <h1><i class="fa-solid fa-star"></i> <?= e($title) ?></h1>
 
-    <form method="post" action="<?= e(route_url($action)) ?>" class="form-grid">
+    <form method="post" action="<?= e(route_url($action)) ?>" class="form-grid admin-form-highlight">
         <?= csrf_field() ?>
 
         <label><?= e($t('commemoratives.field_name', 'Nome')) ?>

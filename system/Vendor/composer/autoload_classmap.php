@@ -46,6 +46,7 @@ return array(
     'System\\Library\\Language' => $baseDir . '/Library/Language.php',
     'System\\Library\\MailService' => $baseDir . '/Library/MailService.php',
     'System\\Library\\ObservabilityService' => $baseDir . '/Library/ObservabilityService.php',
+    'System\\Library\\PlanCampaignAiManagerService' => $baseDir . '/Library/PlanCampaignAiManagerService.php',
     'System\\Library\\PlanTemplateService' => $baseDir . '/Library/PlanTemplateService.php',
     'System\\Library\\PlannerService' => $baseDir . '/Library/PlannerService.php',
     'System\\Library\\SecurityAuthAuditTrait' => $baseDir . '/Library/SecurityAuthAuditTrait.php',

@@ -1,7 +1,7 @@
 <section class="panel">
     <h1><i class="fa-solid fa-lightbulb"></i> <?= e($title) ?></h1>
 
-    <form method="post" action="<?= e(route_url($action)) ?>" class="form-grid">
+    <form method="post" action="<?= e(route_url($action)) ?>" class="form-grid admin-form-highlight">
         <?= csrf_field() ?>
 
         <label class="full"><?= e($t('suggestions.field_title', 'Título')) ?>

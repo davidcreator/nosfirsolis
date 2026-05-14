@@ -3,7 +3,7 @@
 Solis e um sistema tatico dentro do ecossistema **Nosfir**.
 Ele foca planejamento estrategico, execucao diaria, publicacao social, tracking e operacao comercial basica.
 
-## Escopo Atual (2026-05-05)
+## Escopo Atual (2026-05-14)
 
 - Area cliente com:
   - login, cadastro publico e recuperacao de senha por token
@@ -12,9 +12,10 @@ Ele foca planejamento estrategico, execucao diaria, publicacao social, tracking 
   - dashboard estrategico e dashboard executivo
   - calendario unificado (anual, mensal e por periodo)
   - planos editoriais por periodo e por templates anuais
+  - central IA de planos e campanhas (geracao automatica, com campanha nova, existente ou sem campanha)
   - detalhe de plano com filtros, insights e atualizacao individual/em lote
   - exportacao CSV
-  - central social (OAuth/manual, drafts, presets e fila de publicacao)
+  - central social (OAuth/manual, drafts, presets, fila de publicacao e painel visual de seguranca com glifos)
   - tracking de campanhas (UTM/MTM, short links e cliques)
   - area de planos e faturamento (upgrade/downgrade, limites, historico de faturas e pagamento)
 - Area admin com:
@@ -23,6 +24,7 @@ Ele foca planejamento estrategico, execucao diaria, publicacao social, tracking 
   - usuarios e hierarquia por nivel
   - filtros salvos para lista de usuarios
   - gestao de plano e recursos por usuario
+  - central de planos e campanhas IA (governanca de IA padrao/global e por cliente, com edicao rapida de campanhas e planos)
   - central de operacoes (feature flags, webhooks, monitores, alertas, observabilidade e limpeza de cache)
   - central de billing (planos, limites, promocoes, comunicados, conta recebedora e validacao manual de pagamentos)
 - Instalador com validacao de ambiente, seed inicial e bloqueio de reinstalacao sem chave/permissao.
@@ -49,7 +51,7 @@ Indice geral: [`docs/README.md`](docs/README.md)
 1. [`docs/produto-nosfir-solis.md`](docs/produto-nosfir-solis.md) - contexto de produto e escopo atualizado
 2. [`docs/arquitetura-mvcl.md`](docs/arquitetura-mvcl.md) - estrutura, pipeline e camadas
 3. [`docs/modulo-cliente.md`](docs/modulo-cliente.md) - auth, dashboard, calendario, planos, social, tracking e billing
-4. [`docs/modulo-admin.md`](docs/modulo-admin.md) - governanca de base, usuarios, operacoes e billing
+4. [`docs/modulo-admin.md`](docs/modulo-admin.md) - governanca de base, usuarios, operacoes, billing e central IA de planos/campanhas
 5. [`docs/seguranca-e-autenticacao.md`](docs/seguranca-e-autenticacao.md) - auth por area, sessao e auditoria
 6. [`docs/banco-de-dados.md`](docs/banco-de-dados.md) - dominios de tabelas e relacionamentos
 7. [`docs/instalacao-configuracao-operacao.md`](docs/instalacao-configuracao-operacao.md) - instalacao e rotina operacional
@@ -86,10 +88,11 @@ Documentacao complementar fora de `docs/`:
 1. Admin configura base estrategica (`/admin`) e usuarios/hierarquia.
 2. Admin governa operacoes (`/admin/operations`): flags, webhooks, jobs, observabilidade e cache.
 3. Admin governa monetizacao (`/admin/billing`): planos, promocoes, comunicados e validacoes.
-4. Cliente opera estrategia (`/client`): planos, calendario e status.
-5. Cliente conecta/publica (`/client/social`): OAuth/manual, drafts e fila de publicacao.
-6. Cliente rastreia campanhas (`/client/tracking`): links UTM/MTM, short links e cliques.
-7. Cliente gerencia assinatura (`/client/billing`): plano ativo, limites, faturas e pagamentos.
+4. Admin governa IA de conteudo (`/admin/plans_campaigns`): IA padrao, IA por cliente, campanhas e planos.
+5. Cliente opera estrategia (`/client`): planos, calendario e status.
+6. Cliente conecta/publica (`/client/social`): OAuth/manual, drafts e fila de publicacao.
+7. Cliente rastreia campanhas (`/client/tracking`): links UTM/MTM, short links e cliques.
+8. Cliente gerencia assinatura (`/client/billing`): plano ativo, limites, faturas e pagamentos.
 
 ## Estrutura MVCL
 

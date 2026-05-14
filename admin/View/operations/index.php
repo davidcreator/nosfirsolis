@@ -19,12 +19,12 @@ $observabilityEnabled = (bool) ($opsFeatureMap['observability.telemetry'] ?? tru
         <h1><i class="fa-solid fa-gears"></i> Operações e Integrações</h1>
         <p>Governança de feature flags, webhooks de automação, monitoramento de jobs e observabilidade.</p>
     </div>
-    <div class="hero-actions">
-        <form method="post" action="<?= e(route_url('operations/runMaintenance')) ?>">
+    <div class="hero-actions ops-hero-actions">
+        <form method="post" action="<?= e(route_url('operations/runMaintenance')) ?>" class="ops-quick-form">
             <?= csrf_field() ?>
             <button class="btn" type="submit"><i class="fa-solid fa-wrench"></i> Rodar manutenção</button>
         </form>
-        <form method="post" action="<?= e(route_url('operations/clearCache')) ?>" onsubmit="return confirm('<?= e($t('operations.confirm_clear_cache', 'Limpar o cache do sistema agora?')) ?>')">
+        <form method="post" action="<?= e(route_url('operations/clearCache')) ?>" class="ops-quick-form" onsubmit="return confirm('<?= e($t('operations.confirm_clear_cache', 'Limpar o cache do sistema agora?')) ?>')">
             <?= csrf_field() ?>
             <button class="btn btn-muted" type="submit"><i class="fa-solid fa-broom"></i> <?= e($t('operations.button_clear_cache', 'Limpar cache do sistema')) ?></button>
         </form>
@@ -37,7 +37,7 @@ $observabilityEnabled = (bool) ($opsFeatureMap['observability.telemetry'] ?? tru
         <span class="meta-text">Controle de liberação por área, permissão e hierarquia</span>
     </div>
 
-    <form method="post" action="<?= e(route_url('operations/saveFeatureFlag')) ?>" class="form-grid">
+    <form method="post" action="<?= e(route_url('operations/saveFeatureFlag')) ?>" class="form-grid admin-form-highlight ops-form">
         <?= csrf_field() ?>
         <label>Chave
             <input type="text" name="flag_key" placeholder="tracking.campaign_links" required>
@@ -103,10 +103,10 @@ $observabilityEnabled = (bool) ($opsFeatureMap['observability.telemetry'] ?? tru
                         <td><?= e((string) ($flag['target_area'] ?? 'all')) ?></td>
                         <td><?= e((string) ($flag['rollout_strategy'] ?? 'all')) ?></td>
                         <td><?= (int) ($flag['enabled'] ?? 0) === 1 ? 'Ativa' : 'Inativa' ?></td>
-                        <td>
-                            <form method="post" action="<?= e(route_url('operations/deleteFeatureFlag/' . (int) ($flag['id'] ?? 0))) ?>" onsubmit="return confirm('Excluir esta feature flag?')">
+                        <td class="actions">
+                            <form method="post" action="<?= e(route_url('operations/deleteFeatureFlag/' . (int) ($flag['id'] ?? 0))) ?>" class="table-action-form" onsubmit="return confirm('Excluir esta feature flag?')">
                                 <?= csrf_field() ?>
-                                <button class="btn-link danger" type="submit"><i class="fa-regular fa-trash-can"></i> Excluir</button>
+                                <button class="btn-link danger table-action-btn" type="submit"><i class="fa-regular fa-trash-can"></i> Excluir</button>
                             </form>
                         </td>
                     </tr>
@@ -124,7 +124,7 @@ $observabilityEnabled = (bool) ($opsFeatureMap['observability.telemetry'] ?? tru
         <span class="meta-text">Disparo de eventos para n8n, integrações internas e terceiros</span>
     </div>
 
-    <form method="post" action="<?= e(route_url('operations/saveWebhook')) ?>" class="form-grid">
+    <form method="post" action="<?= e(route_url('operations/saveWebhook')) ?>" class="form-grid admin-form-highlight ops-form">
         <?= csrf_field() ?>
         <label>Nome
             <input type="text" name="name" placeholder="Webhook n8n - status plano" required>
@@ -201,14 +201,14 @@ $observabilityEnabled = (bool) ($opsFeatureMap['observability.telemetry'] ?? tru
                         <td><?= e((string) ($webhook['event_key'] ?? '')) ?></td>
                         <td><?= e((string) ($webhook['endpoint_url'] ?? '')) ?></td>
                         <td><?= (int) ($webhook['enabled'] ?? 0) === 1 ? 'Ativo' : 'Inativo' ?></td>
-                        <td>
-                            <form method="post" action="<?= e(route_url('operations/testWebhook/' . (int) ($webhook['id'] ?? 0))) ?>">
+                        <td class="actions">
+                            <form method="post" action="<?= e(route_url('operations/testWebhook/' . (int) ($webhook['id'] ?? 0))) ?>" class="table-action-form">
                                 <?= csrf_field() ?>
-                                <button class="btn-link" type="submit"><i class="fa-solid fa-vial"></i> Testar</button>
+                                <button class="btn-link table-action-btn" type="submit"><i class="fa-solid fa-vial"></i> Testar</button>
                             </form>
-                            <form method="post" action="<?= e(route_url('operations/deleteWebhook/' . (int) ($webhook['id'] ?? 0))) ?>" onsubmit="return confirm('Excluir webhook?')">
+                            <form method="post" action="<?= e(route_url('operations/deleteWebhook/' . (int) ($webhook['id'] ?? 0))) ?>" class="table-action-form" onsubmit="return confirm('Excluir webhook?')">
                                 <?= csrf_field() ?>
-                                <button class="btn-link danger" type="submit"><i class="fa-regular fa-trash-can"></i> Excluir</button>
+                                <button class="btn-link danger table-action-btn" type="submit"><i class="fa-regular fa-trash-can"></i> Excluir</button>
                             </form>
                         </td>
                     </tr>
@@ -261,7 +261,7 @@ $observabilityEnabled = (bool) ($opsFeatureMap['observability.telemetry'] ?? tru
         <span class="meta-text">Check-ins, runtime e alertas de stale/failure</span>
     </div>
 
-    <form method="post" action="<?= e(route_url('operations/saveMonitor')) ?>" class="form-grid">
+    <form method="post" action="<?= e(route_url('operations/saveMonitor')) ?>" class="form-grid admin-form-highlight ops-form">
         <?= csrf_field() ?>
         <label>Job key
             <input type="text" name="job_key" placeholder="social.publisher_queue" required>
@@ -311,10 +311,10 @@ $observabilityEnabled = (bool) ($opsFeatureMap['observability.telemetry'] ?? tru
                         <td><?= e((string) ($monitor['last_status'] ?? 'stale')) ?></td>
                         <td><?= e((string) ($monitor['last_checkin_at'] ?? '-')) ?></td>
                         <td><?= e((string) ($monitor['last_duration_ms'] ?? '-')) ?> ms</td>
-                        <td>
-                            <form method="post" action="<?= e(route_url('operations/deleteMonitor/' . (int) ($monitor['id'] ?? 0))) ?>" onsubmit="return confirm('Excluir monitor?')">
+                        <td class="actions">
+                            <form method="post" action="<?= e(route_url('operations/deleteMonitor/' . (int) ($monitor['id'] ?? 0))) ?>" class="table-action-form" onsubmit="return confirm('Excluir monitor?')">
                                 <?= csrf_field() ?>
-                                <button class="btn-link danger" type="submit"><i class="fa-regular fa-trash-can"></i> Excluir</button>
+                                <button class="btn-link danger table-action-btn" type="submit"><i class="fa-regular fa-trash-can"></i> Excluir</button>
                             </form>
                         </td>
                     </tr>

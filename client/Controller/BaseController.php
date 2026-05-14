@@ -12,6 +12,7 @@ use System\Library\FeatureFlagService;
 use System\Library\JobMonitorService;
 use System\Library\MailService;
 use System\Library\ObservabilityService;
+use System\Library\PlanCampaignAiManagerService;
 use System\Library\PlanTemplateService;
 use System\Library\SocialAuthService;
 use System\Library\SocialFormatStandardsService;
@@ -37,6 +38,7 @@ abstract class BaseController extends Controller
     private ?SocialFormatStandardsService $socialFormatStandardsService = null;
     private ?SocialPlatformRegistry $socialPlatformRegistry = null;
     private ?ContentStrategistService $contentStrategistService = null;
+    private ?PlanCampaignAiManagerService $planCampaignAiManagerService = null;
 
     protected function boot(string $permission = '', ?string $featureKey = null): void
     {
@@ -231,6 +233,16 @@ abstract class BaseController extends Controller
 
         $this->contentStrategistService = new ContentStrategistService();
         return $this->contentStrategistService;
+    }
+
+    protected function planCampaignAiManagerService(): PlanCampaignAiManagerService
+    {
+        if ($this->planCampaignAiManagerService instanceof PlanCampaignAiManagerService) {
+            return $this->planCampaignAiManagerService;
+        }
+
+        $this->planCampaignAiManagerService = new PlanCampaignAiManagerService($this->registry);
+        return $this->planCampaignAiManagerService;
     }
 
     protected function subscriptionContext(): array

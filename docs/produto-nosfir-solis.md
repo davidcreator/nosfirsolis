@@ -12,6 +12,7 @@ Resolver operacao de conteudo ponta a ponta em um escopo tatico:
 - planejamento anual/mensal por calendario
 - organizacao de campanhas, datas e sugestoes editoriais
 - execucao orientada por status e rotina diaria
+- geracao assistida por IA para planos e campanhas, com governanca por cliente
 - apoio a distribuicao social em multiplos canais
 - tracking de campanha com links rastreaveis
 - gestao basica de planos e cobranca no proprio produto
@@ -23,6 +24,8 @@ O Solis cobre hoje:
 - planejamento editorial e operacional
 - gestao de base estrategica (feriados, comemorativas, sugestoes, campanhas)
 - central social para conexoes, drafts, presets e fila de publicacao
+- central IA no cliente para gerar plano + campanha + itens em fluxo unico
+- central IA no admin para governar modelo padrao e override por cliente
 - tracking de campanhas (UTM/MTM, short links e cliques)
 - billing interno (planos, limites, promocoes, anuncios, faturas e pagamento mock)
 - governanca operacional (feature flags, webhooks, monitores de jobs e observabilidade)

@@ -78,6 +78,7 @@ $navItems = [
     ['label' => $t('layout.nav_suggestions', 'Sugestões'), 'route' => 'suggestions/index', 'prefix' => 'suggestions/', 'icon' => 'fa-solid fa-lightbulb'],
     ['label' => $t('layout.nav_channels', 'Canais'), 'route' => 'channels/index', 'prefix' => 'channels/', 'icon' => 'fa-solid fa-share-nodes'],
     ['label' => $t('layout.nav_campaigns', 'Campanhas'), 'route' => 'campaigns/index', 'prefix' => 'campaigns/', 'icon' => 'fa-solid fa-bullhorn'],
+    ['label' => $t('layout.nav_plans_campaigns', 'Planos e Campanhas IA'), 'route' => 'plans_campaigns/index', 'prefix' => 'plans_campaigns/', 'icon' => 'fa-solid fa-diagram-project'],
     ['label' => $t('layout.nav_billing', 'Planos e Pagamentos'), 'route' => 'billing/index', 'prefix' => 'billing/', 'icon' => 'fa-solid fa-credit-card'],
     ['label' => $t('layout.nav_users', 'Usuários e Hierarquia'), 'route' => 'users/index', 'prefix' => 'users/', 'icon' => 'fa-solid fa-users'],
     ['label' => $t('layout.nav_operations', 'Operações'), 'route' => 'operations/index', 'prefix' => 'operations/', 'icon' => 'fa-solid fa-gears'],
@@ -85,6 +86,7 @@ $navItems = [
 
 $topbarTools = [
     ['label' => $t('layout.nav_dashboard', 'Dashboard'), 'route' => 'dashboard/index', 'icon' => 'fa-solid fa-gauge-high'],
+    ['label' => $t('layout.nav_plans_campaigns', 'Planos e Campanhas IA'), 'route' => 'plans_campaigns/index', 'icon' => 'fa-solid fa-diagram-project'],
     ['label' => $t('layout.nav_billing', 'Planos e Pagamentos'), 'route' => 'billing/index', 'icon' => 'fa-solid fa-credit-card'],
     ['label' => $t('layout.nav_operations', 'Operações'), 'route' => 'operations/index', 'icon' => 'fa-solid fa-gears'],
 ];

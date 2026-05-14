@@ -7,6 +7,7 @@ A area `admin` e o centro de governanca do Solis:
 - curadoria de base estrategica
 - administracao de usuarios
 - controle de hierarquia
+- governanca de IA para planos e campanhas
 - monitoramento operacional
 - governanca de integracoes e automacoes
 - governanca de monetizacao e pagamentos
@@ -142,6 +143,25 @@ Permitir governanca de niveis de acesso e de entitlements de produto sem depende
 - `billing/savePaymentSettings`: conta recebedora, meios e modo de validacao
 - `billing/approvePayment/{transactionId}` e `billing/rejectPayment/{transactionId}`
 
+## Central De Planos E Campanhas IA (`admin/plans_campaigns/*`)
+
+### O Que Centraliza
+
+- governanca de IA padrao global para geracao de planos/campanhas
+- atribuicao de IA por cliente (override por usuario)
+- listagem de clientes com origem da IA (`default` ou `custom`)
+- ajustes operacionais de campanhas (status, objetivo, periodo)
+- ajustes operacionais de planos (status, campanha vinculada e notas)
+- filtros combinados e paginacao para clientes, campanhas e planos
+
+### Fluxos
+
+- `plans_campaigns/index`: painel consolidado com KPIs e tres blocos de governanca
+- `plans_campaigns/saveDefaultManager`: define a IA padrao global
+- `plans_campaigns/saveClientManager/{userId}`: define ou limpa IA personalizada por cliente
+- `plans_campaigns/updateCampaign/{campaignId}`: atualiza governanca de campanha
+- `plans_campaigns/updatePlan/{planId}`: atualiza governanca de plano
+
 ## Principais Controllers/Models
 
 - `Admin\Controller\DashboardController`
@@ -153,6 +173,8 @@ Permitir governanca de niveis de acesso e de entitlements de produto sem depende
 - `Admin\Controller\UsersController`
 - `Admin\Controller\OperationsController`
 - `Admin\Controller\BillingController`
+- `Admin\Controller\PlansCampaignsController`
 - `Admin\Model\UserGroupsModel`
 - `Admin\Model\UsersModel`
 - `Admin\Model\ContentSuggestionsModel`
+- `Admin\Model\PlansCampaignsModel`

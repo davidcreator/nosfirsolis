@@ -61,6 +61,7 @@ class ComposerStaticInitbf688befd482a1e45eb73d346646d9cc
         'System\\Library\\Language' => __DIR__ . '/../..' . '/Library/Language.php',
         'System\\Library\\MailService' => __DIR__ . '/../..' . '/Library/MailService.php',
         'System\\Library\\ObservabilityService' => __DIR__ . '/../..' . '/Library/ObservabilityService.php',
+        'System\\Library\\PlanCampaignAiManagerService' => __DIR__ . '/../..' . '/Library/PlanCampaignAiManagerService.php',
         'System\\Library\\PlanTemplateService' => __DIR__ . '/../..' . '/Library/PlanTemplateService.php',
         'System\\Library\\PlannerService' => __DIR__ . '/../..' . '/Library/PlannerService.php',
         'System\\Library\\SecurityAuthAuditTrait' => __DIR__ . '/../..' . '/Library/SecurityAuthAuditTrait.php',

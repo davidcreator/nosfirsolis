@@ -24,9 +24,9 @@
                     <td><?= e($item['status']) ?></td>
                     <td class="actions">
                         <a href="<?= e(route_url('campaigns/edit/' . $item['id'])) ?>"><i class="fa-solid fa-pen-to-square"></i> <?= e($t('common.button_edit', 'Editar')) ?></a>
-                        <form method="post" action="<?= e(route_url('campaigns/delete/' . $item['id'])) ?>" style="display:inline" onsubmit="return confirm('<?= e($t('campaigns.confirm_delete', 'Excluir campanha?')) ?>')">
+                        <form method="post" action="<?= e(route_url('campaigns/delete/' . $item['id'])) ?>" class="table-action-form" onsubmit="return confirm('<?= e($t('campaigns.confirm_delete', 'Excluir campanha?')) ?>')">
                             <?= csrf_field() ?>
-                            <button type="submit" style="background:none;border:0;padding:0;color:inherit;font:inherit;cursor:pointer">
+                            <button type="submit" class="btn-link danger table-action-btn">
                                 <i class="fa-regular fa-trash-can"></i> <?= e($t('common.button_delete', 'Excluir')) ?>
                             </button>
                         </form>

@@ -30,9 +30,9 @@
                     <td><?= e($item['campaign_name'] ?? '-') ?></td>
                     <td class="actions">
                         <a href="<?= e(route_url('suggestions/edit/' . $item['id'])) ?>"><i class="fa-solid fa-pen-to-square"></i> <?= e($t('common.button_edit', 'Editar')) ?></a>
-                        <form method="post" action="<?= e(route_url('suggestions/delete/' . $item['id'])) ?>" style="display:inline" onsubmit="return confirm('<?= e($t('suggestions.confirm_delete', 'Excluir sugestão?')) ?>')">
+                        <form method="post" action="<?= e(route_url('suggestions/delete/' . $item['id'])) ?>" class="table-action-form" onsubmit="return confirm('<?= e($t('suggestions.confirm_delete', 'Excluir sugestão?')) ?>')">
                             <?= csrf_field() ?>
-                            <button type="submit" style="background:none;border:0;padding:0;color:inherit;font:inherit;cursor:pointer">
+                            <button type="submit" class="btn-link danger table-action-btn">
                                 <i class="fa-regular fa-trash-can"></i> <?= e($t('common.button_delete', 'Excluir')) ?>
                             </button>
                         </form>

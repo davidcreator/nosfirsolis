@@ -2,6 +2,8 @@
 
 namespace Client\Controller;
 
+use System\Library\Database;
+
 class PlansController extends BaseController
 {
     public function index(): void
@@ -12,14 +14,20 @@ class PlansController extends BaseController
         $userId = (int) ($user['id'] ?? 0);
 
         $templateService = $this->planTemplateService();
+        $calendarFilterData = $this->loader->model('calendar')->filterData();
+        $aiService = $this->planCampaignAiManagerService();
+        $resolvedAi = $aiService->resolveManagerForUser($userId);
 
         $this->render('plans/index', [
             'title' => $this->t('plans.title_index', 'Planos Editoriais'),
             'plans' => $this->loader->model('planner')->plansByUser($userId),
-            'campaigns' => $this->loader->model('calendar')->filterData()['campaigns'],
-            'objectives' => $this->loader->model('calendar')->filterData()['objectives'],
-            'channels' => $this->loader->model('calendar')->filterData()['channels'],
+            'campaigns' => (array) ($calendarFilterData['campaigns'] ?? []),
+            'objectives' => (array) ($calendarFilterData['objectives'] ?? []),
+            'channels' => (array) ($calendarFilterData['channels'] ?? []),
             'templates' => $templateService->templates(),
+            'ai_managers' => $aiService->availableManagers(),
+            'ai_resolved_manager' => (array) ($resolvedAi['manager'] ?? []),
+            'ai_manager_source' => (string) ($resolvedAi['source'] ?? 'default'),
         ]);
     }
 
@@ -73,6 +81,178 @@ class PlansController extends BaseController
             ['count' => $items]
         ));
         $this->redirectToRoute('plans/show/' . $planId);
+    }
+
+    public function storeAi(): void
+    {
+        $this->boot('client.plans');
+        $this->ensurePostWithCsrf();
+
+        $userId = (int) ($this->auth->user()['id'] ?? 0);
+        $subscription = $this->subscriptionService();
+
+        $feature = $subscription->evaluateFeature($userId, 'allow_ai_draft_generator');
+        if (empty($feature['allowed'])) {
+            flash('error', (string) ($feature['message'] ?? $this->t('plans.flash_ai_feature_unavailable', 'Recurso de IA indisponivel no plano atual.')));
+            $this->redirectToRoute('billing/index');
+        }
+
+        $quota = $subscription->evaluateQuota($userId, 'max_editorial_plans_per_month', 1);
+        if (empty($quota['allowed'])) {
+            flash('error', (string) ($quota['message'] ?? $this->t('plans.flash_limit_reached', 'Limite de plano atingido para este periodo.')));
+            $this->redirectToRoute('billing/index');
+        }
+
+        $calendarFilterData = $this->loader->model('calendar')->filterData();
+        $objectiveMap = [];
+        foreach ((array) ($calendarFilterData['objectives'] ?? []) as $objectiveRow) {
+            $objectiveId = (int) ($objectiveRow['id'] ?? 0);
+            $objectiveName = trim((string) ($objectiveRow['name'] ?? ''));
+            if ($objectiveId > 0 && $objectiveName !== '') {
+                $objectiveMap[$objectiveId] = $objectiveName;
+            }
+        }
+
+        $contentObjectiveId = (int) $this->request->post('ai_objective_id', 0);
+        if (!array_key_exists($contentObjectiveId, $objectiveMap)) {
+            $contentObjectiveId = 0;
+        }
+
+        $objectiveText = trim((string) $this->request->post('ai_objective', ''));
+        if ($objectiveText === '' && $contentObjectiveId > 0) {
+            $objectiveText = (string) ($objectiveMap[$contentObjectiveId] ?? '');
+        }
+
+        $aiService = $this->planCampaignAiManagerService();
+        $blueprint = $aiService->buildPlanCampaignBlueprint([
+            'user_id' => $userId,
+            'manager_id' => (string) $this->request->post('ai_manager_id', ''),
+            'theme' => (string) $this->request->post('ai_theme', ''),
+            'objective' => $objectiveText,
+            'audience' => (string) $this->request->post('ai_audience', ''),
+            'tone' => (string) $this->request->post('ai_tone', ''),
+            'frequency' => (string) $this->request->post('ai_frequency', 'semanal'),
+            'campaign_focus' => (string) $this->request->post('ai_campaign_focus', ''),
+            'start_date' => (string) $this->request->post('ai_start_date', ''),
+            'end_date' => (string) $this->request->post('ai_end_date', ''),
+            'channels' => (array) $this->request->post('channels', []),
+        ]);
+
+        $campaignMode = $this->normalizeAiCampaignMode((string) $this->request->post('ai_campaign_mode', 'new'));
+        $selectedCampaignId = (int) $this->request->post('ai_campaign_id', 0);
+
+        if ($campaignMode === 'existing' && $selectedCampaignId <= 0) {
+            flash('error', $this->t('plans.flash_ai_campaign_existing_required', 'Selecione uma campanha existente para vincular o plano.'));
+            $this->redirectToRoute('plans/index');
+        }
+
+        $itemsBlueprint = (array) ($blueprint['items'] ?? []);
+        if ($itemsBlueprint === []) {
+            flash('error', $this->t('plans.flash_ai_no_items', 'A IA nao conseguiu montar itens para o periodo informado. Revise os dados e tente novamente.'));
+            $this->redirectToRoute('plans/index');
+        }
+
+        $db = $this->registry->get('db');
+        if (!$db instanceof Database || !$db->connected()) {
+            flash('error', $this->t('plans.flash_ai_db_unavailable', 'Banco indisponivel para salvar o plano com IA.'));
+            $this->redirectToRoute('plans/index');
+        }
+
+        $planner = $this->loader->model('planner');
+        $campaignId = null;
+
+        $campaignData = (array) ($blueprint['campaign'] ?? []);
+        $planData = (array) ($blueprint['plan'] ?? []);
+
+        try {
+            $db->beginTransaction();
+
+            if ($campaignMode === 'existing') {
+                $campaignId = $selectedCampaignId;
+            } elseif ($campaignMode === 'new') {
+                $createdCampaignId = $planner->createCampaign([
+                    'name' => (string) ($campaignData['name'] ?? ''),
+                    'description' => (string) ($campaignData['description'] ?? ''),
+                    'objective' => (string) ($campaignData['objective'] ?? ''),
+                    'status' => (string) ($campaignData['status'] ?? 'planned'),
+                    'start_date' => (string) ($campaignData['start_date'] ?? ''),
+                    'end_date' => (string) ($campaignData['end_date'] ?? ''),
+                ]);
+
+                if ($createdCampaignId <= 0) {
+                    throw new \RuntimeException('campaign_create_failed');
+                }
+
+                $campaignId = $createdCampaignId;
+            }
+
+            $managerId = (string) (($blueprint['manager']['id'] ?? ''));
+            $managerSource = (string) ($blueprint['manager_source'] ?? 'default');
+
+            $planId = $planner->createPlan($userId, [
+                'name' => (string) ($planData['name'] ?? $this->t('plans.default_plan_name', 'Plano {date}', ['date' => $this->formatDateTime('Y-m-d H:i')])),
+                'start_date' => (string) ($planData['start_date'] ?? ''),
+                'end_date' => (string) ($planData['end_date'] ?? ''),
+                'campaign_id' => $campaignId,
+                'filters' => [
+                    'source' => 'ai_manager',
+                    'ai_manager_id' => $managerId,
+                    'ai_manager_source' => $managerSource,
+                    'ai_campaign_mode' => $campaignMode,
+                    'content_objective_id' => $contentObjectiveId > 0 ? $contentObjectiveId : null,
+                ],
+                'notes' => (string) ($planData['notes'] ?? ''),
+            ]);
+
+            if ($planId <= 0) {
+                throw new \RuntimeException('plan_create_failed');
+            }
+
+            $itemsToPersist = [];
+            foreach ($itemsBlueprint as $itemBlueprint) {
+                $channels = array_values(array_filter(array_map(
+                    static fn ($channel): string => trim((string) $channel),
+                    (array) ($itemBlueprint['channels'] ?? [])
+                ), static fn (string $channel): bool => $channel !== ''));
+
+                $encodedChannels = json_encode($channels);
+                if (!is_string($encodedChannels)) {
+                    $encodedChannels = '[]';
+                }
+
+                $itemsToPersist[] = [
+                    'planned_date' => (string) ($itemBlueprint['planned_date'] ?? ''),
+                    'title' => (string) ($itemBlueprint['title'] ?? ''),
+                    'description' => (string) ($itemBlueprint['description'] ?? ''),
+                    'campaign_id' => $campaignId,
+                    'content_objective_id' => $contentObjectiveId > 0 ? $contentObjectiveId : null,
+                    'format_type' => (string) ($itemBlueprint['format_type'] ?? 'post'),
+                    'channels_json' => $encodedChannels,
+                    'status' => (string) ($itemBlueprint['status'] ?? 'planned'),
+                ];
+            }
+
+            $inserted = $planner->addPlanItems($planId, $itemsToPersist);
+            if ($inserted <= 0) {
+                throw new \RuntimeException('plan_items_create_failed');
+            }
+
+            $db->commit();
+
+            flash('success', $this->t(
+                'plans.flash_ai_created',
+                'Plano e campanha gerados por IA com sucesso. Itens criados: {count}.',
+                ['count' => $inserted]
+            ));
+            $this->redirectToRoute('plans/show/' . $planId);
+        } catch (\Throwable) {
+            $db->rollBack();
+            flash('error', $this->t(
+                'plans.flash_ai_create_failed',
+                'Nao foi possivel gerar o plano por IA neste momento. Tente novamente.'
+            ));
+            $this->redirectToRoute('plans/index');
+        }
     }
 
     public function storeTemplate(): void
@@ -390,6 +570,12 @@ class PlansController extends BaseController
         $allowed = ['planned', 'scheduled', 'published', 'skipped'];
 
         return in_array($status, $allowed, true) ? $status : null;
+    }
+
+    private function normalizeAiCampaignMode(string $mode): string
+    {
+        $mode = strtolower(trim($mode));
+        return in_array($mode, ['new', 'existing', 'none'], true) ? $mode : 'new';
     }
 
     private function parseSelectedItemIds(string $csv): array

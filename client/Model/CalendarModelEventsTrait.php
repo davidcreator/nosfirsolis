@@ -223,7 +223,7 @@ trait CalendarModelEventsTrait
     public function filterData(): array
     {
         return [
-            'channels' => $this->db->fetchAll('SELECT id, name FROM content_platforms WHERE status = 1 ORDER BY name ASC'),
+            'channels' => $this->db->fetchAll('SELECT id, name, slug FROM content_platforms WHERE status = 1 ORDER BY name ASC'),
             'objectives' => $this->db->fetchAll('SELECT id, name FROM content_objectives WHERE status = 1 ORDER BY name ASC'),
             'campaigns' => $this->db->fetchAll('SELECT id, name FROM campaigns ORDER BY name ASC'),
         ];

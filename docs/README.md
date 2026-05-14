@@ -1,7 +1,7 @@
 # Docs NosfirSolis
 
 Este diretorio concentra a documentacao funcional e tecnica do Solis dentro do ecossistema Nosfir.
-Atualizado em: **2026-05-08**.
+Atualizado em: **2026-05-14**.
 
 ## Como Navegar
 

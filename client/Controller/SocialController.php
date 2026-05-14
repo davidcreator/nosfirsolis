@@ -65,6 +65,10 @@ class SocialController extends BaseController
 
         $trackingService = $this->campaignTrackingService();
         $publishPlanItems = $trackingService->availablePlanItems($userId, 120);
+        $bulkFailedPlatforms = array_values(array_unique(array_filter(array_map(
+            static fn ($slug): string => strtolower(trim((string) $slug)),
+            (array) $this->session->get('social_oauth_bulk_failed', [])
+        ), static fn (string $slug): bool => $slug !== '')));
 
         $this->render('social/index', [
             'title' => $this->t('social.title_index', 'Central Social'),
@@ -81,6 +85,7 @@ class SocialController extends BaseController
             'publication_queue' => $publicationQueue,
             'publish_plan_items' => $publishPlanItems,
             'access_key_docs' => $accessKeyDocs,
+            'bulk_failed_platforms' => $bulkFailedPlatforms,
         ]);
     }
 }

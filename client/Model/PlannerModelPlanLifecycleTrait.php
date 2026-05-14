@@ -6,6 +6,30 @@ use System\Library\PlannerService;
 
 trait PlannerModelPlanLifecycleTrait
 {
+    public function createCampaign(array $data): int
+    {
+        $name = trim((string) ($data['name'] ?? ''));
+        if ($name === '') {
+            return 0;
+        }
+
+        $status = strtolower(trim((string) ($data['status'] ?? 'planned')));
+        if (!in_array($status, ['planned', 'active', 'completed', 'archived'], true)) {
+            $status = 'planned';
+        }
+
+        return $this->db->insert('campaigns', [
+            'name' => $name,
+            'description' => trim((string) ($data['description'] ?? '')) ?: null,
+            'objective' => trim((string) ($data['objective'] ?? '')) ?: null,
+            'start_date' => !empty($data['start_date']) ? (string) $data['start_date'] : null,
+            'end_date' => !empty($data['end_date']) ? (string) $data['end_date'] : null,
+            'status' => $status,
+            'created_at' => $this->modelClockDateTimeNow(),
+            'updated_at' => $this->modelClockDateTimeNow(),
+        ]);
+    }
+
     public function createPlan(int $userId, array $data): int
     {
         [$yearRef, $monthRef] = $this->derivePlanReferenceFromDate((string) ($data['start_date'] ?? ''));

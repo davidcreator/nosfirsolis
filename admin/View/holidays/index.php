@@ -26,9 +26,9 @@
                     <td><?= (int) $item['status'] === 1 ? e($t('common.status_active', 'Ativo')) : e($t('common.status_inactive', 'Inativo')) ?></td>
                     <td class="actions">
                         <a href="<?= e(route_url('holidays/edit/' . $item['id'])) ?>"><i class="fa-solid fa-pen-to-square"></i> <?= e($t('common.button_edit', 'Editar')) ?></a>
-                        <form method="post" action="<?= e(route_url('holidays/delete/' . $item['id'])) ?>" style="display:inline" onsubmit="return confirm('<?= e($t('holidays.confirm_delete', 'Excluir este feriado?')) ?>')">
+                        <form method="post" action="<?= e(route_url('holidays/delete/' . $item['id'])) ?>" class="table-action-form" onsubmit="return confirm('<?= e($t('holidays.confirm_delete', 'Excluir este feriado?')) ?>')">
                             <?= csrf_field() ?>
-                            <button type="submit" style="background:none;border:0;padding:0;color:inherit;font:inherit;cursor:pointer">
+                            <button type="submit" class="btn-link danger table-action-btn">
                                 <i class="fa-regular fa-trash-can"></i> <?= e($t('common.button_delete', 'Excluir')) ?>
                             </button>
                         </form>

@@ -13,8 +13,8 @@
 
     <form method="post" action="<?= e(route_url('auth/authenticate')) ?>" class="auth-form">
         <?= csrf_field() ?>
-        <label><?= e($t('auth.field_email', 'E-mail')) ?>
-            <input type="email" name="email" autocomplete="username" required>
+        <label><?= e($t('auth.field_login', 'E-mail ou usuario')) ?>
+            <input type="text" name="email" autocomplete="username" required>
         </label>
 
         <label><?= e($t('auth.field_password', 'Senha')) ?>

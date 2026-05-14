@@ -8,6 +8,7 @@ use System\Library\CacheMaintenanceService;
 use System\Library\FeatureFlagService;
 use System\Library\JobMonitorService;
 use System\Library\ObservabilityService;
+use System\Library\PlanCampaignAiManagerService;
 use System\Library\SubscriptionService;
 use System\Library\UsersListFilterService;
 
@@ -20,6 +21,7 @@ abstract class BaseController extends Controller
     private ?ObservabilityService $observabilityService = null;
     private ?CacheMaintenanceService $cacheMaintenanceService = null;
     private ?UsersListFilterService $usersListFilterService = null;
+    private ?PlanCampaignAiManagerService $planCampaignAiManagerService = null;
 
     protected function boot(string $permission = '', ?string $featureKey = null): void
     {
@@ -140,5 +142,15 @@ abstract class BaseController extends Controller
 
         $this->usersListFilterService = new UsersListFilterService();
         return $this->usersListFilterService;
+    }
+
+    protected function planCampaignAiManagerService(): PlanCampaignAiManagerService
+    {
+        if ($this->planCampaignAiManagerService instanceof PlanCampaignAiManagerService) {
+            return $this->planCampaignAiManagerService;
+        }
+
+        $this->planCampaignAiManagerService = new PlanCampaignAiManagerService($this->registry);
+        return $this->planCampaignAiManagerService;
     }
 }

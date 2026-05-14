@@ -250,7 +250,7 @@ foreach ($configuredMethods as $isEnabled) {
     <div class="billing-split-grid">
         <article class="billing-surface">
             <h3><i class="fa-solid fa-plus"></i> Nova promoção</h3>
-            <form id="billingPromotionForm" method="post" action="<?= e(route_url('billing/savePromotion')) ?>" class="form-grid billing-form">
+            <form id="billingPromotionForm" method="post" action="<?= e(route_url('billing/savePromotion')) ?>" class="form-grid billing-form admin-form-highlight">
         <?= csrf_field() ?>
         <label>Nome
             <input type="text" name="name" required>
@@ -328,10 +328,10 @@ foreach ($configuredMethods as $isEnabled) {
                                 <?= !empty($promotion['status']) ? 'Ativa' : 'Inativa' ?>
                             </span>
                         </td>
-                        <td>
-                            <form method="post" action="<?= e(route_url('billing/deletePromotion/' . (int) ($promotion['id'] ?? 0))) ?>" onsubmit="return confirm('Excluir promoção?')">
+                        <td class="actions">
+                            <form method="post" action="<?= e(route_url('billing/deletePromotion/' . (int) ($promotion['id'] ?? 0))) ?>" class="table-action-form" onsubmit="return confirm('Excluir promoção?')">
                                 <?= csrf_field() ?>
-                                <button class="btn-link danger" type="submit"><i class="fa-regular fa-trash-can"></i> Excluir</button>
+                                <button class="btn-link danger table-action-btn" type="submit"><i class="fa-regular fa-trash-can"></i> Excluir</button>
                             </form>
                         </td>
                     </tr>
@@ -353,7 +353,7 @@ foreach ($configuredMethods as $isEnabled) {
     <div class="billing-split-grid">
         <article class="billing-surface">
             <h3><i class="fa-solid fa-bullhorn"></i> Novo comunicado</h3>
-            <form id="billingAnnouncementForm" method="post" action="<?= e(route_url('billing/saveAnnouncement')) ?>" class="form-grid billing-form">
+            <form id="billingAnnouncementForm" method="post" action="<?= e(route_url('billing/saveAnnouncement')) ?>" class="form-grid billing-form admin-form-highlight">
         <?= csrf_field() ?>
         <label>Título
             <input type="text" name="title" required>
@@ -409,10 +409,10 @@ foreach ($configuredMethods as $isEnabled) {
                                 <?= !empty($announcement['status']) ? 'Ativo' : 'Inativo' ?>
                             </span>
                         </td>
-                        <td>
-                            <form method="post" action="<?= e(route_url('billing/deleteAnnouncement/' . (int) ($announcement['id'] ?? 0))) ?>" onsubmit="return confirm('Excluir comunicado?')">
+                        <td class="actions">
+                            <form method="post" action="<?= e(route_url('billing/deleteAnnouncement/' . (int) ($announcement['id'] ?? 0))) ?>" class="table-action-form" onsubmit="return confirm('Excluir comunicado?')">
                                 <?= csrf_field() ?>
-                                <button class="btn-link danger" type="submit"><i class="fa-regular fa-trash-can"></i> Excluir</button>
+                                <button class="btn-link danger table-action-btn" type="submit"><i class="fa-regular fa-trash-can"></i> Excluir</button>
                             </form>
                         </td>
                     </tr>
@@ -431,7 +431,7 @@ foreach ($configuredMethods as $isEnabled) {
         <span class="meta-text"><?= e($t('billing.meta_payment_settings', 'Defina para onde os valores vão, meios aceitos e modo de validação.')) ?></span>
     </div>
 
-    <form method="post" action="<?= e(route_url('billing/savePaymentSettings')) ?>" class="form-grid billing-form">
+    <form method="post" action="<?= e(route_url('billing/savePaymentSettings')) ?>" class="form-grid billing-form admin-form-highlight">
         <?= csrf_field() ?>
 
         <label>Moeda
@@ -543,12 +543,12 @@ foreach ($configuredMethods as $isEnabled) {
                                 <form method="post" action="<?= e(route_url('billing/approvePayment/' . (int) ($tx['id'] ?? 0))) ?>" class="validation-action-form">
                                     <?= csrf_field() ?>
                                     <input type="text" name="validation_note" placeholder="Observação (opcional)">
-                                    <button class="btn-link" type="submit"><i class="fa-solid fa-check"></i> Aprovar</button>
+                                    <button class="btn-link panel-action-btn" type="submit"><i class="fa-solid fa-check"></i> Aprovar</button>
                                 </form>
                                 <form method="post" action="<?= e(route_url('billing/rejectPayment/' . (int) ($tx['id'] ?? 0))) ?>" class="validation-action-form">
                                     <?= csrf_field() ?>
                                     <input type="text" name="rejection_reason" placeholder="Motivo da rejeição">
-                                    <button class="btn-link danger" type="submit"><i class="fa-solid fa-xmark"></i> Rejeitar</button>
+                                    <button class="btn-link panel-action-btn danger" type="submit"><i class="fa-solid fa-xmark"></i> Rejeitar</button>
                                 </form>
                             </div>
                         </td>

@@ -8,6 +8,7 @@ return [
     'layout.logout' => 'Sign out',
     'layout.nav_billing' => 'Plans and Payments',
     'layout.nav_campaigns' => 'Campaigns',
+    'layout.nav_plans_campaigns' => 'Plans and Campaigns AI',
     'layout.nav_channels' => 'Channels',
     'layout.nav_commemoratives' => 'Commemoratives',
     'layout.nav_dashboard' => 'Dashboard',
