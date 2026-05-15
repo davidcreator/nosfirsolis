@@ -29,6 +29,15 @@ A area `client` concentra operacao diaria de estrategia e execucao:
 - login/logout usam CSRF e validacao de metodo
 - reset de senha usa token de 64 chars com hash (`password_resets`) e expiracao configuravel
 
+### Idioma E Experiencia De Login
+
+- idiomas de interface suportados: `pt-br` e `en-us`
+- seletor de idioma com dropdown, bandeira e codigo curto dentro do card de login em:
+  - landing principal (`/`, arquivo `index.php`)
+  - tela dedicada de login cliente (`/client/auth/login`)
+- persistencia do idioma ativo em sessao (`language_code`) com fallback de `app.languages.fallback`
+- submit protegido por CSRF para troca de idioma tanto no fluxo de login interno quanto na landing
+
 ## Dashboard (`client/dashboard/index`)
 
 Exibe:

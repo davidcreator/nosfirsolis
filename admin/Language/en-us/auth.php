@@ -18,4 +18,7 @@ return [
     'auth.link_recover_email' => 'Forgot my login e-mail',
     'auth.link_recover_password' => 'Forgot my password',
     'auth.title_login' => '{app} | Login',
+    'auth.language_menu_languages' => 'Languages',
+    'auth.language_menu_title' => 'Translate',
+    'auth.language_switcher_label' => 'Language',
 ];

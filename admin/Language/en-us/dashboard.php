@@ -27,4 +27,11 @@ return [
     'dashboard.section_top_formats_title' => 'Most common formats',
     'dashboard.title_index' => '{app} | Admin',
     'dashboard.undefined_format' => 'Not defined',
+    'dashboard.goal_campaigns' => 'Active campaigns',
+    'dashboard.goal_integrations' => 'Channel integrations',
+    'dashboard.goal_completion_title' => 'Goals and completion',
+    'dashboard.goal_calendar' => 'Calendar coverage',
+    'dashboard.recap_title' => 'Monthly recap',
+    'dashboard.goal_editorial' => 'Editorial planning',
+    'dashboard.recap_subtitle' => 'Quick performance overview from recent months',
 ];

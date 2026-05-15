@@ -13,6 +13,7 @@ return [
         'auth/resetpassword',
         'auth/updatepassword',
         'tracking/redirect',
+        'language/save',
     ],
     'login_redirect' => 'auth/login',
 ];

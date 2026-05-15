@@ -152,7 +152,7 @@ class AuthController extends BaseController
                     'recovery_email' => $recoveryEmail,
                     'password_hash' => password_hash($password, PASSWORD_DEFAULT),
                     'avatar' => null,
-                    'language_code' => 'pt-br',
+                    'language_code' => $this->defaultLanguageCode(),
                     'status' => 1,
                     'last_login_at' => null,
                     'created_at' => $timestamp,
@@ -190,31 +190,7 @@ class AuthController extends BaseController
 
     private function redirectAfterLoginFailure(): never
     {
-        if ($this->shouldReturnToLanding()) {
-            $this->response->redirect($this->landingUrl());
-        }
-
         $this->redirectToRoute('auth/login');
-    }
-
-    private function shouldReturnToLanding(): bool
-    {
-        $returnTo = strtolower(trim((string) $this->request->post(
-            'return_to',
-            (string) $this->request->get('return_to', '')
-        )));
-
-        return $returnTo === 'landing';
-    }
-
-    private function landingUrl(): string
-    {
-        $rootDir = $this->requestRootDirectory();
-        if ($rootDir === '') {
-            return '/';
-        }
-
-        return rtrim($rootDir, '/') . '/';
     }
 
     private function resolveClientGroupId(): int

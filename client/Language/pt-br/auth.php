@@ -68,4 +68,7 @@ return [
     'auth.title_login' => '{app} | Login',
     'auth.title_register' => '{app} | Criar conta',
     'auth.title_reset_password' => '{app} | Redefinir senha',
+    'auth.language_menu_languages' => 'Idiomas',
+    'auth.language_menu_title' => 'Traduzir',
+    'auth.language_switcher_label' => 'Idioma',
 ];

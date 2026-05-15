@@ -96,7 +96,7 @@ class Application
         $language = new Language(
             $this->area,
             $this->resolveLanguageCode($session, $config),
-            'en-us'
+            $this->fallbackLanguageCode($config)
         );
         $language->load('common');
 
@@ -312,8 +312,12 @@ class Application
 
     private function resolveLanguageCode(Session $session, Config $config): string
     {
-        $default = $this->normalizeLanguageCode((string) $config->get('app.default_language', 'en-us')) ?? 'en-us';
-        $sessionCode = $this->normalizeLanguageCode((string) $session->get('language_code', ''));
+        $supportedCodes = $this->supportedLanguageCodes($config);
+        $default = $this->normalizeLanguageCode(
+            (string) $config->get('app.default_language', 'en-us'),
+            $supportedCodes
+        ) ?? $this->fallbackLanguageCode($config);
+        $sessionCode = $this->normalizeLanguageCode((string) $session->get('language_code', ''), $supportedCodes);
 
         return $sessionCode ?? $default;
     }
@@ -367,12 +371,61 @@ class Application
         return null;
     }
 
-    private function normalizeLanguageCode(string $languageCode): ?string
+    private function normalizeLanguageCode(string $languageCode, ?array $supportedCodes = null): ?string
     {
+        $supportedCodes = $supportedCodes ?? ['en-us', 'pt-br'];
         $languageCode = strtolower(trim($languageCode));
         $languageCode = str_replace('_', '-', $languageCode);
 
-        return in_array($languageCode, ['en-us', 'pt-br'], true) ? $languageCode : null;
+        return in_array($languageCode, $supportedCodes, true) ? $languageCode : null;
+    }
+
+    private function supportedLanguageCodes(Config $config): array
+    {
+        $supported = (array) $config->get('app.languages.supported', []);
+        $codes = [];
+
+        foreach ($supported as $code => $_metadata) {
+            $normalized = strtolower(trim((string) $code));
+            $normalized = str_replace('_', '-', $normalized);
+            if (preg_match('/^[a-z]{2}-[a-z]{2}$/', $normalized) !== 1) {
+                continue;
+            }
+
+            $codes[$normalized] = true;
+        }
+
+        if ($codes === []) {
+            return ['en-us', 'pt-br'];
+        }
+
+        $result = array_keys($codes);
+        sort($result);
+
+        return $result;
+    }
+
+    private function fallbackLanguageCode(Config $config): string
+    {
+        $supportedCodes = $this->supportedLanguageCodes($config);
+
+        $configuredFallback = $this->normalizeLanguageCode(
+            (string) $config->get('app.languages.fallback', 'en-us'),
+            $supportedCodes
+        );
+        if ($configuredFallback !== null) {
+            return $configuredFallback;
+        }
+
+        $configuredDefault = $this->normalizeLanguageCode(
+            (string) $config->get('app.default_language', 'en-us'),
+            $supportedCodes
+        );
+        if ($configuredDefault !== null) {
+            return $configuredDefault;
+        }
+
+        return $supportedCodes[0] ?? 'en-us';
     }
 
     private function normalizeEnvironment(string $value): string

@@ -9,7 +9,7 @@ class Auth
 {
     use TemporalClockTrait;
 
-    private const SUPPORTED_LANGUAGE_CODES = ['en-us', 'pt-br'];
+    private const DEFAULT_SUPPORTED_LANGUAGE_CODES = ['en-us', 'pt-br'];
 
     private ?array $user = null;
     private string $lastErrorCode = '';
@@ -33,7 +33,7 @@ class Auth
 
         $session = $this->registry->get('session');
         $db = $this->registry->get('db');
-        $userId = (int) $session->get('user_id', 0);
+        $userId = $this->sessionUserId($session);
 
         if ($userId <= 0 || !$db || !$db->connected()) {
             return null;
@@ -65,7 +65,12 @@ class Auth
             return false;
         }
 
-        $identifier = strtolower(trim($email));
+        $identifier = $this->normalizeAuthIdentifier($email);
+        if ($identifier === '') {
+            $this->setError('invalid_credentials', $this->t('common.auth_invalid_credentials', 'Credenciais invalidas.'));
+            return false;
+        }
+
         $gate = $this->security()->canAttemptLogin($this->area, $identifier);
         if (empty($gate['allowed'])) {
             $this->setError('blocked', (string) ($gate['message'] ?? $this->t('common.auth_blocked', 'Acesso temporariamente bloqueado por seguranca.')));
@@ -84,7 +89,16 @@ class Auth
             return false;
         }
 
-        if (!password_verify($password, (string) $user['password_hash'])) {
+        $passwordHash = (string) ($user['password_hash'] ?? '');
+        $passwordMatches = $passwordHash !== '' && password_verify($password, $passwordHash);
+        if (!$passwordMatches) {
+            $normalizedPassword = $this->normalizeAuthPassword($password);
+            if ($normalizedPassword !== $password && $normalizedPassword !== '') {
+                $passwordMatches = password_verify($normalizedPassword, $passwordHash);
+            }
+        }
+
+        if (!$passwordMatches) {
             $this->security()->registerLoginAttempt($this->area, $identifier, false, (int) $user['id'], 'invalid_password');
             $this->setError('invalid_credentials', $this->t('common.auth_invalid_credentials', 'Credenciais invalidas.'));
             return false;
@@ -98,9 +112,10 @@ class Auth
 
         $session = $this->registry->get('session');
         $session->regenerate(true);
-        $session->set('user_id', (int) $user['id']);
-        $session->set('session_fingerprint', $this->sessionFingerprint((int) $user['id']));
-        $session->set('session_started_at', $this->clockUnixNow());
+        $session->set($this->sessionUserKey(), (int) $user['id']);
+        $session->set($this->sessionFingerprintKey(), $this->sessionFingerprint((int) $user['id']));
+        $session->set($this->sessionStartedAtKey(), $this->clockUnixNow());
+        $this->clearLegacySessionKeys($session);
         $session->set('language_code', $this->resolveUserLanguageCode($user));
 
         $this->security()->registerLoginAttempt($this->area, $identifier, true, (int) $user['id'], 'login_success');
@@ -156,26 +171,38 @@ class Auth
             'SELECT u.*, ug.permissions_json
              FROM users u
              LEFT JOIN user_groups ug ON ug.id = u.user_group_id
-             WHERE u.email = :email
-               AND u.status = 1
+             WHERE u.status = 1
+               AND (
+                   LOWER(u.email) = :identifier_email
+                   OR LOWER(COALESCE(u.recovery_email, \'\')) = :identifier_recovery
+               )
+             ORDER BY
+               CASE
+                 WHEN LOWER(u.email) = :identifier_order_email THEN 0
+                 ELSE 1
+               END,
+               u.id ASC
              LIMIT 1',
-            ['email' => $identifier]
+            [
+                'identifier_email' => $identifier,
+                'identifier_recovery' => $identifier,
+                'identifier_order_email' => $identifier,
+            ]
         );
     }
 
     public function logout(): void
     {
         $session = $this->registry->get('session');
-        $userId = (int) $session->get('user_id', 0);
+        $userId = $this->sessionUserId($session);
 
         if ($userId > 0) {
             $this->security()->audit('logout', 'info', $userId, $this->area, []);
         }
 
-        $session->remove('user_id');
-        $session->remove('session_fingerprint');
-        $session->remove('session_started_at');
-        $session->remove('language_code');
+        $session->remove($this->sessionUserKey());
+        $session->remove($this->sessionFingerprintKey());
+        $session->remove($this->sessionStartedAtKey());
         $this->user = null;
     }
 
@@ -204,7 +231,29 @@ class Auth
 
     public function supportedLanguageCodes(): array
     {
-        return self::SUPPORTED_LANGUAGE_CODES;
+        $config = $this->registry->get('config');
+        $supported = is_object($config) && method_exists($config, 'get')
+            ? (array) $config->get('app.languages.supported', [])
+            : [];
+
+        $codes = [];
+        foreach ($supported as $code => $_metadata) {
+            $normalized = $this->sanitizeLanguageCode((string) $code);
+            if ($normalized === null) {
+                continue;
+            }
+
+            $codes[$normalized] = true;
+        }
+
+        if ($codes === []) {
+            return self::DEFAULT_SUPPORTED_LANGUAGE_CODES;
+        }
+
+        $result = array_keys($codes);
+        sort($result);
+
+        return $result;
     }
 
     public function updateLanguagePreference(string $languageCode): bool
@@ -257,12 +306,12 @@ class Auth
     private function sessionIntegrityValid(int $userId): bool
     {
         $session = $this->registry->get('session');
-        $storedFingerprint = (string) $session->get('session_fingerprint', '');
-        $startedAt = (int) $session->get('session_started_at', 0);
+        $storedFingerprint = (string) $session->get($this->sessionFingerprintKey(), '');
+        $startedAt = (int) $session->get($this->sessionStartedAtKey(), 0);
 
         if ($storedFingerprint === '') {
-            $session->set('session_fingerprint', $this->sessionFingerprint($userId));
-            $session->set('session_started_at', $this->clockUnixNow());
+            $session->set($this->sessionFingerprintKey(), $this->sessionFingerprint($userId));
+            $session->set($this->sessionStartedAtKey(), $this->clockUnixNow());
             return true;
         }
 
@@ -303,11 +352,60 @@ class Auth
     private function forceLogoutSession(): void
     {
         $session = $this->registry->get('session');
+        $session->remove($this->sessionUserKey());
+        $session->remove($this->sessionFingerprintKey());
+        $session->remove($this->sessionStartedAtKey());
+        $this->user = null;
+    }
+
+    private function sessionUserId(mixed $session): int
+    {
+        $userId = (int) $session->get($this->sessionUserKey(), 0);
+        if ($userId > 0) {
+            return $userId;
+        }
+
+        $legacyUserId = (int) $session->get('user_id', 0);
+        if ($legacyUserId <= 0) {
+            return 0;
+        }
+
+        $legacyFingerprint = (string) $session->get('session_fingerprint', '');
+        if ($legacyFingerprint === '' || !hash_equals($legacyFingerprint, $this->sessionFingerprint($legacyUserId))) {
+            return 0;
+        }
+
+        $session->set($this->sessionUserKey(), $legacyUserId);
+        $session->set($this->sessionFingerprintKey(), $legacyFingerprint);
+        $session->set(
+            $this->sessionStartedAtKey(),
+            (int) $session->get('session_started_at', $this->clockUnixNow())
+        );
+        $this->clearLegacySessionKeys($session);
+
+        return $legacyUserId;
+    }
+
+    private function clearLegacySessionKeys(mixed $session): void
+    {
         $session->remove('user_id');
         $session->remove('session_fingerprint');
         $session->remove('session_started_at');
-        $session->remove('language_code');
-        $this->user = null;
+    }
+
+    private function sessionUserKey(): string
+    {
+        return $this->area . '_user_id';
+    }
+
+    private function sessionFingerprintKey(): string
+    {
+        return $this->area . '_session_fingerprint';
+    }
+
+    private function sessionStartedAtKey(): string
+    {
+        return $this->area . '_session_started_at';
     }
 
     private function security(): SecurityService
@@ -372,10 +470,56 @@ class Auth
 
     private function normalizeLanguageCode(string $languageCode): ?string
     {
+        $languageCode = $this->sanitizeLanguageCode($languageCode);
+        if ($languageCode === null) {
+            return null;
+        }
+
+        return in_array($languageCode, $this->supportedLanguageCodes(), true) ? $languageCode : null;
+    }
+
+    private function sanitizeLanguageCode(string $languageCode): ?string
+    {
         $languageCode = strtolower(trim($languageCode));
         $languageCode = str_replace('_', '-', $languageCode);
 
-        return in_array($languageCode, self::SUPPORTED_LANGUAGE_CODES, true) ? $languageCode : null;
+        return preg_match('/^[a-z]{2}-[a-z]{2}$/', $languageCode) === 1 ? $languageCode : null;
+    }
+
+    private function normalizeAuthIdentifier(string $identifier): string
+    {
+        $identifier = trim($identifier);
+        if ($identifier === '') {
+            return '';
+        }
+
+        // Remove invisible separators that may come from mobile keyboards/autofill.
+        $identifier = preg_replace('/[\x{200B}-\x{200D}\x{2060}\x{FEFF}]/u', '', $identifier) ?? $identifier;
+        // Collapse any unicode whitespace inside/borders to avoid hidden mismatch.
+        $identifier = preg_replace('/\s+/u', ' ', $identifier) ?? $identifier;
+        $identifier = trim($identifier);
+
+        if (str_contains($identifier, '@')) {
+            // Mobile keyboards/autocorrect may inject spaces/punctuation around e-mail.
+            $identifier = str_replace(' ', '', $identifier);
+            $identifier = rtrim($identifier, ".,;:");
+        }
+
+        return strtolower($identifier);
+    }
+
+    private function normalizeAuthPassword(string $password): string
+    {
+        if ($password === '') {
+            return '';
+        }
+
+        // Remove invisible separators commonly introduced by mobile/autofill copy-paste.
+        $password = preg_replace('/[\x{200B}-\x{200D}\x{2060}\x{FEFF}]/u', '', $password) ?? $password;
+        // Remove leading/trailing unicode whitespace/control chars without altering middle chars.
+        $password = preg_replace('/^[\p{Z}\p{C}\s]+|[\p{Z}\p{C}\s]+$/u', '', $password) ?? $password;
+
+        return $password;
     }
 
     private function usersLanguageColumnAvailable(): bool

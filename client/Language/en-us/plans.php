@@ -34,4 +34,6 @@ return [
     'plans.template_generated_note' => 'Plan generated automatically from the "{template}" template.',
     'plans.title_index' => 'Editorial plans',
     'plans.title_show' => 'Editorial Plan #{id}',
+    'plans.flash_limit_reached' => 'Plan limit reached for this period.',
+    'plans.flash_template_feature_unavailable' => 'Your current plan does not allow annual templates.',
 ];

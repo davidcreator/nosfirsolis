@@ -88,9 +88,24 @@
         <label>
             <?= e($t('install.field_language', 'Idioma')) ?>
             <?php $selectedLanguage = strtolower((string) ($values['language_code'] ?? 'en-us')); ?>
+            <?php $supportedLanguages = (array) ($supported_languages ?? []); ?>
             <select name="language_code">
-                <option value="en-us" <?= $selectedLanguage === 'en-us' ? 'selected' : '' ?>><?= e($t('install.language_en_us', 'English (United States) - en-us')) ?></option>
-                <option value="pt-br" <?= $selectedLanguage === 'pt-br' ? 'selected' : '' ?>><?= e($t('install.language_pt_br', 'Portugues (Brasil) - pt-br')) ?></option>
+                <?php if ($supportedLanguages === []): ?>
+                    <option value="en-us" <?= $selectedLanguage === 'en-us' ? 'selected' : '' ?>>en-us</option>
+                    <option value="pt-br" <?= $selectedLanguage === 'pt-br' ? 'selected' : '' ?>>pt-br</option>
+                <?php else: ?>
+                    <?php foreach ($supportedLanguages as $languageOption): ?>
+                        <?php
+                        $languageCode = strtolower((string) ($languageOption['code'] ?? ''));
+                        if ($languageCode === '') {
+                            continue;
+                        }
+                        ?>
+                        <option value="<?= e($languageCode) ?>" <?= $selectedLanguage === $languageCode ? 'selected' : '' ?>>
+                            <?= e($languageCode) ?>
+                        </option>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </select>
         </label>
 

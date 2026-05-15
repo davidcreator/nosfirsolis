@@ -23,4 +23,5 @@ return [
     'commemoratives.title_create' => 'New Commemorative Date',
     'commemoratives.title_edit' => 'Edit Commemorative Date',
     'commemoratives.title_index' => 'Commemorative dates',
+    'commemoratives.flash_invalid_date' => 'Invalid commemorative date.',
 ];

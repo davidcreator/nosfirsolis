@@ -22,4 +22,13 @@ return [
     'layout.search_menu_placeholder' => 'Search menu',
     'layout.title_default' => 'Solis',
     'layout.workspace_subtitle' => 'Client workspace',
+    'layout.ads_notice_title' => 'Ads',
+    'layout.language_menu_title' => 'Translate',
+    'layout.ads_notice_upgrade' => 'Upgrade',
+    'layout.ads_notice_suffix' => 'to remove ads.',
+    'layout.language_menu_languages' => 'Languages',
+    'layout.close_menu' => 'Close menu',
+    'layout.shortcut_label' => 'Shortcut',
+    'layout.shortcuts_label' => 'Shortcuts',
+    'layout.ads_notice_text' => 'You are on the free plan with ads.',
 ];

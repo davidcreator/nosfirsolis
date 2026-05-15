@@ -6,7 +6,6 @@ class LanguageController extends BaseController
 {
     public function save(): void
     {
-        $this->boot();
         $this->requirePostAndCsrf();
 
         $languageCode = (string) $this->request->post('language_code', '');

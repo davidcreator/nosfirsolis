@@ -27,6 +27,17 @@ Todas as mudancas relevantes de codigo e seguranca registradas neste diretorio d
 - Correcao de erro fatal no bind de parametros PDO (`SQLSTATE[HY093]`) durante autenticacao admin com consulta de multiplos identificadores.
 - Processo de normalizacao operacional de acesso admin aplicado no ambiente local de trabalho para remover regressao de `user_not_found`.
 
+### Internacionalizacao E Login
+
+- Internacionalizacao consolidada no padrao MVCL com idiomas `pt-br` e `en-us` em `admin/Language` e `client/Language`.
+- Dropdown unico de idioma com bandeiras e codigos curtos (`pt-br`, `en-us`) aplicado no login do admin e no login do cliente.
+- Landing principal (`index.php`) atualizada com seletor de idioma dentro do card de acesso do cliente, persistencia em sessao e textos traduziveis para hero/login.
+- Revisao de textos `en-us` aplicada nos fluxos de autenticacao para reduzir regressao de strings restantes em portugues.
+
+### Build E Validacao
+
+- `composer build` executado em `system/` com sucesso (`autoload` otimizado gerado).
+
 ### Documentacao
 
 - Atualizados:

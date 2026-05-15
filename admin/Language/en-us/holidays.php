@@ -32,4 +32,5 @@ return [
     'holidays.type_international' => 'International',
     'holidays.type_national' => 'National',
     'holidays.type_regional' => 'Regional',
+    'holidays.flash_invalid_date' => 'Invalid holiday date.',
 ];

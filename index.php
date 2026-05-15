@@ -184,7 +184,62 @@ if ($storageDir === '' || !is_dir($storageDir)) {
     $storageDir = is_dir($storageUpper) ? $storageUpper : (is_dir($storageLower) ? $storageLower : $storageUpper);
 }
 $sessionPath = $storageDir . DIRECTORY_SEPARATOR . 'sessions';
-new \System\Engine\Session($sessionName, $sessionPath);
+$session = new \System\Engine\Session($sessionName, $sessionPath);
+
+$normalizeLanguageCode = static function (string $code): ?string {
+    $code = strtolower(trim($code));
+    $code = str_replace('_', '-', $code);
+
+    return preg_match('/^[a-z]{2}-[a-z]{2}$/', $code) === 1 ? $code : null;
+};
+
+$supportedLanguagesConfig = (array) (($appConfig['languages']['supported'] ?? []));
+$supportedLanguageCodes = [];
+foreach ($supportedLanguagesConfig as $code => $_metadata) {
+    $normalizedCode = $normalizeLanguageCode((string) $code);
+    if ($normalizedCode === null) {
+        continue;
+    }
+
+    $supportedLanguageCodes[$normalizedCode] = true;
+}
+
+if ($supportedLanguageCodes === []) {
+    $supportedLanguageCodes = [
+        'en-us' => true,
+        'pt-br' => true,
+    ];
+}
+
+$fallbackLanguageCode = $normalizeLanguageCode((string) ($appConfig['languages']['fallback'] ?? 'en-us'));
+if ($fallbackLanguageCode === null || !isset($supportedLanguageCodes[$fallbackLanguageCode])) {
+    $fallbackLanguageCode = array_key_first($supportedLanguageCodes) ?: 'en-us';
+}
+
+$currentLanguageCode = $normalizeLanguageCode((string) $session->get('language_code', ''));
+if ($currentLanguageCode === null || !isset($supportedLanguageCodes[$currentLanguageCode])) {
+    $currentLanguageCode = $fallbackLanguageCode;
+}
+
+if (
+    ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST'
+    && array_key_exists('landing_language_code', $_POST)
+) {
+    if (!verify_csrf($_POST['_token'] ?? null)) {
+        flash('error', 'Requisicao invalida.');
+    } else {
+        $selectedLanguage = $normalizeLanguageCode((string) ($_POST['landing_language_code'] ?? ''));
+        if ($selectedLanguage !== null && isset($supportedLanguageCodes[$selectedLanguage])) {
+            $session->set('language_code', $selectedLanguage);
+            flash('success', $selectedLanguage === 'pt-br' ? 'Idioma atualizado com sucesso.' : 'Language updated successfully.');
+        } else {
+            flash('error', $currentLanguageCode === 'pt-br' ? 'Idioma invalido selecionado.' : 'Invalid language selected.');
+        }
+    }
+
+    header('Location: ' . $base . '/');
+    exit;
+}
 
 $loginAction = $basePath . '/client/auth/authenticate';
 $registerUrl = $basePath . '/client/auth/register';
@@ -196,11 +251,68 @@ $pageUrl = $scheme . '://' . $host . (string) ($_SERVER['REQUEST_URI'] ?? ($base
 $metaTitle = $appName . ' | Plataforma de planejamento de conteudo';
 $metaDescription = 'Solis centraliza planejamento, execucao e acompanhamento de conteudo em um unico fluxo.';
 $ogImageUrl = $scheme . '://' . $host . $logoPath;
+$languageSaveAction = $base . '/';
+$languageFlagMap = [
+    'en-us' => '&#x1F1FA;&#x1F1F8;',
+    'pt-br' => '&#x1F1E7;&#x1F1F7;',
+];
+$landingTranslations = [
+    'pt-br' => [
+        'platform' => 'Platform',
+        'hero_title' => 'Planejamento estrategico, execucao diaria e visao clara da sua operacao de conteudo.',
+        'hero_description' => 'O Solis organiza campanhas, calendarios e distribuicao em um unico fluxo. Sua equipe acompanha o que precisa ser feito, quando publicar e como medir resultado.',
+        'feature_1_title' => 'Calendario inteligente',
+        'feature_1_text' => 'Planeje ano, mes e periodo com contexto de campanhas e datas importantes.',
+        'feature_2_title' => 'Operacao em equipe',
+        'feature_2_text' => 'Centralize status, revisoes e prioridades para reduzir retrabalho e atrasos.',
+        'feature_3_title' => 'Publicacao social',
+        'feature_3_text' => 'Prepare drafts e formatos por plataforma com consistencia de marca.',
+        'feature_4_title' => 'Tracking de campanha',
+        'feature_4_text' => 'Use links rastreaveis para entender cliques e ajustar sua estrategia.',
+        'login_title' => 'Acesso do cliente',
+        'login_description' => 'Entre com seu usuario para abrir o painel de trabalho.',
+        'field_email' => 'E-mail',
+        'field_password' => 'Senha',
+        'button_login' => 'Entrar no Solis',
+        'button_register' => 'Criar conta gratuita',
+        'language_label' => 'Idioma',
+    ],
+    'en-us' => [
+        'platform' => 'Platform',
+        'hero_title' => 'Strategic planning, daily execution, and clear visibility into your content operation.',
+        'hero_description' => 'Solis unifies campaigns, calendars, and distribution in one workflow. Your team tracks what to do, when to publish, and how to measure results.',
+        'feature_1_title' => 'Smart calendar',
+        'feature_1_text' => 'Plan year, month, and periods with campaign context and important dates.',
+        'feature_2_title' => 'Team operation',
+        'feature_2_text' => 'Centralize status, reviews, and priorities to reduce rework and delays.',
+        'feature_3_title' => 'Social publishing',
+        'feature_3_text' => 'Prepare drafts and formats by platform with brand consistency.',
+        'feature_4_title' => 'Campaign tracking',
+        'feature_4_text' => 'Use trackable links to understand clicks and adjust your strategy.',
+        'login_title' => 'Client access',
+        'login_description' => 'Sign in to open your workspace dashboard.',
+        'field_email' => 'E-mail',
+        'field_password' => 'Password',
+        'button_login' => 'Sign in to Solis',
+        'button_register' => 'Create free account',
+        'language_label' => 'Language',
+    ],
+];
+$landingTextSet = $landingTranslations[$currentLanguageCode] ?? $landingTranslations[$fallbackLanguageCode] ?? $landingTranslations['pt-br'];
+$landingText = static function (string $key, string $default = '') use ($landingTextSet): string {
+    return (string) ($landingTextSet[$key] ?? $default);
+};
+$metaTitle = $appName . ' | ' . ($currentLanguageCode === 'en-us' ? 'Content Planning Platform' : 'Plataforma de planejamento de conteudo');
+$metaDescription = $landingText(
+    'hero_description',
+    'Solis centraliza planejamento, execucao e acompanhamento de conteudo em um unico fluxo.'
+);
+$htmlLanguageCode = $currentLanguageCode === 'pt-br' ? 'pt-BR' : 'en-US';
 
 header('Content-Type: text/html; charset=UTF-8');
 ?>
 <!doctype html>
-<html lang="pt-BR">
+<html lang="<?= e($htmlLanguageCode) ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -348,6 +460,57 @@ header('Content-Type: text/html; charset=UTF-8');
             line-height: 1.5;
         }
 
+        .language-switcher {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 12px;
+        }
+
+        .language-form {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0;
+        }
+
+        .language-label {
+            color: #cad4df;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .language-select-wrap {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid rgba(255, 225, 190, 0.35);
+            border-radius: 999px;
+            background: rgba(255, 225, 190, 0.1);
+            padding: 5px 10px;
+        }
+
+        .language-flag {
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .language-select {
+            border: 0;
+            background: transparent;
+            color: #ffe7c8;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: lowercase;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .language-select option {
+            color: #111;
+        }
+
         .alert {
             border-radius: 12px;
             padding: 12px 14px;
@@ -444,11 +607,20 @@ header('Content-Type: text/html; charset=UTF-8');
 
         @media (max-width: 980px) {
             .shell {
+                width: min(720px, 94vw);
+                margin: 24px auto 28px;
                 grid-template-columns: 1fr;
+                gap: 18px;
             }
         }
 
         @media (max-width: 640px) {
+            .shell {
+                width: min(560px, 94vw);
+                margin: 14px auto 18px;
+                gap: 12px;
+            }
+
             .panel {
                 padding: 22px;
                 border-radius: 18px;
@@ -462,6 +634,81 @@ header('Content-Type: text/html; charset=UTF-8');
             .grid {
                 grid-template-columns: 1fr;
             }
+
+            .brand {
+                width: 100%;
+                justify-content: center;
+            }
+
+            h1 {
+                font-size: clamp(24px, 8.3vw, 34px);
+                line-height: 1.14;
+            }
+
+            .lead {
+                font-size: 15px;
+                line-height: 1.52;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .shell {
+                width: 95vw;
+                margin: 10px auto 14px;
+            }
+
+            .panel {
+                padding: 16px;
+                border-radius: 14px;
+            }
+
+            .login-card {
+                padding: 16px;
+                border-radius: 14px;
+            }
+
+            .brand {
+                font-size: 11px;
+                gap: 8px;
+                padding: 6px 9px;
+            }
+
+            .brand img {
+                height: 18px;
+            }
+
+            .lead {
+                margin-bottom: 16px;
+            }
+
+            .feature {
+                border-radius: 12px;
+                padding: 12px;
+            }
+
+            .feature strong {
+                font-size: 14px;
+            }
+
+            .feature p,
+            .alert,
+            .alt-link,
+            .field input,
+            .cta {
+                font-size: 13px;
+            }
+
+            .field input,
+            .cta,
+            .alt-link {
+                border-radius: 10px;
+                padding-top: 11px;
+                padding-bottom: 11px;
+            }
+
+            .language-switcher {
+                justify-content: flex-start;
+            }
         }
     </style>
 </head>
@@ -470,37 +717,51 @@ header('Content-Type: text/html; charset=UTF-8');
         <section class="panel">
             <span class="brand">
                 <img src="<?= e($logoPath) ?>" alt="<?= e($appName) ?>">
-                <span><?= e($appName) ?> Platform</span>
+                <span><?= e($appName) ?> <?= e($landingText('platform', 'Platform')) ?></span>
             </span>
-            <h1>Planejamento estratégico, execução diária e visão clara da sua operação de conteúdo.</h1>
-            <p class="lead">
-                O Solis organiza campanhas, calendários e distribuição em um único fluxo.
-                Sua equipe acompanha o que precisa ser feito, quando publicar e como medir resultado.
-            </p>
+            <h1><?= e($landingText('hero_title', 'Planejamento estrategico, execucao diaria e visao clara da sua operacao de conteudo.')) ?></h1>
+            <p class="lead"><?= e($landingText('hero_description', 'O Solis organiza campanhas, calendarios e distribuicao em um unico fluxo. Sua equipe acompanha o que precisa ser feito, quando publicar e como medir resultado.')) ?></p>
 
             <div class="grid">
                 <article class="feature">
-                    <strong>Calendário inteligente</strong>
-                    <p>Planeje ano, mês e período com contexto de campanhas e datas importantes.</p>
+                    <strong><?= e($landingText('feature_1_title', 'Calendario inteligente')) ?></strong>
+                    <p><?= e($landingText('feature_1_text', 'Planeje ano, mes e periodo com contexto de campanhas e datas importantes.')) ?></p>
                 </article>
                 <article class="feature">
-                    <strong>Operação em equipe</strong>
-                    <p>Centralize status, revisões e prioridades para reduzir retrabalho e atrasos.</p>
+                    <strong><?= e($landingText('feature_2_title', 'Operacao em equipe')) ?></strong>
+                    <p><?= e($landingText('feature_2_text', 'Centralize status, revisoes e prioridades para reduzir retrabalho e atrasos.')) ?></p>
                 </article>
                 <article class="feature">
-                    <strong>Publicação social</strong>
-                    <p>Prepare drafts e formatos por plataforma com consistência de marca.</p>
+                    <strong><?= e($landingText('feature_3_title', 'Publicacao social')) ?></strong>
+                    <p><?= e($landingText('feature_3_text', 'Prepare drafts e formatos por plataforma com consistencia de marca.')) ?></p>
                 </article>
                 <article class="feature">
-                    <strong>Tracking de campanha</strong>
-                    <p>Use links rastreáveis para entender cliques e ajustar sua estratégia.</p>
+                    <strong><?= e($landingText('feature_4_title', 'Tracking de campanha')) ?></strong>
+                    <p><?= e($landingText('feature_4_text', 'Use links rastreaveis para entender cliques e ajustar sua estrategia.')) ?></p>
                 </article>
             </div>
         </section>
 
         <aside class="login-card">
-            <h2>Acesso do cliente</h2>
-            <p>Entre com seu usuário para abrir o painel de trabalho.</p>
+            <div class="language-switcher">
+                <form method="post" action="<?= e($languageSaveAction) ?>" class="language-form">
+                    <?= csrf_field() ?>
+                    <label for="landing-language" class="language-label"><?= e($landingText('language_label', 'Idioma')) ?></label>
+                    <div class="language-select-wrap">
+                        <span class="language-flag"><?= $languageFlagMap[$currentLanguageCode] ?? '&#x1F310;' ?></span>
+                        <select id="landing-language" name="landing_language_code" class="language-select" onchange="this.form.submit()">
+                            <?php foreach (array_keys($supportedLanguageCodes) as $languageCode): ?>
+                                <option value="<?= e($languageCode) ?>"<?= $currentLanguageCode === $languageCode ? ' selected' : '' ?>>
+                                    <?= e($languageCode) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </form>
+            </div>
+
+            <h2><?= e($landingText('login_title', 'Acesso do cliente')) ?></h2>
+            <p><?= e($landingText('login_description', 'Entre com seu usuario para abrir o painel de trabalho.')) ?></p>
 
             <?php if (is_string($messageSuccess) && $messageSuccess !== ''): ?>
                 <div class="alert alert-ok"><?= e($messageSuccess) ?></div>
@@ -512,20 +773,18 @@ header('Content-Type: text/html; charset=UTF-8');
 
             <form method="post" action="<?= e($loginAction) ?>">
                 <?= csrf_field() ?>
-                <input type="hidden" name="return_to" value="landing">
                 <div class="field">
-                    <label for="email">E-mail</label>
+                    <label for="email"><?= e($landingText('field_email', 'E-mail')) ?></label>
                     <input id="email" type="email" name="email" autocomplete="username" required>
                 </div>
                 <div class="field">
-                    <label for="password">Senha</label>
+                    <label for="password"><?= e($landingText('field_password', 'Senha')) ?></label>
                     <input id="password" type="password" name="password" autocomplete="current-password" required>
                 </div>
-                <button type="submit" class="cta">Entrar no Solis</button>
+                <button type="submit" class="cta"><?= e($landingText('button_login', 'Entrar no Solis')) ?></button>
             </form>
-            <a class="alt-link" href="<?= e($registerUrl) ?>">Criar conta gratuita</a>
+            <a class="alt-link" href="<?= e($registerUrl) ?>"><?= e($landingText('button_register', 'Criar conta gratuita')) ?></a>
         </aside>
     </main>
 </body>
 </html>
-

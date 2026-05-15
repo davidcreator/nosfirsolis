@@ -2336,6 +2336,74 @@ td.out {
     background: #223342;
 }
 
+.auth-language-switcher {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin: 0.1rem 0 0.95rem;
+    padding: 0.55rem 0.65rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: #fff;
+}
+
+.auth-language-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--ink);
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.auth-language-current-flag {
+    font-size: 16px;
+    line-height: 1;
+}
+
+.auth-language-current-code {
+    text-transform: lowercase;
+}
+
+body.client-guest .auth-language-switcher .language-dropdown {
+    position: relative;
+}
+
+body.client-guest .auth-language-switcher .language-dropdown > summary {
+    width: auto;
+    min-height: 34px;
+    border-radius: 999px;
+    padding: 0.35rem 0.6rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+body.client-guest .auth-language-switcher .language-dropdown-menu {
+    top: calc(100% + 6px);
+    right: 0;
+}
+
+body.client-guest .auth-language-switcher .language-dropdown > summary .fa-angle-down {
+    font-size: 11px;
+    color: #5f6f80;
+}
+
+@media (max-width: 560px) {
+    .auth-language-switcher {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    body.client-guest .auth-language-switcher .language-dropdown-menu {
+        left: 0;
+        right: auto;
+    }
+}
+
 .auth-help-link {
     margin: 0.9rem 0 0;
     color: #3e5670;
@@ -3410,3 +3478,564 @@ body.client-auth .language-option .fa-circle-check {
 body.client-auth .language-option.is-active .fa-circle-check {
     opacity: 1;
 }
+
+body.client-guest .guest-language-switcher {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0.75rem 0.75rem 0;
+}
+
+body.client-guest .language-dropdown {
+    position: relative;
+}
+
+body.client-guest .language-dropdown > summary {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid #d7dde5;
+    background: #f5f7fa;
+    color: #3b4a59;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    list-style: none;
+}
+
+body.client-guest .language-dropdown > summary::-webkit-details-marker {
+    display: none;
+}
+
+body.client-guest .language-dropdown[open] > summary,
+body.client-guest .language-dropdown > summary:hover {
+    background: #ffffff;
+    box-shadow: inset 0 0 0 1px #cfd7e0;
+}
+
+body.client-guest .language-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 200px;
+    border: 1px solid #d7dde5;
+    border-radius: 4px;
+    background: #fff;
+    box-shadow: 0 10px 24px rgba(22, 33, 45, 0.2);
+    overflow: hidden;
+    z-index: 80;
+}
+
+body.client-guest .language-dropdown[open] .language-dropdown-menu {
+    display: block;
+}
+
+body.client-guest .language-dropdown-header {
+    background: #3b6fd9;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 7px 9px;
+}
+
+body.client-guest .language-dropdown-header i {
+    margin-right: 6px;
+}
+
+body.client-guest .language-dropdown-body {
+    background: #f7f8fa;
+}
+
+body.client-guest .language-dropdown-label {
+    margin: 0;
+    padding: 8px 10px 6px;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #7b8794;
+}
+
+body.client-guest .language-option-form {
+    margin: 0;
+}
+
+body.client-guest .language-option {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 24px 1fr auto;
+    align-items: center;
+    gap: 8px;
+    border: 0;
+    border-top: 1px solid #e4e8ed;
+    background: #fff;
+    color: #3a4552;
+    text-align: left;
+    padding: 8px 10px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+body.client-guest .language-option:hover {
+    background: #f1f4f8;
+}
+
+body.client-guest .language-option-flag {
+    font-size: 18px;
+    line-height: 1;
+}
+
+body.client-guest .language-option-name {
+    white-space: nowrap;
+}
+
+body.client-guest .language-option .fa-circle-check {
+    color: #67b56a;
+    opacity: 0;
+}
+
+body.client-guest .language-option.is-active .fa-circle-check {
+    opacity: 1;
+}
+
+/* Mobile hardening (client) */
+body.client-auth .topbar-title,
+body.client-auth .topbar-actions,
+body.client-auth .topbar-user,
+body.client-auth .topbar-user-meta,
+body.client-auth .topbar-tools,
+body.client-auth .panel-head-inline,
+body.client-auth .hero-actions,
+body.client-auth .filters-grid,
+body.client-auth .plan-bulk-form,
+body.client-auth .plan-bulk-form label,
+body.client-auth .plan-bulk-actions,
+body.client-auth .social-quick-actions,
+body.client-auth .social-actions,
+body.client-auth .social-inline-form,
+body.client-auth .channel-checks,
+body.client-auth .manual-actions,
+body.client-auth .table-wrap,
+body.client-auth .table-wrap .table,
+body.client-auth .table-wrap .table th,
+body.client-auth .table-wrap .table td {
+    min-width: 0;
+}
+
+body.client-auth .topbar-title strong,
+body.client-auth .topbar-title small,
+body.client-auth .topbar-user-meta strong,
+body.client-auth .topbar-user-meta small,
+body.client-auth .language-option-name,
+body.client-auth .panel h1,
+body.client-auth .panel h2,
+body.client-auth .panel h3,
+body.client-auth .panel h4 {
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 900px) {
+    body.client-auth .topbar {
+        grid-template-columns: auto 1fr;
+        align-items: start;
+    }
+
+    body.client-auth .topbar-title {
+        padding-right: 0.2rem;
+    }
+
+    body.client-auth .topbar-actions {
+        grid-column: 1 / -1;
+        width: 100%;
+        justify-content: space-between;
+        gap: 0.45rem;
+    }
+
+    body.client-auth .topbar-tools {
+        flex: 1 1 auto;
+        min-width: 0;
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 0.12rem;
+        scrollbar-width: thin;
+    }
+
+    body.client-auth .topbar-tools a {
+        flex: 0 0 auto;
+    }
+
+    body.client-auth .topbar-user {
+        flex: 0 1 auto;
+        max-width: 100%;
+    }
+
+    body.client-auth .plan-bulk-form label {
+        min-width: 0;
+        flex: 1 1 220px;
+    }
+
+    body.client-auth .table-wrap .table {
+        min-width: 540px;
+    }
+}
+
+@media (max-width: 760px) {
+    body.client-auth .app-content {
+        padding: 0.75rem;
+    }
+
+    body.client-auth .panel {
+        padding: 0.8rem;
+    }
+
+    body.client-auth .topbar-title small {
+        display: none;
+    }
+
+    body.client-auth .topbar-tools a span {
+        display: none;
+    }
+
+    body.client-auth .topbar-tools a {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        justify-content: center;
+    }
+
+    body.client-auth .topbar-actions {
+        align-items: center;
+    }
+
+    body.client-auth .topbar-user {
+        margin-left: auto;
+    }
+
+    body.client-auth .plan-bulk-form {
+        align-items: stretch;
+    }
+
+    body.client-auth .plan-bulk-form label {
+        flex: 1 1 100%;
+        min-width: 0;
+    }
+
+    body.client-auth .plan-bulk-actions {
+        display: grid;
+        gap: 0.4rem;
+        width: 100%;
+    }
+
+    body.client-auth .plan-bulk-actions .btn-link,
+    body.client-auth .plan-bulk-actions button,
+    body.client-auth .social-quick-actions .btn-link,
+    body.client-auth .social-quick-actions button,
+    body.client-auth .social-actions .btn-link,
+    body.client-auth .social-actions button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    body.client-auth .channel-checks {
+        grid-template-columns: 1fr;
+    }
+
+    body.client-auth .social-inline-manual summary,
+    body.client-auth .social-meta,
+    body.client-auth .social-quick-item-label {
+        overflow-wrap: anywhere;
+    }
+
+    body.client-auth .dashboard-hero,
+    body.client-auth .kpi-grid,
+    body.client-auth .stats-grid,
+    body.client-auth .plan-insights-grid,
+    body.client-auth .annual-grid,
+    body.client-auth .catalog-grid,
+    body.client-auth .template-grid,
+    body.client-auth .usage-grid,
+    body.client-auth .pricing-grid,
+    body.client-auth .social-guide-grid,
+    body.client-auth .social-grid,
+    body.client-auth .standards-focus-grid,
+    body.client-auth .draft-grid,
+    body.client-auth .item-update-grid,
+    body.client-auth .filters-grid {
+        grid-template-columns: 1fr;
+    }
+
+    body.client-auth .table-wrap .table {
+        min-width: 500px;
+    }
+}
+
+@media (max-width: 640px) {
+    body.client-auth .topbar {
+        gap: 0.45rem;
+    }
+
+    body.client-auth .topbar-title strong {
+        font-size: 0.95rem;
+    }
+
+    body.client-auth .topbar-actions {
+        flex-wrap: wrap;
+        gap: 0.35rem;
+    }
+
+    body.client-auth .topbar-tools {
+        order: 2;
+        width: 100%;
+    }
+
+    body.client-auth .topbar-user {
+        order: 1;
+        margin-left: 0;
+        padding: 0;
+    }
+
+    body.client-auth .language-dropdown-menu {
+        width: min(88vw, 220px);
+        right: 0;
+        left: auto;
+    }
+
+    body.client-auth .panel-head-inline .btn-link,
+    body.client-auth .panel-head-inline .btn,
+    body.client-auth .hero-actions .btn-link,
+    body.client-auth .hero-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    body.client-auth .plan-items-table td,
+    body.client-auth .standards-table td {
+        min-width: 96px;
+    }
+
+    body.client-auth .table-wrap .table {
+        min-width: 460px;
+    }
+
+    body.client-auth .table-wrap.short {
+        max-height: 320px;
+    }
+
+    body.client-auth .full-calendar td {
+        min-width: 120px;
+        height: 112px;
+    }
+}
+
+@media (max-width: 480px) {
+    body.client-auth .app-content {
+        padding: 0.6rem;
+    }
+
+    body.client-auth .panel {
+        padding: 0.7rem;
+        border-radius: 9px;
+    }
+
+    body.client-auth .topbar {
+        grid-template-columns: auto 1fr;
+    }
+
+    body.client-auth .topbar-title strong {
+        font-size: 0.9rem;
+    }
+
+    body.client-auth .topbar-tools a {
+        width: 30px;
+        height: 30px;
+    }
+
+    body.client-auth .table-wrap .table {
+        min-width: 400px;
+    }
+
+    body.client-auth .table-wrap .table th,
+    body.client-auth .table-wrap .table td {
+        padding: 0.42rem 0.38rem;
+        font-size: 0.8rem;
+    }
+}
+
+/* Mobile sandwich menu (client) */
+html.mobile-menu-lock,
+body.mobile-menu-lock {
+    overflow: hidden;
+}
+
+body.client-auth .icon-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+body.client-auth .icon-btn span {
+    position: absolute;
+    left: 50%;
+    width: 18px;
+    margin: 0;
+    transform: translateX(-50%);
+    transition: transform 0.22s ease, opacity 0.2s ease, background 0.2s ease;
+}
+
+body.client-auth .icon-btn span:nth-child(1) {
+    top: 11px;
+}
+
+body.client-auth .icon-btn span:nth-child(2) {
+    top: 17px;
+}
+
+body.client-auth .icon-btn span:nth-child(3) {
+    top: 23px;
+}
+
+body.client-sidebar-open .icon-btn.is-active span:nth-child(1) {
+    transform: translateX(-50%) translateY(6px) rotate(45deg);
+}
+
+body.client-sidebar-open .icon-btn.is-active span:nth-child(2) {
+    opacity: 0;
+}
+
+body.client-sidebar-open .icon-btn.is-active span:nth-child(3) {
+    transform: translateX(-50%) translateY(-6px) rotate(-45deg);
+}
+
+@media (max-width: 860px) {
+    body.client-auth .client-shell {
+        grid-template-columns: 1fr;
+    }
+
+    body.client-auth .app-header {
+        z-index: 45;
+    }
+
+    body.client-auth .client-sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: min(88vw, 300px);
+        height: 100vh;
+        z-index: 40;
+        transform: translateX(calc(-100% - 8px));
+        transition: transform 0.24s ease, box-shadow 0.24s ease;
+        box-shadow: 0 24px 56px rgba(9, 15, 24, 0.36);
+    }
+
+    body.client-auth .icon-btn {
+        display: inline-flex;
+        z-index: 60;
+    }
+
+    body.client-sidebar-open .client-sidebar {
+        transform: translateX(0);
+    }
+
+    body.client-sidebar-open::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: rgba(7, 11, 18, 0.5);
+        z-index: 35;
+    }
+}
+
+/* Strict fallback responsive layer (client) */
+@media (max-width: 860px) {
+    body.client-auth .client-main,
+    body.client-auth .main-content-wrapper,
+    body.client-auth .app-content,
+    body.client-auth .panel {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    body.client-auth .table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    body.client-auth .table-wrap .table,
+    body.client-auth .table {
+        width: 100%;
+        min-width: 0 !important;
+        table-layout: auto;
+    }
+
+    body.client-auth .table-wrap .table th,
+    body.client-auth .table-wrap .table td,
+    body.client-auth .table th,
+    body.client-auth .table td {
+        white-space: normal;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+    }
+}
+
+@media (max-width: 640px) {
+    body.client-auth .full-calendar td,
+    body.client-auth .mini-calendar td {
+        min-width: 0 !important;
+    }
+}
+
+@media (max-width: 480px) {
+    body.client-auth .client-shell {
+        display: block;
+    }
+
+    body.client-auth .client-main,
+    body.client-auth .main-content-wrapper,
+    body.client-auth .app-content,
+    body.client-auth .main-content {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    body.client-auth .app-header {
+        padding: 0.38rem 0.55rem;
+    }
+
+    body.client-auth .app-content {
+        padding: 0.5rem;
+    }
+
+    body.client-auth .panel {
+        margin-bottom: 0.7rem;
+        padding: 0.62rem;
+    }
+
+    body.client-auth .filters-grid,
+    body.client-auth .item-update-grid,
+    body.client-auth .plan-insights-grid,
+    body.client-auth .draft-grid,
+    body.client-auth .social-grid,
+    body.client-auth .social-guide-grid,
+    body.client-auth .channel-checks {
+        grid-template-columns: 1fr !important;
+    }
+
+    body.client-auth .filters-grid > *,
+    body.client-auth .item-update-grid > *,
+    body.client-auth .plan-bulk-form > *,
+    body.client-auth .social-inline-form > *,
+    body.client-auth .manual-actions > *,
+    body.client-auth .hero-actions > *,
+    body.client-auth .topbar-actions > * {
+        width: 100%;
+        min-width: 0;
+    }
+
+    body.client-auth .topbar-tools {
+        display: none;
+    }
+}
+

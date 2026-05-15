@@ -22,9 +22,17 @@ if ($pageTitle !== '') {
         ? $pageTitle
         : ($pageTitle . ' | ' . $brandName);
 }
-$metaDescription = (string) $t('layout.header_subtitle', 'Planejamento anual, mensal e por período com camadas estratégicas.');
+$metaDescription = (string) $t('layout.header_subtitle', 'Planejamento anual, mensal e por perÃƒÂ­odo com camadas estratÃƒÂ©gicas.');
 $metaRobots = !empty($current_user) ? 'noindex, nofollow, noarchive' : 'index, follow';
 $ogImageUrl = $requestScheme . '://' . $requestHost . $ogImagePath;
+$clientCssHref = (string) asset_url('css/client.css');
+$clientCssPath = dirname(__DIR__, 2) . '/assets/css/client.css';
+if (is_file($clientCssPath)) {
+    $clientCssVersion = (string) @filemtime($clientCssPath);
+    if ($clientCssVersion !== '') {
+        $clientCssHref .= (str_contains($clientCssHref, '?') ? '&' : '?') . 'v=' . rawurlencode($clientCssVersion);
+    }
+}
 $languageCode = strtolower((string) ($language_code ?? 'en-us'));
 $ogLocale = str_replace('-', '_', $languageCode);
 if ($ogLocale === 'pt_br') {
@@ -51,7 +59,7 @@ if ($ogLocale === 'pt_br') {
     <meta property="og:image" content="<?= e($ogImageUrl) ?>">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="<?= e('Solis - Planejamento estratégico e operação digital') ?>">
+    <meta property="og:image:alt" content="<?= e('Solis - Planejamento estratÃƒÂ©gico e operaÃƒÂ§ÃƒÂ£o digital') ?>">
     <meta property="og:site_name" content="<?= e($brandName) ?>">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="<?= e($metaTitle) ?>">
@@ -59,7 +67,7 @@ if ($ogLocale === 'pt_br') {
     <meta name="twitter:url" content="<?= e($pageUrl) ?>">
     <meta name="twitter:image" content="<?= e($ogImageUrl) ?>">
     <link rel="stylesheet" href="<?= e(asset_url('fontawesome/css/all.min.css')) ?>">
-    <link rel="stylesheet" href="<?= e(asset_url('css/client.css')) ?>">
+    <link rel="stylesheet" href="<?= e($clientCssHref) ?>">
 </head>
 <?php
 $currentRoute = strtolower(trim((string) ($current_route ?? '')));
@@ -76,6 +84,17 @@ $showAds = (bool) ($subscriptionContext['ads_enabled'] ?? false);
 $userName = (string) ($current_user['name'] ?? '');
 $userInitial = strtoupper(substr($userName !== '' ? $userName : 'U', 0, 1));
 $currentLanguageCode = strtolower((string) ($language_code ?? 'en-us'));
+$supportedLanguages = (array) ($supported_languages ?? []);
+if ($supportedLanguages === []) {
+    $supportedLanguages = [
+        ['code' => 'en-us'],
+        ['code' => 'pt-br'],
+    ];
+}
+$languageFlagMap = [
+    'en-us' => '&#x1F1FA;&#x1F1F8;',
+    'pt-br' => '&#x1F1E7;&#x1F1F7;',
+];
 $planDescriptor = strtolower(trim((string) (($subscriptionPlan['slug'] ?? '') !== '' ? $subscriptionPlan['slug'] : ($subscriptionPlan['name'] ?? ''))));
 $planTier = 'free';
 
@@ -97,7 +116,7 @@ $trackingEnabled =
 
 $navItems = [
     ['label' => $t('layout.nav_dashboard', 'Dashboard'), 'route' => 'dashboard/index', 'prefix' => 'dashboard/', 'icon' => 'fa-solid fa-chart-pie'],
-    ['label' => $t('layout.nav_calendar', 'Calendário'), 'route' => 'calendar/index', 'prefix' => 'calendar/', 'icon' => 'fa-solid fa-calendar-days'],
+    ['label' => $t('layout.nav_calendar', 'CalendÃƒÂ¡rio'), 'route' => 'calendar/index', 'prefix' => 'calendar/', 'icon' => 'fa-solid fa-calendar-days'],
     ['label' => $t('layout.nav_plans', 'Planos editoriais'), 'route' => 'plans/index', 'prefix' => 'plans/', 'icon' => 'fa-solid fa-list-check'],
     ['label' => $t('layout.nav_social', 'Central social'), 'route' => 'social/index', 'prefix' => 'social/', 'icon' => 'fa-solid fa-share-nodes'],
     ['label' => $t('layout.nav_billing', 'Planos e faturamento'), 'route' => 'billing/index', 'prefix' => 'billing/', 'icon' => 'fa-solid fa-credit-card'],
@@ -117,6 +136,7 @@ if ($trackingEnabled) {
 }
 
 $showTopNotice = $currentRoute === 'dashboard/index' || str_starts_with($currentRoute, 'dashboard/');
+$isGuestLoginRoute = $currentRoute === 'auth/login';
 ?>
 <body class="<?= !empty($current_user) ? 'client-auth' : 'client-guest' ?>">
 <div class="client-shell<?= empty($current_user) ? ' guest' : '' ?>">
@@ -134,7 +154,7 @@ $showTopNotice = $currentRoute === 'dashboard/index' || str_starts_with($current
                 <i class="fa-solid fa-magnifying-glass"></i>
                 <input type="search" id="clientSidebarSearch" placeholder="<?= e($t('layout.search_menu_placeholder', 'Buscar no menu')) ?>" aria-label="<?= e($t('layout.search_menu_placeholder', 'Buscar no menu')) ?>">
             </div>
-            <p class="sidebar-section-label"><?= e($t('layout.main_navigation', 'Navegação')) ?></p>
+            <p class="sidebar-section-label"><?= e($t('layout.main_navigation', 'NavegaÃƒÂ§ÃƒÂ£o')) ?></p>
 
             <nav class="app-nav sidebar-nav">
                 <?php foreach ($navItems as $item): ?>
@@ -155,26 +175,74 @@ $showTopNotice = $currentRoute === 'dashboard/index' || str_starts_with($current
     <?php endif; ?>
 
     <div class="client-main main-content-wrapper<?= empty($current_user) ? ' auth-only' : '' ?>">
+        <?php if (empty($current_user)): ?>
+            <div class="guest-language-switcher">
+                <details class="language-dropdown language-dropdown-guest">
+                    <summary class="language-dropdown-toggle" title="<?= e($t('layout.language_label', 'Idioma')) ?>" aria-label="<?= e($t('layout.language_label', 'Idioma')) ?>">
+                        <i class="fa-solid fa-language"></i>
+                    </summary>
+                    <div class="language-dropdown-menu">
+                        <div class="language-dropdown-header">
+                            <span><i class="fa-solid fa-language"></i> <?= e($t('layout.language_menu_title', 'Traduzir')) ?></span>
+                            <span aria-hidden="true">&times;</span>
+                        </div>
+                        <div class="language-dropdown-body">
+                            <p class="language-dropdown-label"><?= e($t('layout.language_menu_languages', 'Idiomas')) ?></p>
+                            <?php foreach ($supportedLanguages as $languageOption): ?>
+                                <?php
+                                $languageOptionCode = strtolower((string) ($languageOption['code'] ?? ''));
+                                if ($languageOptionCode === '') {
+                                    continue;
+                                }
+
+                                $languageOptionName = $languageOptionCode;
+                                $languageOptionFlag = $languageFlagMap[$languageOptionCode] ?? '&#x1F310;';
+                                ?>
+                                <form method="post" action="<?= e(route_url('language/save')) ?>" class="language-option-form">
+                                    <?= csrf_field() ?>
+                                    <input type="hidden" name="redirect_route" value="<?= e($currentRoute) ?>">
+                                    <button type="submit" class="language-option<?= $currentLanguageCode === $languageOptionCode ? ' is-active' : '' ?>" name="language_code" value="<?= e($languageOptionCode) ?>">
+                                        <span class="language-option-flag"><?= $languageOptionFlag ?></span>
+                                        <span class="language-option-name"><?= e($languageOptionName) ?></span>
+                                        <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                                    </button>
+                                </form>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                </details>
+            </div>
+        <?php endif; ?>
+
         <?php if (!empty($current_user)): ?>
             <header class="app-header topbar">
-                <button type="button" class="icon-btn" id="clientSidebarToggle" aria-label="<?= e($t('layout.open_menu', 'Abrir menu')) ?>" aria-controls="clientSidebar" aria-expanded="true">
+                <button
+                    type="button"
+                    class="icon-btn"
+                    id="clientSidebarToggle"
+                    aria-label="<?= e($t('layout.open_menu', 'Abrir menu')) ?>"
+                    data-open-label="<?= e($t('layout.open_menu', 'Abrir menu')) ?>"
+                    data-close-label="<?= e($t('layout.close_menu', 'Fechar menu')) ?>"
+                    aria-controls="clientSidebar"
+                    aria-expanded="true"
+                >
                     <span></span><span></span><span></span>
                 </button>
                 <div class="app-title topbar-title">
                     <strong><?= e($title ?? $t('layout.header_title', 'Strategic Content Planner')) ?></strong>
-                    <small><?= e($t('layout.header_subtitle', 'Planejamento anual, mensal e por período com camadas estratégicas.')) ?></small>
+                    <small><?= e($t('layout.header_subtitle', 'Planejamento anual, mensal e por perÃƒÂ­odo com camadas estratÃƒÂ©gicas.')) ?></small>
                 </div>
                 <div class="topbar-actions">
-                    <nav class="topbar-tools" aria-label="Atalhos">
+                    <nav class="topbar-tools" aria-label="<?= e($t('layout.shortcuts_label', 'Atalhos')) ?>">
                         <?php foreach ($topbarTools as $tool): ?>
                             <?php
                             $toolRoute = strtolower((string) ($tool['route'] ?? ''));
                             $toolPrefix = strtok($toolRoute . '/', '/') . '/';
                             $toolActive = $currentRoute === $toolRoute || str_starts_with($currentRoute, $toolPrefix);
                             ?>
-                            <a class="<?= $toolActive ? 'is-active' : '' ?>" href="<?= e(route_url((string) ($tool['route'] ?? 'dashboard/index'))) ?>" title="<?= e((string) ($tool['label'] ?? 'Atalho')) ?>">
+                            <a class="<?= $toolActive ? 'is-active' : '' ?>" href="<?= e(route_url((string) ($tool['route'] ?? 'dashboard/index'))) ?>" title="<?= e((string) ($tool['label'] ?? $t('layout.shortcut_label', 'Atalho'))) ?>">
                                 <i class="<?= e((string) ($tool['icon'] ?? 'fa-solid fa-circle')) ?>"></i>
-                                <span><?= e((string) ($tool['label'] ?? 'Atalho')) ?></span>
+                                <span><?= e((string) ($tool['label'] ?? $t('layout.shortcut_label', 'Atalho'))) ?></span>
                             </a>
                         <?php endforeach; ?>
                     </nav>
@@ -193,29 +261,31 @@ $showTopNotice = $currentRoute === 'dashboard/index' || str_starts_with($current
                                 </summary>
                                 <div class="language-dropdown-menu">
                                     <div class="language-dropdown-header">
-                                        <span><i class="fa-solid fa-language"></i> Translate</span>
-                                        <span aria-hidden="true">×</span>
+                                        <span><i class="fa-solid fa-language"></i> <?= e($t('layout.language_menu_title', 'Traduzir')) ?></span>
+                                        <span aria-hidden="true">Ãƒâ€”</span>
                                     </div>
                                     <div class="language-dropdown-body">
-                                        <p class="language-dropdown-label">Languages</p>
-                                        <form method="post" action="<?= e(route_url('language/save')) ?>" class="language-option-form">
-                                            <?= csrf_field() ?>
-                                            <input type="hidden" name="redirect_route" value="<?= e($currentRoute) ?>">
-                                            <button type="submit" class="language-option<?= $currentLanguageCode === 'en-us' ? ' is-active' : '' ?>" name="language_code" value="en-us">
-                                                <span class="language-option-flag">&#x1F1FA;&#x1F1F8;</span>
-                                                <span class="language-option-name">English (US)</span>
-                                                <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
-                                            </button>
-                                        </form>
-                                        <form method="post" action="<?= e(route_url('language/save')) ?>" class="language-option-form">
-                                            <?= csrf_field() ?>
-                                            <input type="hidden" name="redirect_route" value="<?= e($currentRoute) ?>">
-                                            <button type="submit" class="language-option<?= $currentLanguageCode === 'pt-br' ? ' is-active' : '' ?>" name="language_code" value="pt-br">
-                                                <span class="language-option-flag">&#x1F1E7;&#x1F1F7;</span>
-                                                <span class="language-option-name"><?= e($t('layout.language_option_pt_br', 'Português')) ?></span>
-                                                <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
-                                            </button>
-                                        </form>
+                                        <p class="language-dropdown-label"><?= e($t('layout.language_menu_languages', 'Idiomas')) ?></p>
+                                        <?php foreach ($supportedLanguages as $languageOption): ?>
+                                            <?php
+                                            $languageOptionCode = strtolower((string) ($languageOption['code'] ?? ''));
+                                            if ($languageOptionCode === '') {
+                                                continue;
+                                            }
+
+                                            $languageOptionName = $languageOptionCode;
+                                            $languageOptionFlag = $languageFlagMap[$languageOptionCode] ?? '&#x1F310;';
+                                            ?>
+                                            <form method="post" action="<?= e(route_url('language/save')) ?>" class="language-option-form">
+                                                <?= csrf_field() ?>
+                                                <input type="hidden" name="redirect_route" value="<?= e($currentRoute) ?>">
+                                                <button type="submit" class="language-option<?= $currentLanguageCode === $languageOptionCode ? ' is-active' : '' ?>" name="language_code" value="<?= e($languageOptionCode) ?>">
+                                                    <span class="language-option-flag"><?= $languageOptionFlag ?></span>
+                                                    <span class="language-option-name"><?= e($languageOptionName) ?></span>
+                                                    <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                                                </button>
+                                            </form>
+                                        <?php endforeach; ?>
                                     </div>
                                 </div>
                             </details>
@@ -234,15 +304,15 @@ $showTopNotice = $currentRoute === 'dashboard/index' || str_starts_with($current
         <main class="app-content main-content">
             <?php if (!empty($current_user) && $showTopNotice): ?>
                 <section class="topbar-notice">
-                    <span><i class="fa-solid fa-bolt"></i> <?= e($t('layout.dashboard_notice_text', 'Novidade: acompanhe seu calendário e acelere resultados com melhorias no faturamento.')) ?></span>
+                    <span><i class="fa-solid fa-bolt"></i> <?= e($t('layout.dashboard_notice_text', 'Novidade: acompanhe seu calendÃƒÂ¡rio e acelere resultados com melhorias no faturamento.')) ?></span>
                     <a href="<?= e(route_url('billing/index')) ?>"><?= e($t('layout.dashboard_notice_cta', 'Abrir faturamento')) ?></a>
                 </section>
             <?php endif; ?>
 
             <?php if (!empty($current_user) && $showAds): ?>
                 <div class="alert">
-                    <strong>Publicidade</strong>: você está no plano gratuito com anúncios.
-                    <a href="<?= e(route_url('billing/index')) ?>">Fazer upgrade</a> para remover propaganda.
+                    <strong><?= e($t('layout.ads_notice_title', 'Publicidade')) ?></strong>: <?= e($t('layout.ads_notice_text', 'Voce esta no plano gratuito com anuncios.')) ?>
+                    <a href="<?= e(route_url('billing/index')) ?>"><?= e($t('layout.ads_notice_upgrade', 'Fazer upgrade')) ?></a> <?= e($t('layout.ads_notice_suffix', 'para remover propaganda.')) ?>
                 </div>
             <?php endif; ?>
 
@@ -265,9 +335,12 @@ document.addEventListener('DOMContentLoaded', function () {
     var navLinks = document.querySelectorAll('.app-nav a');
     var collapseClass = 'client-sidebar-collapsed';
     var overlayClass = 'client-sidebar-open';
-    var mobileBreakpoint = 640;
+    var mobileBreakpoint = 860;
     var autoCollapseBreakpoint = 640;
+    var mobileLockClass = 'mobile-menu-lock';
     var storageKey = 'solis.client.sidebar.collapsed.v3';
+    var openMenuLabel = toggle ? (toggle.getAttribute('data-open-label') || 'Abrir menu') : 'Abrir menu';
+    var closeMenuLabel = toggle ? (toggle.getAttribute('data-close-label') || 'Fechar menu') : 'Fechar menu';
     var statusClassMap = {
         'ativo': 'status-active',
         'ativa': 'status-active',
@@ -286,7 +359,7 @@ document.addEventListener('DOMContentLoaded', function () {
         'falha': 'status-failed',
         'processando': 'status-processing',
         'em analise': 'status-processing',
-        'em análise': 'status-processing',
+        'em anÃƒÂ¡lise': 'status-processing',
         'open': 'status-pending',
         'paid': 'status-paid',
         'failed': 'status-failed',
@@ -314,6 +387,21 @@ document.addEventListener('DOMContentLoaded', function () {
         } catch (error) {}
     }
 
+    function setScrollLock(locked) {
+        document.documentElement.classList.toggle(mobileLockClass, locked);
+        document.body.classList.toggle(mobileLockClass, locked);
+    }
+
+    function setMobileSidebarOpen(open) {
+        if (!isMobileViewport()) {
+            return;
+        }
+
+        document.body.classList.toggle(overlayClass, open);
+        setScrollLock(open);
+        updateToggleA11y();
+    }
+
     function updateToggleA11y() {
         if (!toggle) {
             return;
@@ -323,18 +411,23 @@ document.addEventListener('DOMContentLoaded', function () {
             ? document.body.classList.contains(overlayClass)
             : !document.body.classList.contains(collapseClass);
 
+        var mobileOpen = isMobileViewport() && document.body.classList.contains(overlayClass);
         toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        toggle.setAttribute('aria-label', mobileOpen ? closeMenuLabel : openMenuLabel);
+        toggle.classList.toggle('is-active', mobileOpen);
     }
 
     function syncSidebarState() {
         if (isMobileViewport()) {
             document.body.classList.remove(collapseClass);
             document.body.classList.remove(overlayClass);
+            setScrollLock(false);
             updateToggleA11y();
             return;
         }
 
         document.body.classList.remove(overlayClass);
+        setScrollLock(false);
 
         var stored = getStoredCollapsePreference();
         var shouldCollapse = stored !== null ? stored === '1' : window.innerWidth <= autoCollapseBreakpoint;
@@ -380,6 +473,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 link.style.display = query === '' || text.indexOf(query) !== -1 ? '' : 'none';
             });
         });
+
+        navLinks.forEach(function (link) {
+            link.addEventListener('click', function () {
+                if (isMobileViewport()) {
+                    setMobileSidebarOpen(false);
+                }
+            });
+        });
     }
 
     if (!toggle) {
@@ -390,8 +491,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     toggle.addEventListener('click', function () {
         if (isMobileViewport()) {
-            document.body.classList.toggle(overlayClass);
-            updateToggleA11y();
+            setMobileSidebarOpen(!document.body.classList.contains(overlayClass));
             return;
         }
 
@@ -413,8 +513,17 @@ document.addEventListener('DOMContentLoaded', function () {
         var clickedInsideSidebar = sidebar.contains(event.target);
         var clickedToggle = toggle.contains(event.target);
         if (!clickedInsideSidebar && !clickedToggle) {
-            document.body.classList.remove(overlayClass);
-            updateToggleA11y();
+            setMobileSidebarOpen(false);
+        }
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key !== 'Escape' || !isMobileViewport()) {
+            return;
+        }
+
+        if (document.body.classList.contains(overlayClass)) {
+            setMobileSidebarOpen(false);
         }
     });
 
@@ -428,6 +537,7 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 </body>
 </html>
+
 
 
 

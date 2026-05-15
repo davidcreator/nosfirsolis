@@ -25,6 +25,7 @@ abstract class Controller
         $data['message_success'] = flash('success');
         $data['message_error'] = flash('error');
         $data['language_code'] = method_exists($this->language, 'code') ? $this->language->code() : 'en-us';
+        $data['supported_languages'] = $this->supportedLanguages();
         $data['t'] = fn (string $key, string $default = '', array $replacements = []): string => $this->t($key, $default, $replacements);
 
         $output = $this->view->render($template, $data, $layout);
@@ -51,6 +52,88 @@ abstract class Controller
         }
 
         return $withoutPrefix;
+    }
+
+    protected function supportedLanguages(): array
+    {
+        $supported = (array) $this->config->get('app.languages.supported', []);
+        $fallbackCode = $this->normalizedLanguageCode(
+            (string) $this->config->get('app.languages.fallback', 'en-us')
+        ) ?? 'en-us';
+
+        $resolved = [];
+        foreach ($supported as $code => $metadata) {
+            $normalizedCode = $this->normalizedLanguageCode((string) $code);
+            if ($normalizedCode === null) {
+                continue;
+            }
+
+            $entry = is_array($metadata) ? $metadata : [];
+            $resolved[$normalizedCode] = [
+                'code' => $normalizedCode,
+                'label' => trim((string) ($entry['label'] ?? strtoupper($normalizedCode))),
+                'native_label' => trim((string) ($entry['native_label'] ?? $entry['label'] ?? strtoupper($normalizedCode))),
+                'locale' => trim((string) ($entry['locale'] ?? str_replace('-', '_', $normalizedCode))),
+            ];
+        }
+
+        if ($resolved === []) {
+            $resolved = [
+                'en-us' => [
+                    'code' => 'en-us',
+                    'label' => 'English (US)',
+                    'native_label' => 'English (US)',
+                    'locale' => 'en_US',
+                ],
+                'pt-br' => [
+                    'code' => 'pt-br',
+                    'label' => 'Portuguese (Brazil)',
+                    'native_label' => 'Portugues (Brasil)',
+                    'locale' => 'pt_BR',
+                ],
+            ];
+        }
+
+        if (!isset($resolved[$fallbackCode])) {
+            $resolved[$fallbackCode] = [
+                'code' => $fallbackCode,
+                'label' => strtoupper($fallbackCode),
+                'native_label' => strtoupper($fallbackCode),
+                'locale' => str_replace('-', '_', $fallbackCode),
+            ];
+        }
+
+        ksort($resolved);
+        return array_values($resolved);
+    }
+
+    protected function defaultLanguageCode(): string
+    {
+        $configuredDefault = $this->normalizedLanguageCode((string) $this->config->get('app.default_language', ''));
+        $supportedCodes = array_map(
+            static fn (array $language): string => (string) ($language['code'] ?? ''),
+            $this->supportedLanguages()
+        );
+        $supportedCodes = array_values(array_filter($supportedCodes, static fn (string $code): bool => $code !== ''));
+
+        if ($configuredDefault !== null && in_array($configuredDefault, $supportedCodes, true)) {
+            return $configuredDefault;
+        }
+
+        $fallback = $this->normalizedLanguageCode((string) $this->config->get('app.languages.fallback', 'en-us'));
+        if ($fallback !== null && in_array($fallback, $supportedCodes, true)) {
+            return $fallback;
+        }
+
+        return $supportedCodes[0] ?? 'en-us';
+    }
+
+    protected function normalizedLanguageCode(string $languageCode): ?string
+    {
+        $languageCode = strtolower(trim($languageCode));
+        $languageCode = str_replace('_', '-', $languageCode);
+
+        return preg_match('/^[a-z]{2}-[a-z]{2}$/', $languageCode) === 1 ? $languageCode : null;
     }
 
     protected function redirectToRoute(string $route): never

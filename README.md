@@ -7,6 +7,7 @@ Ele foca planejamento estrategico, execucao diaria, publicacao social, tracking 
 
 - Area cliente com:
   - login, cadastro publico e recuperacao de senha por token
+  - seletor de idioma visivel no acesso (`pt-br` e `en-us`) com dropdown e bandeiras na landing (`/`) e no login (`/client/auth/login`)
   - recuperacao de e-mail de acesso via e-mail de recuperacao
   - ativacao automatica de assinatura no plano Basico Gratuito apos cadastro
   - dashboard estrategico e dashboard executivo
@@ -20,6 +21,7 @@ Ele foca planejamento estrategico, execucao diaria, publicacao social, tracking 
   - area de planos e faturamento (upgrade/downgrade, limites, historico de faturas e pagamento)
 - Area admin com:
   - dashboard administrativo
+  - login com seletor de idioma no card de autenticacao (`pt-br` e `en-us`, codigos curtos)
   - CRUD de feriados, comemorativas, sugestoes, canais e campanhas
   - usuarios e hierarquia por nivel
   - filtros salvos para lista de usuarios
@@ -34,6 +36,7 @@ Ele foca planejamento estrategico, execucao diaria, publicacao social, tracking 
   - validacao de sessao por fingerprint e TTL
   - controle de acesso por area (`admin` e `client`)
   - allowlist de hosts (`ALLOWED_HOSTS`) contra Host Header Injection
+- Internacionalizacao baseada em estrutura MVCL de idiomas (`admin/Language` e `client/Language`) com `pt-br`, `en-us`, fallback configuravel e persistencia de idioma em sessao.
 
 ## Estado Atual De Seguranca
 

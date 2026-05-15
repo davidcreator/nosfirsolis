@@ -12,6 +12,15 @@ A area `admin` e o centro de governanca do Solis:
 - governanca de integracoes e automacoes
 - governanca de monetizacao e pagamentos
 
+## Acesso E Idioma (`admin/auth/login`)
+
+- autenticacao aceita:
+  - `users.email`
+  - `users.recovery_email`
+  - `users.name` (usuario)
+- seletor de idioma visivel no card de login com dropdown, bandeiras e codigos curtos (`pt-br` e `en-us`)
+- troca de idioma persiste `language_code` em sessao via `language/save` com validacao CSRF
+
 ## Dashboard Administrativo (`admin/dashboard/index`)
 
 Exibe indicadores de:

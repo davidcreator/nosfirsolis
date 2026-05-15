@@ -35,4 +35,5 @@ return [
     'suggestions.title_create' => 'New suggestion',
     'suggestions.title_edit' => 'Edit Suggestion',
     'suggestions.title_index' => 'Strategic Suggestions',
+    'suggestions.flash_invalid_date' => 'Invalid suggestion date.',
 ];

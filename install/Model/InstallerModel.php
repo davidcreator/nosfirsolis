@@ -192,7 +192,15 @@ class InstallerModel extends Model
         $groupId = $this->resolveAdminGroup($pdo);
 
         $sql = 'INSERT INTO users (user_group_id, name, email, recovery_email, password_hash, language_code, status, created_at, updated_at)
-                VALUES (:user_group_id, :name, :email, :recovery_email, :password_hash, :language_code, 1, NOW(), NOW())';
+                VALUES (:user_group_id, :name, :email, :recovery_email, :password_hash, :language_code, 1, NOW(), NOW())
+                ON DUPLICATE KEY UPDATE
+                    user_group_id = VALUES(user_group_id),
+                    name = VALUES(name),
+                    recovery_email = VALUES(recovery_email),
+                    password_hash = VALUES(password_hash),
+                    language_code = VALUES(language_code),
+                    status = 1,
+                    updated_at = NOW()';
 
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
@@ -588,8 +596,35 @@ class InstallerModel extends Model
     {
         $code = strtolower(trim($code));
         $code = str_replace('_', '-', $code);
+        $supported = $this->supportedLanguageCodes();
+        $fallback = $supported[0] ?? 'en-us';
 
-        return in_array($code, ['en-us', 'pt-br'], true) ? $code : 'en-us';
+        return in_array($code, $supported, true) ? $code : $fallback;
+    }
+
+    private function supportedLanguageCodes(): array
+    {
+        $supported = (array) $this->config->get('app.languages.supported', []);
+        $codes = [];
+
+        foreach ($supported as $code => $_metadata) {
+            $normalized = strtolower(trim((string) $code));
+            $normalized = str_replace('_', '-', $normalized);
+            if (preg_match('/^[a-z]{2}-[a-z]{2}$/', $normalized) !== 1) {
+                continue;
+            }
+
+            $codes[$normalized] = true;
+        }
+
+        if ($codes === []) {
+            return ['en-us', 'pt-br'];
+        }
+
+        $result = array_keys($codes);
+        sort($result);
+
+        return $result;
     }
 
     private function normalizeEnvironment(string $value): string

@@ -5,6 +5,21 @@ return [
     'environment' => 'development',
     'timezone' => 'America/Sao_Paulo',
     'default_language' => 'en-us',
+    'languages' => [
+        'fallback' => 'en-us',
+        'supported' => [
+            'en-us' => [
+                'label' => 'English (US)',
+                'native_label' => 'English (US)',
+                'locale' => 'en_US',
+            ],
+            'pt-br' => [
+                'label' => 'Portuguese (Brazil)',
+                'native_label' => 'Portugues (Brasil)',
+                'locale' => 'pt_BR',
+            ],
+        ],
+    ],
     'session_name' => 'nsplanner_session',
     'installed' => false,
     'areas' => [
