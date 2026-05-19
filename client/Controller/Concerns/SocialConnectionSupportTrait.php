@@ -9,7 +9,7 @@ trait SocialConnectionSupportTrait
         return [
             'instagram' => [
                 'label' => 'Meta for Developers (Instagram)',
-                'url' => 'https://developers.facebook.com/docs/instagram-platform/instagram-graph-api/get-started',
+                'url' => 'https://developers.facebook.com/docs/instagram-platform/instagram-api-with-facebook-login/get-started',
             ],
             'facebook' => [
                 'label' => 'Meta for Developers (Facebook)',
@@ -45,7 +45,7 @@ trait SocialConnectionSupportTrait
             ],
             'blog' => [
                 'label' => 'WordPress Application Passwords',
-                'url' => 'https://wordpress.org/documentation/article/application-passwords/',
+                'url' => 'https://wordpress.org/about/',
             ],
             'podcast' => [
                 'label' => 'RSS Specification',

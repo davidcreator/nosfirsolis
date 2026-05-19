@@ -2758,7 +2758,7 @@ video {
 }
 
 /* Left sidebar collapse behavior (client) */
-@media (min-width: 641px) {
+@media (min-width: 861px) {
     .client-shell {
         transition: grid-template-columns 0.2s ease;
     }
@@ -2767,11 +2767,15 @@ video {
         transition: width 0.2s ease, padding 0.2s ease;
     }
 
-    body.client-sidebar-collapsed .client-shell {
+    body.client-sidebar-collapsed .client-shell,
+    body.client-auth.client-sidebar-collapsed .client-shell {
         grid-template-columns: 72px 1fr;
     }
 
-    body.client-sidebar-collapsed .client-sidebar {
+    body.client-sidebar-collapsed .client-sidebar,
+    body.client-auth.client-sidebar-collapsed .client-sidebar {
+        width: 72px;
+        min-width: 72px;
         overflow-x: hidden;
         padding-left: 0.45rem;
         padding-right: 0.45rem;
@@ -2819,7 +2823,7 @@ video {
     }
 }
 
-@media (min-width: 641px) and (max-width: 1366px) {
+@media (min-width: 861px) and (max-width: 1366px) {
     .app-header .icon-btn {
         display: inline-block;
     }

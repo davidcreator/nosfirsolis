@@ -2829,11 +2829,15 @@ video {
         transition: width 0.2s ease, padding 0.2s ease;
     }
 
-    body.sidebar-collapsed .admin-shell {
+    body.sidebar-collapsed .admin-shell,
+    body.admin-auth.sidebar-collapsed .admin-shell {
         grid-template-columns: 72px 1fr;
     }
 
-    body.sidebar-collapsed .sidebar {
+    body.sidebar-collapsed .sidebar,
+    body.admin-auth.sidebar-collapsed .sidebar {
+        width: 72px;
+        min-width: 72px;
         overflow-x: hidden;
     }
 
