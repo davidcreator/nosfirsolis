@@ -51,6 +51,8 @@ return [
             'max_attempts_per_ip' => 12,
             'max_attempts_per_user' => 6,
             'session_ttl_minutes' => 720,
+            'bind_session_to_ip' => false,
+            'bind_session_to_user_agent' => false,
             'password_recovery_max_requests_per_hour' => 5,
             'email_recovery_max_requests_per_hour' => 5,
             'fail_open_on_security_error' => false,

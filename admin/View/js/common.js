@@ -279,6 +279,64 @@ $(document).ready(function() {
     $(document).on('focus', '.datetime', initDateTimePicker);
 
     /**
+     * Auto-wrap legacy admin tables in responsive containers.
+     * This protects older Twig pages that render .table directly without wrappers.
+     */
+    function ensureResponsiveTables(context) {
+        const $scope = context ? $(context) : $(document.body);
+
+        $scope.find('table.table').each(function() {
+            const $table = $(this);
+
+            if ($table.closest('.table-responsive, .table-wrap, .table-checks').length) {
+                return;
+            }
+
+            $table.wrap('<div class="table-responsive table-responsive-auto"></div>');
+        });
+    }
+
+    ensureResponsiveTables(document.body);
+
+    let responsiveTablePassQueued = false;
+    function queueResponsiveTablePass() {
+        if (responsiveTablePassQueued) {
+            return;
+        }
+
+        responsiveTablePassQueued = true;
+        const schedule = window.requestAnimationFrame || function(callback) {
+            return window.setTimeout(callback, 16);
+        };
+
+        schedule(function() {
+            responsiveTablePassQueued = false;
+            ensureResponsiveTables(document.body);
+        });
+    }
+
+    $(document).ajaxComplete(function() {
+        queueResponsiveTablePass();
+    });
+
+    if (window.MutationObserver) {
+        const tableObserver = new MutationObserver(function(mutations) {
+            for (let i = 0; i < mutations.length; i += 1) {
+                const mutation = mutations[i];
+                if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                    queueResponsiveTablePass();
+                    break;
+                }
+            }
+        });
+
+        tableObserver.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }
+
+    /**
      * Auto-hide alerts with improved timing
      */
     function fadeAlert() {

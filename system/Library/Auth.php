@@ -316,6 +316,11 @@ class Auth
         }
 
         if (!hash_equals($storedFingerprint, $this->sessionFingerprint($userId))) {
+            if ($this->migrateLegacySessionFingerprint($storedFingerprint, $userId)) {
+                $session->set($this->sessionFingerprintKey(), $this->sessionFingerprint($userId));
+                return true;
+            }
+
             $this->security()->audit('session_fingerprint_mismatch', 'critical', $userId, $this->area, []);
             $this->forceLogoutSession();
             return false;
@@ -334,19 +339,194 @@ class Auth
 
     private function sessionFingerprint(int $userId): string
     {
-        $request = $this->registry->get('request');
-        $server = (is_object($request) && isset($request->server) && is_array($request->server))
-            ? $request->server
-            : [];
-        $ip = (string) ($server['REMOTE_ADDR'] ?? '0.0.0.0');
-        $userAgent = (string) ($server['HTTP_USER_AGENT'] ?? 'unknown');
-
-        return hash('sha256', implode('|', [
+        $parts = [
             $this->area,
             $userId,
-            $ip,
-            $userAgent,
-        ]));
+        ];
+
+        if ($this->bindSessionToIp()) {
+            $parts[] = $this->sessionClientIp();
+        }
+
+        if ($this->bindSessionToUserAgent()) {
+            $parts[] = $this->sessionUserAgent();
+        }
+
+        return hash('sha256', implode('|', $parts));
+    }
+
+    private function bindSessionToIp(): bool
+    {
+        return (bool) $this->registry->get('config')->get('security.auth.bind_session_to_ip', false);
+    }
+
+    private function bindSessionToUserAgent(): bool
+    {
+        return (bool) $this->registry->get('config')->get('security.auth.bind_session_to_user_agent', false);
+    }
+
+    private function sessionClientIp(): string
+    {
+        $server = $this->requestServerContext();
+        $remoteAddr = (string) ($server['REMOTE_ADDR'] ?? '');
+        $remoteAddr = filter_var($remoteAddr, FILTER_VALIDATE_IP) ? $remoteAddr : '0.0.0.0';
+
+        if (!$this->shouldTrustForwardedHeaders($remoteAddr)) {
+            return $remoteAddr;
+        }
+
+        $cfIp = $this->firstValidIpFromHeader((string) ($server['HTTP_CF_CONNECTING_IP'] ?? ''));
+        if ($cfIp !== null) {
+            return $cfIp;
+        }
+
+        $forwardedFor = $this->firstValidIpFromHeader((string) ($server['HTTP_X_FORWARDED_FOR'] ?? ''));
+        if ($forwardedFor !== null) {
+            return $forwardedFor;
+        }
+
+        return $remoteAddr;
+    }
+
+    private function sessionUserAgent(): string
+    {
+        $server = $this->requestServerContext();
+        $userAgent = trim((string) ($server['HTTP_USER_AGENT'] ?? ''));
+        if ($userAgent === '') {
+            return 'unknown';
+        }
+
+        return mb_substr($userAgent, 0, 255);
+    }
+
+    private function requestServerContext(): array
+    {
+        $request = $this->registry->get('request');
+        if (!is_object($request) || !isset($request->server) || !is_array($request->server)) {
+            return [];
+        }
+
+        return $request->server;
+    }
+
+    private function shouldTrustForwardedHeaders(string $remoteAddr): bool
+    {
+        $config = $this->registry->get('config');
+        $trustedProxies = (array) ($config ? $config->get('security.trusted_proxies', []) : []);
+        if ($trustedProxies === []) {
+            return false;
+        }
+
+        foreach ($trustedProxies as $rule) {
+            if (!is_string($rule)) {
+                continue;
+            }
+
+            $rule = trim($rule);
+            if ($rule === '') {
+                continue;
+            }
+
+            if ($this->ipMatchesRule($remoteAddr, $rule)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function firstValidIpFromHeader(string $value): ?string
+    {
+        if (trim($value) === '') {
+            return null;
+        }
+
+        $parts = explode(',', $value);
+        foreach ($parts as $part) {
+            $ip = trim($part);
+            if (filter_var($ip, FILTER_VALIDATE_IP)) {
+                return $ip;
+            }
+        }
+
+        return null;
+    }
+
+    private function ipMatchesRule(string $ip, string $rule): bool
+    {
+        if (!str_contains($rule, '/')) {
+            return hash_equals(strtolower(trim($rule)), strtolower(trim($ip)));
+        }
+
+        return $this->ipInCidr($ip, $rule);
+    }
+
+    private function ipInCidr(string $ip, string $cidr): bool
+    {
+        [$network, $prefixRaw] = array_pad(explode('/', $cidr, 2), 2, '');
+        $network = trim($network);
+        $prefixRaw = trim($prefixRaw);
+        if ($network === '' || $prefixRaw === '' || !ctype_digit($prefixRaw)) {
+            return false;
+        }
+
+        $ipBin = @inet_pton($ip);
+        $networkBin = @inet_pton($network);
+        if ($ipBin === false || $networkBin === false) {
+            return false;
+        }
+
+        if (strlen($ipBin) !== strlen($networkBin)) {
+            return false;
+        }
+
+        $prefix = (int) $prefixRaw;
+        $maxBits = strlen($ipBin) * 8;
+        if ($prefix < 0 || $prefix > $maxBits) {
+            return false;
+        }
+
+        $fullBytes = intdiv($prefix, 8);
+        if ($fullBytes > 0 && substr($ipBin, 0, $fullBytes) !== substr($networkBin, 0, $fullBytes)) {
+            return false;
+        }
+
+        $remainingBits = $prefix % 8;
+        if ($remainingBits === 0) {
+            return true;
+        }
+
+        $mask = (0xFF << (8 - $remainingBits)) & 0xFF;
+        $ipByte = ord($ipBin[$fullBytes]);
+        $networkByte = ord($networkBin[$fullBytes]);
+
+        return ($ipByte & $mask) === ($networkByte & $mask);
+    }
+
+    private function migrateLegacySessionFingerprint(string $storedFingerprint, int $userId): bool
+    {
+        $storedFingerprint = trim($storedFingerprint);
+        if ($storedFingerprint === '') {
+            return false;
+        }
+
+        $server = $this->requestServerContext();
+        $legacyUserAgent = (string) ($server['HTTP_USER_AGENT'] ?? 'unknown');
+        $legacyRemoteAddr = (string) ($server['REMOTE_ADDR'] ?? '0.0.0.0');
+        $resolvedClientIp = $this->sessionClientIp();
+
+        $candidates = [
+            hash('sha256', implode('|', [$this->area, $userId, $legacyRemoteAddr, $legacyUserAgent])),
+            hash('sha256', implode('|', [$this->area, $userId, $resolvedClientIp, $legacyUserAgent])),
+        ];
+
+        foreach ($candidates as $candidate) {
+            if (hash_equals($storedFingerprint, $candidate)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function forceLogoutSession(): void
@@ -371,8 +551,20 @@ class Auth
         }
 
         $legacyFingerprint = (string) $session->get('session_fingerprint', '');
-        if ($legacyFingerprint === '' || !hash_equals($legacyFingerprint, $this->sessionFingerprint($legacyUserId))) {
+        if ($legacyFingerprint === '') {
             return 0;
+        }
+
+        $currentFingerprint = $this->sessionFingerprint($legacyUserId);
+        if (
+            !hash_equals($legacyFingerprint, $currentFingerprint)
+            && !$this->migrateLegacySessionFingerprint($legacyFingerprint, $legacyUserId)
+        ) {
+            return 0;
+        }
+
+        if (!hash_equals($legacyFingerprint, $currentFingerprint)) {
+            $legacyFingerprint = $currentFingerprint;
         }
 
         $session->set($this->sessionUserKey(), $legacyUserId);

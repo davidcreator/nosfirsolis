@@ -71,6 +71,7 @@ body {
 
 .client-shell {
     min-height: 100vh;
+    min-height: 100dvh;
     display: grid;
     grid-template-columns: 270px 1fr;
 }
@@ -83,6 +84,7 @@ body {
     position: sticky;
     top: 0;
     height: 100vh;
+    height: 100dvh;
     overflow-y: auto;
     background: linear-gradient(180deg, var(--sidebar-bg) 0%, var(--sidebar-bg-alt) 100%);
     padding: 1rem 0.85rem;
@@ -169,6 +171,7 @@ body {
 
 .client-main {
     min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
 }
@@ -2544,7 +2547,7 @@ body.client-guest .auth-language-switcher .language-dropdown > summary .fa-angle
     }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 860px) {
     .filters-grid {
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     }
@@ -2732,7 +2735,7 @@ video {
 
 @media (max-width: 640px) {
     body {
-        overflow-x: hidden;
+        overflow-x: auto;
     }
 
     .app-content {
@@ -3640,7 +3643,7 @@ body.client-auth .panel h4 {
     overflow-wrap: anywhere;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 860px) {
     body.client-auth .topbar {
         grid-template-columns: auto 1fr;
         align-items: start;
@@ -3928,6 +3931,7 @@ body.client-sidebar-open .icon-btn.is-active span:nth-child(3) {
         left: 0;
         width: min(88vw, 300px);
         height: 100vh;
+        height: 100dvh;
         z-index: 40;
         transform: translateX(calc(-100% - 8px));
         transition: transform 0.24s ease, box-shadow 0.24s ease;
@@ -3970,7 +3974,6 @@ body.client-sidebar-open .icon-btn.is-active span:nth-child(3) {
     body.client-auth .table-wrap .table,
     body.client-auth .table {
         width: 100%;
-        min-width: 0 !important;
         table-layout: auto;
     }
 

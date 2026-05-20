@@ -396,6 +396,20 @@ $authFailOpenOnSecurityErrorRaw = strtolower(nosfir_env_first([
 
 $authFailOpenOnSecurityError = in_array($authFailOpenOnSecurityErrorRaw, ['1', 'true', 'yes', 'on'], true);
 
+$authBindSessionToIpRaw = strtolower(nosfir_env_first([
+    'AUTH_BIND_SESSION_TO_IP',
+    'NOSFIRSOLIS_AUTH_BIND_SESSION_TO_IP',
+], '0'));
+
+$authBindSessionToIp = in_array($authBindSessionToIpRaw, ['1', 'true', 'yes', 'on'], true);
+
+$authBindSessionToUserAgentRaw = strtolower(nosfir_env_first([
+    'AUTH_BIND_SESSION_TO_USER_AGENT',
+    'NOSFIRSOLIS_AUTH_BIND_SESSION_TO_USER_AGENT',
+], '0'));
+
+$authBindSessionToUserAgent = in_array($authBindSessionToUserAgentRaw, ['1', 'true', 'yes', 'on'], true);
+
 $securityHeadersEnabledRaw = strtolower(nosfir_env_first([
     'SECURITY_HEADERS_ENABLED',
     'NOSFIRSOLIS_SECURITY_HEADERS_ENABLED',
@@ -633,6 +647,8 @@ return [
         'runtime_schema_mutations' => $securityRuntimeSchemaMutations,
         'auth' => [
             'fail_open_on_security_error' => $authFailOpenOnSecurityError,
+            'bind_session_to_ip' => $authBindSessionToIp,
+            'bind_session_to_user_agent' => $authBindSessionToUserAgent,
         ],
         'mail' => [
             'driver' => $mailDriver,
